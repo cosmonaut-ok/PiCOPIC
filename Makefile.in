@@ -1,0 +1,195 @@
+MKDIR                 = @MKDIR@
+ROOTDIR               = ./
+SRCDIR                = $(ROOTDIR)src
+TARGETDIR             ?= $(ROOTDIR)target
+OBJDIR                = $(TARGETDIR)/obj
+INCLUDEDIR            = $(ROOTDIR)include
+SUBDIRS               =
+TESTSUBDIRS           = test/unit
+EXES                  = pdp3
+TESTDIR               = testingdir
+### Common settings
+CEXTRA                =
+CXXEXTRA              =
+DEFINES               =
+INCLUDE_PATH          = -I$(INCLUDEDIR)
+LIBRARY_PATH          =
+LIBRARIES             =
+DOXYGEN               = doxygen
+DOXYGEN_CONFIGS       = doc/app.conf doc/vis.conf
+DOXYGEN_FORMATS       = @DOXYGEN_FORMATS@
+DOXYGEN_DIRS          = doc/app doc/vis
+RELEASE               = @RELEASE@
+
+### pdp3 sources and settings
+pdp3_MODULE           = pdp3
+pdp3_C_SRCS           =
+
+pdp3_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp)
+
+pdp3_LDFLAGS          = @LDFLAGS_ADDITIONAL@
+pdp3_ARFLAGS          =
+pdp3_LIBRARY_PATH     =
+pdp3_LIBRARIES        =
+
+### tinyxml2 sources and settings
+tinyxml2_SUBDIR := $(ROOTDIR)lib/tinyxml2
+INCLUDE_PATH += -I$(tinyxml2_SUBDIR)
+SUBDIRS += $(tinyxml2_SUBDIR)
+pdp3_LIBRARIES += tinyxml2
+LDFLAGS += -L$(tinyxml2_SUBDIR)
+
+### tinyvec3d sources and settings
+tinyvec3d_SUBDIR := $(ROOTDIR)lib/tinyvec3d
+INCLUDE_PATH += -I$(tinyvec3d_SUBDIR)
+SUBDIRS += $(tinyvec3d_SUBDIR)
+pdp3_LIBRARIES += tinyvec3d
+LDFLAGS += -L$(tinyvec3d_SUBDIR)
+
+### link hdf5 library
+ifeq (@HDF5_OPTION@, true)
+pdp3_LIBRARIES += hdf5
+else
+pdp3_CXX_SRCS_TMP := $(pdp3_CXX_SRCS)
+pdp3_CXX_SRCS = $(filter-out $(SRCDIR)/ioHDF5.cpp, $(pdp3_CXX_SRCS_TMP))
+endif
+
+pdp3_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(pdp3_CXX_SRCS))
+
+LDFLAGS := $(LDFLAGS) $(pdp3_LDFLAGS)
+
+### Global source lists
+C_SRCS                = $(pdp3_C_SRCS)
+CXX_SRCS              = $(pdp3_CXX_SRCS)
+
+### Tools
+CC ?= gcc
+CXX ?= g++
+
+RC = wrc
+AR = ar
+
+CFLAGS ?= @CFLAGS_DEFAULT@
+CFLAGS += @EXPERIMENTAL_OPTION@
+CFLAGS += @CFLAGS_ADDITIONAL@
+
+CXXFLAGS = ${CFLAGS}
+
+### Generic targets
+all: prepare $(SUBDIRS) $(LIBS) $(EXES)
+
+### Build rules
+.PHONY: all clean dummy check-syntax prepare doxygen test test-unit test-h5 test-ext
+
+$(SUBDIRS): dummy
+	cd $@ && $(MAKE)
+
+$(DOXYGEN_FORMATS): doxygen
+	@for i in $(DOXYGEN_DIRS); do test -f $(ROOTDIR)$$i/$@/Makefile && (cd $(ROOTDIR)$$i/$@ && $(MAKE)) || true; done
+
+# Implicit rules
+.SUFFIXES: .cpp .cxx
+DEFINCL = $(INCLUDE_PATH) $(DEFINES) $(OPTIONS)
+
+# obj/%.c.o:
+# 	$(CC) -c $(CFLAGS) $(CEXTRA) $(DEFINCL) -o $@ $<
+
+# obj/%.cpp.o:
+# 	$(CXX) -c $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) -o $@ $<
+
+# obj/%.cxx.o:
+# 	$(CXX) -c $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) -o $@ $<
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	$(CXX) -c $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) -o $@ $<
+
+# Rules for cleaning
+CLEAN_FILES  = y.tab.c y.tab.h lex.yy.c core *.orig *.rej \
+               \\\#*\\\# *~ *% .\\\#*
+
+BUILD_DIRS = $(OBJDIR) $(OBJDIR)/math $(TARGETDIR)
+space :=
+space +=
+comma :=,
+
+# clean: $(SUBDIRS:%=%/__clean__) $(EXTRASUBDIRS:%=%/__clean__) $(TESTSUBDIRS:%=%/__clean__) $(DOXYGEN_FORMATS:%=%/__clean__)
+# 	$(RM) $(pdp3_OBJS) $(CLEAN_FILES)
+# 	$(RM) $(LIBS) $(EXES) $(EXES:%=%.so)
+# 	$(RM) -r $(ROOTDIR)/tools/__pycache__/
+# 	$(RM) -r $(DOXYGEN_DIRS)
+
+# $(SUBDIRS:%=%/__clean__): dummy
+# 	-cd `dirname $@` && $(MAKE) clean
+
+# $(DOXYGEN_FORMATS:%=%/__clean__): dummy
+# 	-cd `dirname doc/$@` && test -f Makefile && $(MAKE) clean || return 0
+
+
+# $(EXTRASUBDIRS:%=%/__clean__): dummy
+# 	-cd `dirname $@` && $(RM) $(CLEAN_FILES)
+
+
+# $(TESTSUBDIRS:%=%/__clean__): dummy
+# 	-cd `dirname $@` && $(MAKE) clean
+
+# $(pdp3_MODULE): $(pdp3_OBJS)
+# 	$(CXX) $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) $(LDFLAGS) -o $@ $(pdp3_OBJS) $(pdp3_LIBRARY_PATH) $(pdp3_LIBRARIES:%=-l%)
+
+# distclean: clean
+# 	$(RM) -r *.avi *.png $(BUILD_DIRS) $(RELEASE) $(RELEASE).zip autom4te.cache config.log config.status configure Makefile parameters.xml test/functional/test.sh test/functional/parameters*tmpl
+
+# run: bootstrap
+# 	./pdp3
+
+# $(TESTSUBDIRS:%=%/__test__): dummy
+# 	cd `dirname $@` && $(MAKE) test
+
+# test-unit: $(TESTSUBDIRS:%=%/__test__)
+
+# test: clean
+# 	@python3 ./test/functional/test.py
+
+# test-ext: clean
+# 	@python3 ./test/functional/test.py --type=ext
+
+# test-regression: clean
+# 	@python3 ./test/functional/test.py --type=regression --fastmath
+
+# test-tools: test
+# 	TESTDIR=$(TESTDIR) /bin/bash ./test/functional/tools.sh
+
+# test-full: test-unit test-ext test-tools
+
+# check-syntax:
+# 	$(CXX) $(LIBRARY_PATH) $(INCLUDE_PATH) $(CXXFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(pdp3_CXX_SRCS)
+
+# prepare:
+# 	$(MKDIR) -p $(BUILD_DIRS)
+
+# doxygen:
+# 	for i in $(shell ls doc/*.svg); do convert $$i $$(dirname $$i)/$$(basename $$i .svg).png; done
+# 	for i in $(DOXYGEN_CONFIGS); do $(DOXYGEN) $$i; done
+
+# doc: doxygen $(DOXYGEN_FORMATS)
+
+# dist: all doc
+# 	cp pdp3 $(RELEASE)
+# 	cp -r CHANGELOG.md $(RELEASE)
+# 	cp -r tools $(RELEASE)/tools
+# 	$(MKDIR) -p $(RELEASE)/doc
+# 	cp doc/app/latex/refman.pdf $(RELEASE)/doc/pdp3.pdf
+# 	cp doc/vis/latex/refman.pdf $(RELEASE)/doc/visualization.pdf
+# 	zip -r `basename $(RELEASE)`.zip $(RELEASE)
+
+# hdf5: prepare
+# 	test -d $(TARGETDIR)/@HDF5_VERSION@ || \
+# 	(cd $(TARGETDIR); \
+# 	wget -qO- "@HDF5_URL@" | tar xjf -; \
+# 	cd @HDF5_VERSION@; \
+# 	./autogen.sh; \
+# 	./configure --enable-cxx --enable-build-mode=production --prefix=@prefix@; \
+# 	make)
+
+# hdf5-install: hdf5
+# 	cd $(TARGETDIR)/@HDF5_VERSION@; \
+# 	make install
