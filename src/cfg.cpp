@@ -53,6 +53,8 @@ Cfg::Cfg(const char *json_file_name)
 
   init_output_data();
   init_probes();
+
+  method_limitations_check();
 }
 
 Cfg::~Cfg()
@@ -285,4 +287,104 @@ void Cfg::weight_macro_amount()
     (*b).macro_amount = (unsigned int)(beam_r_grid_size * beam_z_grid_size * norm * beam_macro_const);
     LOG_DBG("Macro amount for ``" << (*b).name << "'' beam is " << (*b).macro_amount);
   }
+}
+
+bool Cfg::method_limitations_check ()
+{
+  double full_macro_amount = 0;
+  double electron_density = 0;
+  double electron_temperature = 0;
+
+// try to figure out, where is electrons
+  for (auto i = particle_species.begin(); i != particle_species.end(); ++i)
+  {
+    full_macro_amount += (*i).macro_amount; // calculate total number of macroparticles
+
+    if (strcmp((*i).name, "Electrons") == 0
+        || strcmp((*i).name, "electrons") == 0
+        || strcmp((*i).name, "Electron") == 0
+        || strcmp((*i).name, "electron") == 0
+        || (*i).mass == 1)
+    {
+      electron_density = ((*i).left_density + (*i).right_density) / 2;
+      electron_temperature = (*i).temperature;
+    }
+  }
+
+  if (electron_density == 0 || electron_temperature == 0)
+  {
+    LOG_CRIT("There is no electrons present in system", 1);
+  }
+
+  double plasma_freq = sqrt(electron_density * EL_CHARGE * EL_CHARGE / (EL_MASS * EPSILON0));
+
+  // TODO: WTF
+  unsigned int time_multiplicator = 100;
+
+  // particle should not fly more, than 1 cell per time step
+  double max_time_c = min(geometry->r_cell_size / constant::LIGHT_VEL,
+                          geometry->z_cell_size / constant::LIGHT_VEL);
+  double max_time_wp = 2 / plasma_freq / time_multiplicator;
+  double max_time = min(max_time_c, max_time_wp);
+
+  if (time->step > max_time)
+  {
+    LOG_CRIT("Too large time step: ``"
+             << time->step
+             << " s.''. Should be less, than ``"
+             << max_time
+             << " s.''", 1);
+  }
+
+  // cell size d{r,z} < \lambda debye
+
+  // 7400 is a coefficient, when T is in electron volts and N is in \f$ m^-3 \f$
+  double debye_length = 7400 * sqrt(electron_temperature / electron_density);
+  unsigned int debye_multiplicator = 100;
+
+  if (geometry->r_cell_size > debye_length * debye_multiplicator
+      || geometry->z_cell_size > debye_length * debye_multiplicator)
+  {
+    LOG_CRIT("Too large grid size: ``"
+             << geometry->r_cell_size << " x " << geometry->z_cell_size
+             << " m.''. Should be less, than ``"
+             << debye_length * debye_multiplicator
+             << " m.''", 1);
+  }
+
+  // \f$ L >> R_{debye} \f$
+  if (geometry->r_size < debye_length * debye_multiplicator
+      || geometry->z_size < debye_length * debye_multiplicator)
+  {
+    LOG_CRIT("Too small system size: ``"
+             << geometry->r_size << " x " << geometry->z_size
+             << " m.''. Should be more, than ``"
+             <<  debye_length * debye_multiplicator
+             << " m.''", 1);
+  }
+
+  // \f$ L << N_{particles} * R_{debye} \f$
+  if (geometry->r_size > debye_length * full_macro_amount * debye_multiplicator
+      || geometry->z_size > debye_length * full_macro_amount * debye_multiplicator)
+  {
+    LOG_CRIT("Too large system size: ``"
+             << geometry->r_size << " x " << geometry->z_size
+             << " m.''. Should be less, than ``"
+             <<  debye_length * full_macro_amount * debye_multiplicator
+             << " m.''", 1);
+
+  }
+
+  unsigned int grid_multiplicator = 10;
+
+  if (geometry->r_grid_amount * geometry->r_grid_amount * grid_multiplicator > full_macro_amount)
+  {
+    LOG_WARN("Too small summary number of macroparticles: ``"
+             << full_macro_amount
+             << "''. Should be more, than ``"
+             <<  geometry->r_grid_amount * geometry->r_grid_amount * grid_multiplicator
+             << "''. You could get not relevant results");
+  }
+
+  return true;
 }
