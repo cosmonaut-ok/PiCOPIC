@@ -95,7 +95,7 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
               - dl) + dz / 2;
     P_POS_Z((**n)) += left_cell_number * dz; // shift by z to respect geometry with areas
 
-    v_sum += 2 * PI * P_POS_Z((**n)) * dr * dz;
+    v_sum += 2 * PI * P_POS_R((**n)) * dr * dz;
 
     ++particles_count;
   }
