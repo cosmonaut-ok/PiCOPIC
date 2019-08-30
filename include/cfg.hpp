@@ -82,6 +82,8 @@ public:
   bool debug = false;
   bool use_hdf5 = false;
 
+  double macro_amount; // amount of macroparticles in system
+
   Geometry *geometry;
 
   /* <time> */
@@ -167,5 +169,5 @@ private:
   void init_time();
   void init_boundary();
   void init_output_data();
-
+  void weight_macro_amount();
 };

@@ -32,6 +32,9 @@ Cfg::Cfg(const char *json_file_name)
   //! check if use hdf5 backend
   use_hdf5 = json_data.get<object>()["hdf5"].get<bool>();
 
+  //! check if use hdf5 backend
+  macro_amount = json_data.get<object>()["macro_amount"].get<double>();
+
   //! initialize geometry, set PML
   init_geometry();
 
@@ -43,6 +46,10 @@ Cfg::Cfg(const char *json_file_name)
 
   //! initialize particles beam parameters
   init_beam();
+
+  //! weight macroparticles alignment
+  //! for each particles specie and beam
+  weight_macro_amount();
 
   init_output_data();
   init_probes();
@@ -69,7 +76,7 @@ void Cfg::init_particles()
     p_s.name = (char*)o["name"].get<string>().c_str();
     p_s.mass = (int)o["mass"].get<double>();
     p_s.charge = (int)o["charge"].get<double>();
-    p_s.macro_amount = o["macro_amount"].get<double>();
+    // p_s.macro_amount = o["macro_amount"].get<double>();
     p_s.left_density = o["density"].get<object>()["left"].get<double>();
     p_s.right_density = o["density"].get<object>()["right"].get<double>();
     p_s.temperature = o["temperature"].get<double>();
@@ -165,7 +172,7 @@ void Cfg::init_beam()
     p_b.bunch_length = b_o["length"].get<double>();
     p_b.bunch_radius = b_o["radius"].get<double>();
     p_b.density = b_o["density"].get<double>();
-    p_b.macro_amount = b_o["macro_amount"].get<double>();
+    // p_b.macro_amount = b_o["macro_amount"].get<double>();
 
     p_b.current_bunch_number = 0;
 
@@ -233,4 +240,49 @@ void Cfg::init_output_data()
 
   output_data->compress = json_root["compression"].get<object>()["use"].get<bool>();
   output_data->compress_level = (int)json_root["compression"].get<object>()["level"].get<double>();
+}
+
+void Cfg::weight_macro_amount()
+//! calculate alignment of macroparticles amount
+//! to each particles specie and each beam
+{
+  double norm_sum = 0;
+
+  // make beam macroparticles X times smaller, than
+  // macroparticles of regular particle species
+  const unsigned int beam_macro_const = 2;
+
+// increase normalization sum for particle species (assume, that specie size times species amount)
+  norm_sum += geometry->r_grid_amount * geometry->z_grid_amount * particle_species.size();
+
+// increase normalization sum for particle beams
+  for (auto b = particle_beams.begin(); b != particle_beams.end(); ++b)
+  {
+    double beam_r_grid_size = (*b).bunch_radius / geometry->r_cell_size;
+    double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->z_cell_size;
+
+    norm_sum += beam_r_grid_size * beam_z_grid_size * beam_macro_const;
+  }
+
+  // calculate normalization coeffitient
+  double norm = macro_amount / norm_sum;
+
+  // align macroparticles amount to particle species
+  // with respect to normalization
+  for (auto p_s = particle_species.begin(); p_s != particle_species.end(); ++p_s)
+  {
+    (*p_s).macro_amount = (unsigned int)(geometry->r_grid_amount * geometry->z_grid_amount * norm);
+    LOG_DBG("Macro amount for ``" << (*p_s).name << "'' speice is " << (*p_s).macro_amount);
+  }
+
+  // align macroparticles amount to particle beams
+  // with respect to normalization
+  for (auto b = particle_beams.begin(); b != particle_beams.end(); ++b)
+  {
+    double beam_r_grid_size = (*b).bunch_radius / geometry->r_cell_size;
+    double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->z_cell_size;
+
+    (*b).macro_amount = (unsigned int)(beam_r_grid_size * beam_z_grid_size * norm * beam_macro_const);
+    LOG_DBG("Macro amount for ``" << (*b).name << "'' beam is " << (*b).macro_amount);
+  }
 }
