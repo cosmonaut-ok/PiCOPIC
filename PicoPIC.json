@@ -1,0 +1,181 @@
+{
+  "debug": false,
+  "hdf5": false,
+  "geometry": {
+    "radius": 0.25,
+    "longitude": 0.5,
+    "grid_size": {
+      "radius": 128,
+      "longitude": 1024
+    },
+    "areas_amount": {
+      "radius": 8,
+      "longitude": 8
+    }
+  },
+  "pml": {
+    "left_wall": 0,
+    "right_wall": 0,
+    "outer_wall": 0,
+    "sigma_1": 1e-05,
+    "sigma_2": 0.07
+  },
+  "time": {
+    "start": 0,
+    "end": 1e-08,
+    "step": 1e-12
+  },
+  "particles": [
+    {
+      "name": "electrons",
+      "charge": -1,
+      "mass": 1,
+      "macro_amount": 5e5,
+      "density": {
+        "left": 1e+16,
+        "right": 1.05e+16
+      },
+      "temperature": 100
+    },
+    {
+      "name": "ions",
+      "charge": 1,
+      "mass": 1836,
+      "macro_amount": 5e5,
+      "density": {
+        "left": 1e+16,
+        "right": 1.05e+16
+      },
+      "temperature": 10
+    }
+  ],
+  "beams": [
+    {
+      "name": "electrons",
+      "charge": -1,
+      "mass": 1,
+      "velocity": 2.7e8,
+      "start_time": 0,
+      "bunch": {
+        "amount": 10,
+        "distance": 0.2,
+        "macro_amount": 5e6,
+        "length": 0.02,
+        "radius": 0.02,
+        "density": 1e+15
+      }
+    }
+  ],
+  "data": {
+    "data_root": "./picopic_result",
+    "compression": {
+      "use": false,
+      "level": 1
+    },
+    "probes": [
+      {
+        "component": "E_r",
+	"schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 127, "z": 1023 }
+      },
+      {
+        "component": "E_phi",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 127, "z": 1023 }
+      },
+      {
+        "component": "E_z",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 127, "z": 1023 }
+      },
+      {
+        "component": "position",
+        "specie": "electrons",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 127, "z": 1023 }
+      },
+      {
+        "component": "position",
+        "specie": "beam_electrons",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 127, "z": 1023 }
+      },
+      {
+        "component": "velocity",
+        "specie": "electrons",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 127, "z": 1023 }
+      },
+      {
+        "component": "velocity",
+        "specie": "beam_electrons",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 127, "z": 1023 }
+      },
+      {
+        "component": "position",
+        "specie": "ions",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 127, "z": 1023 }
+      },
+      {
+        "component": "velocity",
+        "specie": "ions",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 127, "z": 1023 }
+      },
+      {
+        "component": "charge",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 127, "z": 1023 }
+      }
+    ],
+    "plot": {
+      "subplot": {
+        "cmap": "terrain",
+        "ticks": {
+          "x_amount": 20,
+          "y_amount": 8,
+          "z_amount": 20,
+          "cbar_amount": 3
+        }
+      },
+      "figure": {
+        "color": "None",
+        "width": 10.5,
+        "height": 7,
+        "dpi": 100,
+        "font": {
+          "family": "sans-serif",
+          "size": 10,
+          "name": "DejaVu Sans"
+        }
+      },
+      "video": {
+        "codec": "mjpeg",
+        "fps": 20,
+        "bitrate": 32000
+      }
+    }
+  }
+}
