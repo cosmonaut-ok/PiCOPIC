@@ -1,12 +1,12 @@
 MKDIR                 = @MKDIR@
-ROOTDIR               = ./
-SRCDIR                = $(ROOTDIR)src
-TARGETDIR             ?= $(ROOTDIR)target
+ROOTDIR               = .
+SRCDIR                = $(ROOTDIR)/src
+TARGETDIR             ?= $(ROOTDIR)/target
 OBJDIR                = $(TARGETDIR)/obj
-INCLUDEDIR            = $(ROOTDIR)include
+INCLUDEDIR            = $(ROOTDIR)/include
 SUBDIRS               =
 TESTSUBDIRS           = test/unit
-EXES                  = pdp3
+EXES                  = PicoPIC
 TESTDIR               = testingdir
 ### Common settings
 CEXTRA                =
@@ -21,46 +21,46 @@ DOXYGEN_FORMATS       = @DOXYGEN_FORMATS@
 DOXYGEN_DIRS          = doc/app doc/vis
 RELEASE               = @RELEASE@
 
-### pdp3 sources and settings
-pdp3_MODULE           = pdp3
-pdp3_C_SRCS           =
+### PicoPIC sources and settings
+PicoPIC_MODULE           = PicoPIC
+PicoPIC_C_SRCS           =
 
-pdp3_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp)
+PicoPIC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp)
 
-pdp3_LDFLAGS          = @LDFLAGS_ADDITIONAL@
-pdp3_ARFLAGS          =
-pdp3_LIBRARY_PATH     =
-pdp3_LIBRARIES        =
+PicoPIC_LDFLAGS          = @LDFLAGS_ADDITIONAL@
+PicoPIC_ARFLAGS          =
+PicoPIC_LIBRARY_PATH     =
+PicoPIC_LIBRARIES        =
 
-### tinyxml2 sources and settings
-tinyxml2_SUBDIR := $(ROOTDIR)lib/tinyxml2
-INCLUDE_PATH += -I$(tinyxml2_SUBDIR)
-SUBDIRS += $(tinyxml2_SUBDIR)
-pdp3_LIBRARIES += tinyxml2
-LDFLAGS += -L$(tinyxml2_SUBDIR)
+### picojson sources and settings
+picojson_SUBDIR := $(ROOTDIR)/lib/picojson
+INCLUDE_PATH += -I$(picojson_SUBDIR)
+SUBDIRS += $(picojson_SUBDIR)
+# PicoPIC_LIBRARIES += picojson
+# LDFLAGS += -L$(picojson_SUBDIR)
 
 ### tinyvec3d sources and settings
-tinyvec3d_SUBDIR := $(ROOTDIR)lib/tinyvec3d
-INCLUDE_PATH += -I$(tinyvec3d_SUBDIR)
-SUBDIRS += $(tinyvec3d_SUBDIR)
-pdp3_LIBRARIES += tinyvec3d
-LDFLAGS += -L$(tinyvec3d_SUBDIR)
+# tinyvec3d_SUBDIR := $(ROOTDIR)lib/tinyvec3d
+# INCLUDE_PATH += -I$(tinyvec3d_SUBDIR)
+# SUBDIRS += $(tinyvec3d_SUBDIR)
+# PicoPIC_LIBRARIES += tinyvec3d
+# LDFLAGS += -L$(tinyvec3d_SUBDIR)
 
 ### link hdf5 library
 ifeq (@HDF5_OPTION@, true)
-pdp3_LIBRARIES += hdf5
+PicoPIC_LIBRARIES += hdf5
 else
-pdp3_CXX_SRCS_TMP := $(pdp3_CXX_SRCS)
-pdp3_CXX_SRCS = $(filter-out $(SRCDIR)/ioHDF5.cpp, $(pdp3_CXX_SRCS_TMP))
+PicoPIC_CXX_SRCS_TMP := $(PicoPIC_CXX_SRCS)
+PicoPIC_CXX_SRCS = $(filter-out $(SRCDIR)/ioHDF5.cpp, $(PicoPIC_CXX_SRCS_TMP))
 endif
 
-pdp3_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(pdp3_CXX_SRCS))
+PicoPIC_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PicoPIC_CXX_SRCS))
 
-LDFLAGS := $(LDFLAGS) $(pdp3_LDFLAGS)
+LDFLAGS += $(PicoPIC_LDFLAGS)
 
 ### Global source lists
-C_SRCS                = $(pdp3_C_SRCS)
-CXX_SRCS              = $(pdp3_CXX_SRCS)
+C_SRCS                = $(PicoPIC_C_SRCS)
+CXX_SRCS              = $(PicoPIC_CXX_SRCS)
 
 ### Tools
 CC ?= gcc
@@ -85,7 +85,7 @@ $(SUBDIRS): dummy
 	cd $@ && $(MAKE)
 
 $(DOXYGEN_FORMATS): doxygen
-	@for i in $(DOXYGEN_DIRS); do test -f $(ROOTDIR)$$i/$@/Makefile && (cd $(ROOTDIR)$$i/$@ && $(MAKE)) || true; done
+	@for i in $(DOXYGEN_DIRS); do test -f $(ROOTDIR)/$$i/$@/Makefile && (cd $(ROOTDIR)/$$i/$@ && $(MAKE)) || true; done
 
 # Implicit rules
 .SUFFIXES: .cpp .cxx
@@ -112,34 +112,35 @@ space :=
 space +=
 comma :=,
 
-# clean: $(SUBDIRS:%=%/__clean__) $(EXTRASUBDIRS:%=%/__clean__) $(TESTSUBDIRS:%=%/__clean__) $(DOXYGEN_FORMATS:%=%/__clean__)
-# 	$(RM) $(pdp3_OBJS) $(CLEAN_FILES)
-# 	$(RM) $(LIBS) $(EXES) $(EXES:%=%.so)
-# 	$(RM) -r $(ROOTDIR)/tools/__pycache__/
-# 	$(RM) -r $(DOXYGEN_DIRS)
+clean: $(SUBDIRS:%=%/__clean__) $(EXTRASUBDIRS:%=%/__clean__) $(TESTSUBDIRS:%=%/__clean__) $(DOXYGEN_FORMATS:%=%/__clean__)
+	$(RM) $(PicoPIC_OBJS) $(CLEAN_FILES)
+	$(RM) $(LIBS) $(EXES) $(EXES:%=%.so)
+	$(RM) -r $(ROOTDIR)/tools/__pycache__/
+	$(RM) -r $(DOXYGEN_DIRS)
+	$(RM) -r $(TARGETDIR)
 
-# $(SUBDIRS:%=%/__clean__): dummy
-# 	-cd `dirname $@` && $(MAKE) clean
+$(SUBDIRS:%=%/__clean__): dummy
+	-cd `dirname $@` && $(MAKE) clean
 
-# $(DOXYGEN_FORMATS:%=%/__clean__): dummy
-# 	-cd `dirname doc/$@` && test -f Makefile && $(MAKE) clean || return 0
-
-
-# $(EXTRASUBDIRS:%=%/__clean__): dummy
-# 	-cd `dirname $@` && $(RM) $(CLEAN_FILES)
+$(DOXYGEN_FORMATS:%=%/__clean__): dummy
+	-cd `dirname doc/$@` && test -f Makefile && $(MAKE) clean || return 0
 
 
-# $(TESTSUBDIRS:%=%/__clean__): dummy
-# 	-cd `dirname $@` && $(MAKE) clean
+$(EXTRASUBDIRS:%=%/__clean__): dummy
+	-cd `dirname $@` && $(RM) $(CLEAN_FILES)
 
-# $(pdp3_MODULE): $(pdp3_OBJS)
-# 	$(CXX) $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) $(LDFLAGS) -o $@ $(pdp3_OBJS) $(pdp3_LIBRARY_PATH) $(pdp3_LIBRARIES:%=-l%)
 
-# distclean: clean
-# 	$(RM) -r *.avi *.png $(BUILD_DIRS) $(RELEASE) $(RELEASE).zip autom4te.cache config.log config.status configure Makefile parameters.xml test/functional/test.sh test/functional/parameters*tmpl
+$(TESTSUBDIRS:%=%/__clean__): dummy
+	-cd `dirname $@` && $(MAKE) clean
+
+$(PicoPIC_MODULE): $(PicoPIC_OBJS)
+	$(CXX) $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) $(LDFLAGS) -o $@ $(PicoPIC_OBJS) $(PicoPIC_LIBRARY_PATH) $(PicoPIC_LIBRARIES:%=-l%)
+
+distclean: clean
+	$(RM) -r *.avi *.png $(BUILD_DIRS) $(RELEASE) $(RELEASE).zip autom4te.cache config.log config.status configure Makefile scripts/*.sh picopic_result/
 
 # run: bootstrap
-# 	./pdp3
+# 	./PicoPIC
 
 # $(TESTSUBDIRS:%=%/__test__): dummy
 # 	cd `dirname $@` && $(MAKE) test
@@ -161,35 +162,35 @@ comma :=,
 # test-full: test-unit test-ext test-tools
 
 # check-syntax:
-# 	$(CXX) $(LIBRARY_PATH) $(INCLUDE_PATH) $(CXXFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(pdp3_CXX_SRCS)
+# 	$(CXX) $(LIBRARY_PATH) $(INCLUDE_PATH) $(CXXFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(PicoPIC_CXX_SRCS)
 
-# prepare:
-# 	$(MKDIR) -p $(BUILD_DIRS)
+prepare:
+	$(MKDIR) -p $(BUILD_DIRS)
 
-# doxygen:
-# 	for i in $(shell ls doc/*.svg); do convert $$i $$(dirname $$i)/$$(basename $$i .svg).png; done
-# 	for i in $(DOXYGEN_CONFIGS); do $(DOXYGEN) $$i; done
+doxygen:
+	for i in $(shell ls doc/*.svg); do convert $$i $$(dirname $$i)/$$(basename $$i .svg).png; done
+	for i in $(DOXYGEN_CONFIGS); do $(DOXYGEN) $$i; done
 
-# doc: doxygen $(DOXYGEN_FORMATS)
+doc: doxygen $(DOXYGEN_FORMATS)
 
 # dist: all doc
-# 	cp pdp3 $(RELEASE)
+# 	cp PicoPIC $(RELEASE)
 # 	cp -r CHANGELOG.md $(RELEASE)
 # 	cp -r tools $(RELEASE)/tools
 # 	$(MKDIR) -p $(RELEASE)/doc
-# 	cp doc/app/latex/refman.pdf $(RELEASE)/doc/pdp3.pdf
+# 	cp doc/app/latex/refman.pdf $(RELEASE)/doc/PicoPIC.pdf
 # 	cp doc/vis/latex/refman.pdf $(RELEASE)/doc/visualization.pdf
 # 	zip -r `basename $(RELEASE)`.zip $(RELEASE)
 
-# hdf5: prepare
-# 	test -d $(TARGETDIR)/@HDF5_VERSION@ || \
-# 	(cd $(TARGETDIR); \
-# 	wget -qO- "@HDF5_URL@" | tar xjf -; \
-# 	cd @HDF5_VERSION@; \
-# 	./autogen.sh; \
-# 	./configure --enable-cxx --enable-build-mode=production --prefix=@prefix@; \
-# 	make)
+hdf5: prepare
+	test -d $(TARGETDIR)/@HDF5_VERSION@ || \
+	(cd $(TARGETDIR); \
+	wget -qO- "@HDF5_URL@" | tar xjf -; \
+	cd @HDF5_VERSION@; \
+	./autogen.sh; \
+	./configure --enable-cxx --enable-build-mode=production --prefix=@prefix@; \
+	make)
 
-# hdf5-install: hdf5
-# 	cd $(TARGETDIR)/@HDF5_VERSION@; \
-# 	make install
+hdf5-install: hdf5
+	cd $(TARGETDIR)/@HDF5_VERSION@; \
+	make install
