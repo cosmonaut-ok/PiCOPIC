@@ -1,6 +1,7 @@
 {
   "debug": false,
   "hdf5": false,
+  "macro_amount": 5e6,
   "geometry": {
     "radius": 0.25,
     "longitude": 0.5,
@@ -30,7 +31,6 @@
       "name": "electrons",
       "charge": -1,
       "mass": 1,
-      "macro_amount": 5e5,
       "density": {
         "left": 1e+16,
         "right": 1.05e+16
@@ -41,7 +41,6 @@
       "name": "ions",
       "charge": 1,
       "mass": 1836,
-      "macro_amount": 5e5,
       "density": {
         "left": 1e+16,
         "right": 1.05e+16
@@ -59,7 +58,6 @@
       "bunch": {
         "amount": 10,
         "distance": 0.2,
-        "macro_amount": 5e6,
         "length": 0.02,
         "radius": 0.02,
         "density": 1e+15
