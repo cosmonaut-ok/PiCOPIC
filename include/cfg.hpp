@@ -19,6 +19,7 @@
 #endif
 
 // #include "lib.h"
+#include "constant.hpp"
 #include "geometry.hpp"
 #include "timeSim.hpp"
 #include "msg.hpp"
@@ -170,4 +171,5 @@ private:
   void init_boundary();
   void init_output_data();
   void weight_macro_amount();
+  bool method_limitations_check();
 };
