@@ -51,7 +51,9 @@ DataWriter::DataWriter(string a_path, string a_component,
   if (component.compare("temperature") == 0
       || component.compare("density") == 0
       || component.compare("position") == 0  // TODO: implement specie-dependent
-      || component.compare("velocity") == 0) //        behavior for positions and velocities
+      || component.compare("velocity") == 0
+      || component.compare("p_charge") == 0  // TODO: implement specie-dependent
+      || component.compare("p_mass") == 0) //        behavior for positions and velocities
   {
     name += specie;
     name += "/";
@@ -141,6 +143,20 @@ void DataWriter::go()
           + to_string(size[2]) + "x"  + to_string(size[1]) + "-"
           + to_string(size[3]);
       };
+    }
+    else if (component.compare("p_mass") == 0
+             || component.compare("p_charge") == 0)
+    {
+      LOG_DBG("Launch 1d-vector-shaped writer " << component << " at step " << dump_step);
+      string dump_step_name = dump_step;
+      out_data_plain.resize(0);
+      merge_particle_areas(component, 0, specie);
+      engine.write_1d_vector(dump_step_name, out_data_plain);
+      shape_name = "rec";
+      component_name = specie
+        + "-" + component + ":" + to_string(size[0]) + "-"
+        + to_string(size[2]) + "x"  + to_string(size[1]) + "-"
+        + to_string(size[3]);
     }
     else
     {
@@ -281,6 +297,10 @@ void DataWriter::merge_particle_areas(string parameter,
                 out_data_plain.push_back((*pp[p])[component]);
               else if (parameter.compare("velocity") == 0)
                 out_data_plain.push_back((*pp[p])[component+6]); // positions(3), positions_old(3), velocity(3)
+              else if (parameter.compare("p_charge") == 0)
+                out_data_plain.push_back((*pp[p])[component+9]); // positions(3), positions_old(3), velocity(3)
+              else if (parameter.compare("p_mass") == 0)
+                out_data_plain.push_back((*pp[p])[component+10]); // positions(3), positions_old(3), velocity(3)
               else
                 LOG_CRIT("Unknown DataWriter component ``" << parameter << "''", 1);
             }

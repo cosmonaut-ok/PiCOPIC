@@ -379,7 +379,6 @@ int main(int argc, char **argv)
       Area *sim_area = areas.get(i, j);
 
       sim_area->distribute(); // spatial and velocity distribution
-      // sim_area->weight_charge(); // TODO: initial charge weighting for c_rho_new
     }
 
   LOG_DBG("Initializing Boundary Conditions (TBD)");
@@ -426,7 +425,7 @@ int main(int argc, char **argv)
         sim_area->manage_beam();
 
         // ! 2. Calculate magnetic field (H)
-        sim_area->weight_field_h(); // +
+        // sim_area->weight_field_h(); // +
 
         // ! 3. Calculate velocity
         sim_area->reset_current(); // +
@@ -450,7 +449,7 @@ int main(int argc, char **argv)
         Area *sim_area = areas.get(i, j);
 
         // current distribution
-        // sim_area->weight_current_azimuthal(); // TODO: implement FIXME: gives SegFault
+        sim_area->weight_current_azimuthal();
         sim_area->update_particles_coords_at_half(); // +
         sim_area->particles_back_position_to_rz(); // +
         sim_area->reflect(); // +
@@ -467,15 +466,15 @@ int main(int argc, char **argv)
       {
         Area *sim_area = areas.get(i, j);
 
-        // sim_area->weight_current(); // TODO: implement
+        sim_area->weight_current();
         sim_area->particles_back_velocity_to_rz();
 
         // ! 5. Calculate electric field (E)
         // sim_area->weight_field_e(); // +
 
         // ! 6. Continuity equation
-        sim_area->reset_charge(); // TODO: for c_rho_new
-        sim_area->weight_charge(); // TODO: r_who_new, c_bunch
+        // sim_area->reset_charge(); // TODO: for c_rho_new
+        // sim_area->weight_charge(); // TODO: r_who_new, c_bunch
       }
 
     // dump data

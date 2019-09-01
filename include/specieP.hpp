@@ -120,7 +120,6 @@ public:
 
   double temperature; // in electronvolts
 
-  // FIXME:
   double start_time;
   double bunch_length;
   double bunches_distance;

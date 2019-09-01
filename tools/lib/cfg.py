@@ -54,14 +54,14 @@ class Cfg:
         
         self.species = []
         for i in cfg['particles']:
-            pp = SpecieP(i['name'], i['macro_amount'], i['density']['left'], 
+            pp = SpecieP(i['name'], 1e6, i['density']['left'], 
                          i['density']['right'], i['temperature'], 
                          i['charge'], i['mass'])
             self.species.append(pp)
             
         self.beams = []
         for i in cfg['beams']:
-            bm = BeamP(i['name'], i['bunch']['macro_amount'], i['velocity'], i['charge'], i['mass'],
+            bm = BeamP(i['name'], 1e6, i['velocity'], i['charge'], i['mass'],
                        i['start_time'], i['bunch']['density'], i['bunch']['amount'], i['bunch']['length'], 
                        i['bunch']['radius'], i['bunch']['distance'])
             self.beams.append(bm)

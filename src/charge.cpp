@@ -4,6 +4,8 @@ Charge::Charge(Geometry *geom, vector<SpecieP *> species): geometry(geom)
 {
   // ! FIXME: that +1 is really temporary solution
   // ! to avoid Segfaults while weighting
+  MSG_FIXME("That +1 is really temporary solution to avoid Segfaults while weighting");
+
   density = Grid<double>(geometry->r_grid_amount+1, geometry->z_grid_amount+1);
   species_p = species;
 }
@@ -17,7 +19,6 @@ void Charge::weight_cylindrical ()
   {
     vector<vector <double> * > psp = (**sp).particles;
 
-    // MSG(psp.size());
     for (auto pp = psp.begin(); pp != psp.end(); ++pp)
     {
       vector<double> *p = *pp; // single particle
