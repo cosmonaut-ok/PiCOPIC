@@ -142,6 +142,9 @@ void FieldE::calc_field_cylindrical()
                    - (j[1].get(i, k) - (h[0].get(i, k) - h[0].get(i, k-1))
                       / dz + (h[2].get(i, k) - h[2].get(i-1, k)) / dr) * koef_h);
 
+      // if (k == 5 && i == 5)
+      //   MSG("FFFFF " << field[1].get(i, k));
+
       field[2].set(i, k, field[2].get(i, k) * koef_e
                    - (j[2].get(i, k) - (h[1].get(i, k) - h[1].get(i-1, k)) / dr
                       - (h[1].get(i, k) + h[1].get(i-1, k)) / (2.0 * dr * i)) * koef_h);

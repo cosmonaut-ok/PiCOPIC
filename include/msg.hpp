@@ -7,9 +7,15 @@
 #define DEBUG false
 #endif
 
+#ifndef FIXME
+#define FIXME false
+#endif
+
 #define MSG(message) std::cout << message << std::endl;
 
 #define LOG_DBG(message) if (DEBUG) std::cerr << "DEBUG: " << message << "." << std::endl;
+
+#define MSG_FIXME(message) if (FIXME) std::cerr << "FIXME: " << message << "." << std::endl;
 
 #define LOG_INFO(message) std::cerr << "INFO: " << message << "." << std::endl;
 

@@ -46,6 +46,7 @@ HDF5_VERSION="hdf5-1.10.5"
 dnl AC_ARG_ENABLE([experimental], [AC_HELP_STRING([--enable-experimental], [Enable experimental features (only for debug/development)])], [ENABLE_EXPERIMENTAL="$enableval"], [ENABLE_EXPERIMENTAL=no])
 dnl AC_ARG_ENABLE([legacy], [AC_HELP_STRING([--enable-legacy], [Use legacy instead of current features])], [ENABLE_LEGACY="$enableval"], [ENABLE_LEGACY=no])
 AC_ARG_ENABLE([debug], [AC_HELP_STRING([--enable-debug], [Enable debug (optimized for GDB)])], [DEBUG="$enableval"], [DEBUG=no])
+AC_ARG_ENABLE([fixme], [AC_HELP_STRING([--enable-fixme], [Enable FIXME output ])], [FIXME="$enableval"], [FIXME=${DEBUG}])
 AC_ARG_ENABLE([profiler], [AC_HELP_STRING([--enable-profiler], [Enable profiler support for performance debug])], [PROFILER="$enableval"], [PROFILER=no])
 AC_ARG_ENABLE([ieee], [AC_HELP_STRING([--enable-ieee], [Keep IEEE compliant rounding and disable hardware acceleration. Decrease calculation speed])], [IEEE="$enableval"], [IEEE=${DEBUG}])
 AC_ARG_ENABLE([singlethread], [AC_HELP_STRING([--enable-singlethread], [Build application to run in single-thread mode (used in debug by default)])], [SINGLETHREAD="$enableval"], [SINGLETHREAD=${DEBUG}])
@@ -88,6 +89,11 @@ if test x$DEBUG == xyes; then
   AC_DEFINE([DEBUG], [true], [Use debug option])
 else
   DEBUG_OPTION=false
+fi
+
+dnl debug
+if test x$FIXME == xyes; then
+  AC_DEFINE([FIXME], [true], [Use FIXME output])
 fi
 
 # profiler

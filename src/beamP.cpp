@@ -156,7 +156,6 @@ void BeamP::reflect ()
   {
     double pos_r = P_POS_R((**p)) - r_shift;
 
-    // ! FIXME: fix wall reflections for r-position
     if (pos_r > radius_wall && geometry->walls[2])
     {
       P_POS_R((**p)) = radius_wallX2 - pos_r + r_shift;

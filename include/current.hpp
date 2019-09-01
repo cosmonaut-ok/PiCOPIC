@@ -28,7 +28,7 @@ public:
 
   Current() {};
   Current(Geometry *geom, TimeSim *t, vector<SpecieP *> species);
-  ~Current(void) {MSG("Current");};
+  ~Current() {MSG("Current");};
 
   void current_distribution();
   void azimuthal_current_distribution();
@@ -42,9 +42,9 @@ private:
                                     int k_n,
                                     double p_charge);
 
-  void strict_motion_weighting (double radius_new,
-                                double longitude_new,
-                                double radius_old,
-                                double longitude_old,
-                                double p_charge);
+  void strict_motion_distribution (double radius_new,
+                                   double longitude_new,
+                                   double radius_old,
+                                   double longitude_old,
+                                   double p_charge);
 };
