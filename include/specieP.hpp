@@ -43,9 +43,9 @@ const double LIGHT_VEL_POW_2 = pow (LIGHT_VEL, 2);
 #define PP_SIN(var, num) (*var[num])[11]
 #define PP_COS(var, num) (*var[num])[12]
 
-#define PP_ALIVE(var, num) (*var[num])[13]
+// #define PP_ALIVE(var, num) (*var[num])[13]
 
-#define PP_JUMP(var, num) (*var[num])[14]
+// #define PP_JUMP(var, num) (*var[num])[14]
 
 // getters from particle directly
 #define P_POS_R(var) var[0]
@@ -67,9 +67,9 @@ const double LIGHT_VEL_POW_2 = pow (LIGHT_VEL, 2);
 #define P_SIN(var) var[11]
 #define P_COS(var) var[12]
 
-#define P_ALIVE(var) var[13]
+// #define P_ALIVE(var) var[13]
 
-#define P_JUMP(var) var[14]
+// #define P_JUMP(var) var[14]
 
 class FieldE;
 class FieldH;
