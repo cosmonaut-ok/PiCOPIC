@@ -83,8 +83,8 @@ void BeamP::inject()
 
       for (unsigned int i = 0; i < macro_per_step_to_inject; ++i)
       {
-        vector<double> *v = new vector<double>(15, 0);
-        vector<double> *v_old = new vector<double>(15, 0);
+        vector<double> *v = new vector<double>(13, 0);
+        // vector<double> *v_old = new vector<double>(15, 0);
 
 #ifdef TESTMODE
         double rand_r = random_reverse(i, 9);
@@ -125,7 +125,7 @@ void BeamP::inject()
 
         // push particle to particles beam vector
         particles.push_back(v);
-        particles_old.push_back(v_old);
+        // particles_old.push_back(v_old);
       }
     }
 

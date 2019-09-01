@@ -268,7 +268,7 @@ void SpecieP::wakeup ()
   // fill particles vector with particle vector objects
   for (unsigned int i = 0; i < macro_amount; i++)
   {
-    vector<double> *v = new vector<double>(15, 0);
+    vector<double> *v = new vector<double>(13, 0);
     // vector<double> *v_old = new vector<double>(15, 0);
     particles.push_back(v);
     // particles_old.push_back(v_old);
