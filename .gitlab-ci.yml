@@ -1,0 +1,52 @@
+image: cosmonaut/hdf5-builder:latest
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+stages:
+  - build
+  - postbuild
+  # - test
+  - clean
+
+# Stage "build"
+build:
+  stage: build
+  artifacts:
+    untracked: true
+  tags:
+    - plasma
+  script:
+    - ./autogen.sh
+    - ./configure --enable-debug --disable-fixme
+    - make
+
+# test:
+#   stage: test
+#   dependencies:
+#     - build
+#   tags:
+#     - plasma
+#   script:
+#     - make test
+
+doc:
+  stage: postbuild
+  dependencies:
+    - build
+  tags:
+    - plasma
+  script:
+    - make doc
+  allow_failure: true
+
+clean:
+  stage: clean
+  dependencies:
+    - build
+    - doc
+  tags:
+    - plasma
+  script:
+    - make distclean
+  allow_failure: true
