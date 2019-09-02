@@ -293,7 +293,7 @@ void Cfg::weight_macro_amount()
   for (auto p_s = particle_species.begin(); p_s != particle_species.end(); ++p_s)
   {
     (*p_s).macro_amount = (unsigned int)(geometry->r_grid_amount * geometry->z_grid_amount * norm);
-    LOG_DBG("Macro amount for ``" << (*p_s).name << "'' speice is " << (*p_s).macro_amount);
+    LOG_INFO("Macro amount for ``" << (*p_s).name << "'' speice is " << (*p_s).macro_amount);
   }
 
   // align macroparticles amount to particle beams
@@ -304,7 +304,7 @@ void Cfg::weight_macro_amount()
     double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->z_cell_size;
 
     (*b).macro_amount = (unsigned int)(beam_r_grid_size * beam_z_grid_size * norm * beam_macro_const);
-    LOG_DBG("Macro amount for ``" << (*b).name << "'' beam is " << (*b).macro_amount);
+    LOG_INFO("Macro amount for ``" << (*b).name << "'' beam is " << (*b).macro_amount);
   }
 }
 
