@@ -246,11 +246,11 @@ void DataWriter::merge_areas(string component, string specie)
       else if (component.compare("E_z") == 0)
         value = sim_area->field_e->field[2];
       else if (component.compare("H_r") == 0)
-        value = sim_area->field_h->field[0];
+        value = sim_area->field_h->field_at_et[0];
       else if (component.compare("H_phi") == 0)
-        value = sim_area->field_h->field[1];
+        value = sim_area->field_h->field_at_et[1];
       else if (component.compare("H_z") == 0)
-        value = sim_area->field_h->field[1];
+        value = sim_area->field_h->field_at_et[2];
       else if (component.compare("J_r") == 0)
         value = sim_area->current->current[0];
       else if (component.compare("J_phi") == 0)

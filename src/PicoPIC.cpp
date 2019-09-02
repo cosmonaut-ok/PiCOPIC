@@ -320,9 +320,9 @@ int main(int argc, char **argv)
         geometry_global->r_size / r_areas,
         geometry_global->z_size / z_areas,
         bot_r, top_r, left_z, right_z,
-        pml_l_z0,
-        pml_l_zwall,
-        pml_l_rwall,
+        pml_l_z0 * z_areas,
+        pml_l_zwall * z_areas,
+        pml_l_rwall * r_areas,
         geometry_global->pml_sigma[0],
         geometry_global->pml_sigma[1],
         wall_r0,
@@ -425,7 +425,7 @@ int main(int argc, char **argv)
         sim_area->manage_beam();
 
         // ! 2. Calculate magnetic field (H)
-        // sim_area->weight_field_h(); // +
+        sim_area->weight_field_h(); // +
 
         // ! 3. Calculate velocity
         sim_area->reset_current(); // +
@@ -470,7 +470,7 @@ int main(int argc, char **argv)
         sim_area->particles_back_velocity_to_rz();
 
         // ! 5. Calculate electric field (E)
-        // sim_area->weight_field_e(); // +
+        sim_area->weight_field_e(); // +
 
         // ! 6. Continuity equation
         // sim_area->reset_charge(); // TODO: for c_rho_new

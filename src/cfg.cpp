@@ -145,7 +145,26 @@ void Cfg::init_probes ()
 
     p_p.schedule = (int)o["schedule"].get<double>();
 
-    probes.push_back(p_p);
+    if (p_p.r_start > p_p.r_start || p_p.z_start > p_p.z_start)
+    {
+      LOG_CRIT("Incorrect probe's " << p_p.component << "/" << p_shape << " shape: ["
+               << p_p.r_start << "," << p_p.r_end << ","
+               << p_p.z_start << "," << p_p.z_end << "]", 1);
+    }
+    else if (p_p.r_end > geometry->r_grid_amount)
+    {
+      LOG_CRIT("Probe's " << p_p.component << "/" << p_shape << " radius is out of simulation area: "
+               << p_p.r_end << ". Must be less, than "
+               << geometry->r_grid_amount, 1);
+    }
+    else if (p_p.z_end > geometry->z_grid_amount)
+    {
+      LOG_CRIT("Probe's " << p_p.component << "/" << p_shape << " longitude is out of simulation area: "
+               << p_p.z_end << ". Must be less, than "
+               << geometry->z_grid_amount, 1);
+    }
+    else
+      probes.push_back(p_p);
   }
 }
 
