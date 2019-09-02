@@ -1,13 +1,13 @@
 {
   "debug": false,
   "hdf5": false,
-  "macro_amount": 5e6,
+  "macro_amount": 1e6,
   "geometry": {
     "radius": 0.25,
     "longitude": 0.5,
     "grid_size": {
-      "radius": 128,
-      "longitude": 1024
+      "radius": 256,
+      "longitude": 512
     },
     "areas_amount": {
       "radius": 8,
@@ -18,8 +18,8 @@
     "left_wall": 0,
     "right_wall": 0,
     "outer_wall": 0,
-    "sigma_1": 1e-05,
-    "sigma_2": 0.07
+    "sigma_1": 0,
+    "sigma_2": 0
   },
   "time": {
     "start": 0,
@@ -76,21 +76,63 @@
 	"schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 127, "z": 1023 }
+        "end": { "r": 256, "z": 512 }
       },
       {
         "component": "E_phi",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 127, "z": 1023 }
+        "end": { "r": 256, "z": 512 }
       },
       {
         "component": "E_z",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 127, "z": 1023 }
+        "end": { "r": 256, "z": 512 }
+      },
+      {
+        "component": "H_r",
+	"schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 256, "z": 512 }
+      },
+      {
+        "component": "H_phi",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 256, "z": 512 }
+      },
+      {
+        "component": "H_z",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 256, "z": 512 }
+      },
+{
+        "component": "J_r",
+	"schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 256, "z": 512 }
+      },
+      {
+        "component": "J_phi",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 256, "z": 512 }
+      },
+      {
+        "component": "J_z",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 256, "z": 512 }
       },
       {
         "component": "position",
@@ -98,7 +140,7 @@
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 127, "z": 1023 }
+        "end": { "r": 256, "z": 512 }
       },
       {
         "component": "position",
@@ -106,46 +148,7 @@
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 127, "z": 1023 }
-      },
-      {
-        "component": "velocity",
-        "specie": "electrons",
-        "schedule": 10,
-        "shape": "rec",
-        "start": { "r": 0, "z": 0 },
-        "end": { "r": 127, "z": 1023 }
-      },
-      {
-        "component": "velocity",
-        "specie": "beam_electrons",
-        "schedule": 10,
-        "shape": "rec",
-        "start": { "r": 0, "z": 0 },
-        "end": { "r": 127, "z": 1023 }
-      },
-      {
-        "component": "position",
-        "specie": "ions",
-        "schedule": 10,
-        "shape": "rec",
-        "start": { "r": 0, "z": 0 },
-        "end": { "r": 127, "z": 1023 }
-      },
-      {
-        "component": "velocity",
-        "specie": "ions",
-        "schedule": 10,
-        "shape": "rec",
-        "start": { "r": 0, "z": 0 },
-        "end": { "r": 127, "z": 1023 }
-      },
-      {
-        "component": "charge",
-        "schedule": 10,
-        "shape": "rec",
-        "start": { "r": 0, "z": 0 },
-        "end": { "r": 127, "z": 1023 }
+        "end": { "r": 256, "z": 512 }
       }
     ],
     "plot": {
