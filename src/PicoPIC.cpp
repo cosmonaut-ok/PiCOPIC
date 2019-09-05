@@ -289,26 +289,25 @@ int main(int argc, char **argv)
       double pml_l_zwall = 0;
       double pml_l_rwall = 0;
 
+      // set walls to areas
       if (i == 0)
         wall_r0 = true;
-
       if (i == r_areas - 1)
-      {
         wall_rr = true;
-        pml_l_rwall = geometry_global->pml_length[2];
-      }
-
       if (j == 0)
-      {
         wall_z0 = true;
-        pml_l_z0 = geometry_global->pml_length[1];
-      }
-
       if (j == z_areas - 1)
-      {
         wall_zz = true;
+
+      // set PML to areas
+      if (geometry_global->r_size - geometry_global->r_size / r_areas * (i + 1)
+          < geometry_global->pml_length[2])
+        pml_l_rwall = geometry_global->pml_length[2];
+      if (j * geometry_global->z_size / z_areas < geometry_global->pml_length[1])
+        pml_l_z0 = geometry_global->pml_length[1];
+      if (geometry_global->z_size - geometry_global->z_size / z_areas * (j + 1)
+          < geometry_global->pml_length[3])
         pml_l_zwall = geometry_global->pml_length[3];
-      }
 
       unsigned int bot_r = (unsigned int)geometry_global->r_grid_amount * i / r_areas;
       unsigned int top_r = (unsigned int)geometry_global->r_grid_amount * (i + 1) / r_areas;
@@ -320,9 +319,9 @@ int main(int argc, char **argv)
         geometry_global->r_size / r_areas,
         geometry_global->z_size / z_areas,
         bot_r, top_r, left_z, right_z,
-        pml_l_z0 * z_areas,
-        pml_l_zwall * z_areas,
-        pml_l_rwall * r_areas,
+        pml_l_z0 * z_areas,    // multiplying is a workaround, because area
+        pml_l_zwall * z_areas, // doesn't know abount whole simulation area size
+        pml_l_rwall * r_areas, // aka geometry_global
         geometry_global->pml_sigma[0],
         geometry_global->pml_sigma[1],
         wall_r0,
@@ -330,6 +329,13 @@ int main(int argc, char **argv)
         wall_z0,
         wall_zz
         );
+
+      // WORKAROUND: // used just to set PML
+      // for information about global geometry
+      // WARNING! don't use it in local geometries!
+      geom_area->areas_by_r = r_areas;
+      geom_area->areas_by_z = z_areas;
+      // /WORKAROUND
 
       // init particle species
       vector<SpecieP *> species_p;
