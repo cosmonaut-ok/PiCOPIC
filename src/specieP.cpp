@@ -79,20 +79,23 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
   {
     // very flat distribution, instead of random rectangle distribution
     // TODO: replace to better random, but still flat distribution
-    double rand_r = math::random::random_reverse(particles_count, 13);
-    double rand_z = math::random::random_reverse(macro_amount - 1 - particles_count, 11);
-    // double rand_r = uniform();
-    // double rand_z = uniform();
 
-    P_POS_R((**n)) = (r_size - dr) * rand_r + dr / 2.;
+#ifdef TESTMODE
+    double rand_r = math::random::random_reverse(geometry->left_z_grid_number + particles_count, 13);
+    double rand_z = math::random::random_reverse(macro_amount - 1 - particles_count + geometry->bottom_r_grid_number, 11);
+#else
+    double rand_r = math::random::uniform();
+    double rand_z = math::random::uniform();
+#endif
+    P_POS_R((**n)) = r_size * rand_r;
     P_POS_R((**n)) += int_cell_number * dr;
 
     P_POS_PHI((**n)) = 0;
 
-    P_POS_Z((**n)) = (z_size - dz)
+    P_POS_Z((**n)) = z_size
       / dn * (lib::sq_rt(pow(dl, 2) + rand_z
                          * (2 * dl * dn + pow(dn, 2)))
-              - dl) + dz / 2;
+              - dl);
     P_POS_Z((**n)) += left_cell_number * dz; // shift by z to respect geometry with areas
 
     v_sum += 2 * PI * P_POS_R((**n)) * dr * dz;
