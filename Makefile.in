@@ -137,7 +137,7 @@ $(PicoPIC_MODULE): $(PicoPIC_OBJS)
 	$(CXX) $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) $(LDFLAGS) -o $@ $(PicoPIC_OBJS) $(PicoPIC_LIBRARY_PATH) $(PicoPIC_LIBRARIES:%=-l%)
 
 distclean: clean
-	$(RM) -r *.avi *.png $(BUILD_DIRS) $(RELEASE) $(RELEASE).zip autom4te.cache config.log config.status configure Makefile scripts/*.sh picopic_result/
+	$(RM) -r *.avi *.png $(BUILD_DIRS) $(RELEASE) $(RELEASE).zip autom4te.cache config.log config.status configure Makefile scripts/*.sh simulation_result/
 
 # run: bootstrap
 # 	./PicoPIC
