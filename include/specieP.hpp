@@ -123,7 +123,7 @@ public:
   double start_time;
   double bunch_length;
   double bunches_distance;
-  int current_bunch_number;
+  unsigned int current_bunch_number;
   int velocity;
 
 public:

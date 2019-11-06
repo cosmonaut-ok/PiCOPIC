@@ -145,7 +145,7 @@ void Cfg::init_probes ()
 
     p_p.schedule = (int)o["schedule"].get<double>();
 
-    if (p_p.r_start > p_p.r_start || p_p.z_start > p_p.z_start)
+    if (p_p.r_start > p_p.r_end || p_p.z_start > p_p.z_end)
     {
       LOG_CRIT("Incorrect probe's " << p_p.component << "/" << p_shape << " shape: ["
                << p_p.r_start << "," << p_p.r_end << ","

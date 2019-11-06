@@ -155,7 +155,7 @@ public:
     return cmp;
   };
 
-  vector3d<double> get_field_dummy(double radius, double longitude)
+  vector3d<double> get_field_dummy(__attribute__((unused)) double radius, __attribute__((unused)) double longitude)
   {
     // just dummy method for test/debug
     vector3d<double> cmp(0, 0, 0); // field components
