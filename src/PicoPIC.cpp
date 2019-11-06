@@ -358,19 +358,24 @@ int main(int argc, char **argv)
       };
 
       // init particle beams
-      for (auto bm = cfg.particle_beams.begin(); bm != cfg.particle_beams.end(); ++bm)
-      {
-        BeamP *beam = new BeamP (b_id_counter, ((string)"beam_").append(bm->name),
-                                 bm->charge, bm->mass, bm->macro_amount,
-                                 bm->start_time, bm->bunch_radius, bm->density,
-                                 bm->bunches_amount, bm->bunch_length,
-                                 bm->bunches_distance, bm->velocity,
-                                 geom_area, sim_time_clock);
+      if (! cfg.particle_beams.empty())
+	for (auto bm = cfg.particle_beams.begin(); bm != cfg.particle_beams.end(); ++bm)
+	  {
+	    if (bm->bunches_amount > 0)
+	      {
+		BeamP *beam = new BeamP (b_id_counter, ((string)"beam_").append(bm->name),
+					 bm->charge, bm->mass, bm->macro_amount,
+					 bm->start_time, bm->bunch_radius, bm->density,
+					 bm->bunches_amount, bm->bunch_length,
+					 bm->bunches_distance, bm->velocity,
+					 geom_area, sim_time_clock);
 
-        species_p.push_back(beam);
-
-        ++b_id_counter;
-      }
+		species_p.push_back(beam);
+	      }
+	    ++b_id_counter;
+	  }
+      else
+	LOG_WARN("There is no particle beams");
 
       Area *sim_area = new Area(*geom_area, species_p, sim_time_clock);
       areas.set(i, j, sim_area);
@@ -378,7 +383,7 @@ int main(int argc, char **argv)
 
   LOG_INFO("Preparation to calculation");
 
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
   for (unsigned int i=0; i < r_areas; i++)
     for (unsigned int j = 0; j < z_areas; j++)
     {
@@ -421,15 +426,16 @@ int main(int argc, char **argv)
   {
     LOG_DBG("Processing areas at time: " << sim_time_clock->current);
 
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_areas; i++)
       for (unsigned int j = 0; j < z_areas; j++)
       {
         Area *sim_area = areas.get(i, j);
 
         // ! 1. manage beam
-        sim_area->manage_beam();
-
+	if (! cfg.particle_beams.empty())
+	  sim_area->manage_beam();
+	
         // ! 2. Calculate magnetic field (H)
         sim_area->weight_field_h(); // +
 
@@ -448,7 +454,7 @@ int main(int argc, char **argv)
     LOG_DBG("Processing borders at time: " << cfg.time->current);
     particles_runaway_collector(areas, geometry_global);
 
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_areas; i++)
       for (unsigned int j = 0; j < z_areas; j++)
       {
@@ -466,7 +472,7 @@ int main(int argc, char **argv)
     LOG_DBG("Processing borders at time: " << cfg.time->current);
     particles_runaway_collector(areas, geometry_global);
 
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_areas; i++)
       for (unsigned int j = 0; j < z_areas; j++)
       {
