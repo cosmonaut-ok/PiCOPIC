@@ -20,6 +20,8 @@ public:
   ~FieldH(void) {};
 
   void calc_field_cylindrical();
+  vector3d<double> get_field(double radius, double longitude);
+
   // HField(Geometry *geom1);
   // HField(void);
   // ~HField(void);

@@ -28,6 +28,8 @@ public:
 
   void set_pml();
   void calc_field_cylindrical();
+  
+  vector3d<double> get_field(double radius, double longitude);
 
   // void calc_field(HField *h_field1, Time *time1, Current *current1);
   // void poisson_equation2(Geometry *geom1, ChargeDensity *ro1);
