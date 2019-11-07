@@ -1,7 +1,7 @@
 {
   "debug": false,
   "hdf5": false,
-  "macro_amount": 2.1e6,
+  "macro_amount": 1e6,
   "geometry": {
     "radius": 0.25,
     "longitude": 2,
@@ -15,11 +15,11 @@
     }
   },
   "pml": {
-    "left_wall": 0.1,
-    "right_wall": 0.1,
-    "outer_wall": 0.1,
+    "left_wall": 0,
+    "right_wall": 0.05,
+    "outer_wall": 0.2,
     "sigma_1": 1e-5,
-    "sigma_2": 7
+    "sigma_2": 7e-2
   },
   "time": {
     "start": 0,
@@ -56,7 +56,7 @@
       "velocity": 2.7e8,
       "start_time": 0,
       "bunch": {
-        "amount": 10,
+        "amount": 2,
         "distance": 0.2,
         "length": 0.02,
         "radius": 0.02,

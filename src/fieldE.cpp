@@ -79,8 +79,8 @@ void FieldE::calc_field_cylindrical()
   Grid<double> j_phi = current->current[1];
   Grid<double> j_z = current->current[2];
   Grid<double> h_r = field_h->field_at_et[0];
-  Grid<double> h_phi = field_h->field_at_et[0];
-  Grid<double> h_z = field_h->field_at_et[0];
+  Grid<double> h_phi = field_h->field_at_et[1];
+  Grid<double> h_z = field_h->field_at_et[2];
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
