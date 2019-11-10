@@ -62,12 +62,12 @@ void Area::weight_field_e()
 
 void Area::reset_current()
 {
-  current->current.setall(0);
+  current->current = 0;
 }
 
 void Area::reset_charge()
 {
-  charge->density.setall(0);
+  charge->density = 0;
 }
 
 void Area::push_particles ()

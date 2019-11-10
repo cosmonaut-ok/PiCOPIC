@@ -5,7 +5,7 @@ Current::Current(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : geomet
   current = Grid3D<double> (geometry->r_grid_amount+2, geometry->z_grid_amount+2);
   species_p = species;
 
-  current.setall(0);
+  current = 0;
 }
 
 void Current::simple_current_distribution(double radius_new,

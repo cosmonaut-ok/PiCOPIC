@@ -25,7 +25,7 @@ void OutEnginePlain::write_rec(string a_name, Grid<double> data)
 
   for (int i = size[0]; i < size[2]; i++)
     for (int j = size[1]; j < size[3]; j++)
-      out_val << data.get(i, j) << " ";
+      out_val << data(i, j) << " ";
 
   out_val.close();
 }
@@ -43,14 +43,14 @@ void OutEnginePlain::write_vec(string a_name, Grid<double> data)
   // vector by Z-component with fixed r (r_begin)
   if (size[1] == -1 && size[2] == -1 && size[3] == -1)
   {
-    for (int i = 0; i < data.size_y(); i++)
-      out_val << data.get(size[0], i) << " ";
+    for (unsigned int i = 0; i < data.size_y(); i++)
+      out_val << data(size[0], i) << " ";
   }
   // vector by R-component with fixed z (z_begin)
   else if (size[0] == -1 && size[2] == -1 && size[3] == -1)
   {
-    for (int i = 0; i < data.size_x(); i++)
-      out_val << data.get(i, size[1]) << " ";
+    for (unsigned int i = 0; i < data.size_x(); i++)
+      out_val << data(i, size[1]) << " ";
   }
   else
     LOG_CRIT("Incorrect shape for vector output", 1);
@@ -68,7 +68,7 @@ void OutEnginePlain::write_dot(string a_name, Grid<double> data)
 
   ofstream out_val(path + "/" + a_name + ".dat", omode);
 
-  out_val << data.get(size[0], size[1]) << endl;
+  out_val << data(size[0], size[1]) << endl;
 
   out_val.close();
 }

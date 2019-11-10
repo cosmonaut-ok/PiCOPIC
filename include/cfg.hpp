@@ -84,6 +84,7 @@ public:
   bool use_hdf5 = false;
 
   double macro_amount; // amount of macroparticles in system
+  unsigned int beam_macro_ratio;
 
   Geometry *geometry;
 

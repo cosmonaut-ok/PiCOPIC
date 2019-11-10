@@ -6,8 +6,8 @@ FieldE::FieldE(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(ge
   epsilon = Grid<double> (geometry->r_grid_amount + 2, geometry->z_grid_amount + 2);
   sigma = Grid<double> (geometry->r_grid_amount + 2, geometry->z_grid_amount + 2);
 
-  epsilon.setall(EPSILON0);
-  sigma.setall(0);
+  epsilon = EPSILON0;
+  sigma = 0;
 
   set_pml();
 }
@@ -91,16 +91,14 @@ void FieldE::calc_field_cylindrical()
     for(int k = 1; k < (geometry->z_grid_amount - 1); k++)
     {
       int i = 0;
-      double epsilonx2 = 2 * epsilon.get(i, k);
-      double sigma_t = sigma.get(i, k) * time->step;
+      double epsilonx2 = 2 * epsilon(i, k);
+      double sigma_t = sigma(i, k) * time->step;
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
-
       double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
 
-      field[0].set(i, k, field[0].get(i, k) * koef_e
-                   - (j_r.get(i, k)
-                      + (h_phi.get(i, k) - h_phi.get(i, k-1)) / dz) * koef_h);
+      field[0].m_a(i, k, koef_e);
+      field[0].dec(i, k, (j_r(i, k) + (h_phi(i, k) - h_phi(i, k-1)) / dz) * koef_h);
     }
 
     // Ez=on axis
@@ -108,55 +106,51 @@ void FieldE::calc_field_cylindrical()
     for(int k = 0; k < (geometry->z_grid_amount - 1); k++)
     {
       int i = 0;
-      double epsilonx2 = 2 * epsilon.get(i, k);
-      double sigma_t = sigma.get(i, k) * time->step;
+      double epsilonx2 = 2 * epsilon(i, k);
+      double sigma_t = sigma(i, k) * time->step;
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
 
-      field[2].set(i, k, field[2].get(i, k) * koef_e
-                   - (j_z.get(i, k)
-                      - 4. / dr * h_phi.get(i, k)) * koef_h);
+      field[2].m_a(i, k, koef_e);
+      field[2].dec(i, k, (j_z(i, k) - 4. / dr * h_phi(i, k)) * koef_h);
     }
 
 // #pragma omp for
     for(int i=1; i < (geometry->r_grid_amount - 1); i++)
       for(int k=1; k < (geometry->z_grid_amount - 1); k++)
       {
-        double epsilonx2 = 2 * epsilon.get(i, k);
-        double sigma_t = sigma.get(i, k) * time->step;
+        double epsilonx2 = 2 * epsilon(i, k);
+        double sigma_t = sigma(i, k) * time->step;
 
         double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
         double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
 
-        field[0].set(i, k, field[0].get(i, k) * koef_e
-                     - (j_r.get(i, k)
-                        + (h_phi.get(i, k) - h_phi.get(i, k-1)) / dz) * koef_h);
+        field[0].m_a(i, k, koef_e);
+        field[0].dec(i, k, (j_r(i, k) + (h_phi(i, k) - h_phi(i, k-1)) / dz) * koef_h);
 
-        field[1].set(i, k, field[1].get(i, k) * koef_e
-                     - (j_phi.get(i, k) - (h_r.get(i, k) - h_r.get(i, k-1))
-                        / dz + (h_z.get(i, k) - h_z.get(i-1, k)) / dr) * koef_h);
+        field[1].m_a(i, k, koef_e);
+        field[1].dec(i, k, (j_phi(i, k) - (h_r(i, k) - h_r(i, k-1))
+                            / dz + (h_z(i, k) - h_z(i-1, k)) / dr) * koef_h);
 
-        field[2].set(i, k, field[2].get(i, k) * koef_e
-                     - (j_z.get(i, k) - (h_phi.get(i, k) - h_phi.get(i-1, k)) / dr
-                        - (h_phi.get(i, k) + h_phi.get(i-1, k)) / (2. * dr * i))
-                     * koef_h);
+        field[2].m_a(i, k, koef_e);
+        field[2].dec(i, k, (j_z(i, k) - (h_phi(i, k) - h_phi(i-1, k)) / dr
+                            - (h_phi(i, k) + h_phi(i-1, k)) / (2. * dr * i)) * koef_h);
       }
 
 // #pragma omp for
     for(int i=1; i < (geometry->r_grid_amount-1); i++)
     {
       int k = 0;
-      double epsilonx2 = 2 * epsilon.get(i, k);
-      double sigma_t = sigma.get(i, k) * time->step;
+      double epsilonx2 = 2 * epsilon(i, k);
+      double sigma_t = sigma(i, k) * time->step;
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
 
-      field[2].set(i, k, field[2].get(i, k) * koef_e
-                   - (j_z.get(i, k) - (h_phi.get(i, k) - h_phi.get(i-1, k)) / dr
-                      - (h_phi.get(i, k) + h_phi.get(i-1, k)) / (2. * dr * i)
-                     ) * koef_h);
+      field[2].m_a(i, k, koef_e);
+      field[2].dec(i, k, (j_z(i, k) - (h_phi(i, k) - h_phi(i-1, k)) / dr
+                          - (h_phi(i, k) + h_phi(i-1, k)) / (2. * dr * i) ) * koef_h);
     }
   }
 }
@@ -165,7 +159,7 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
 //! function for electric field weighting
 {
   vector3d<double> cmp(0., 0., 0.);
-  
+
   int i_r = 0; // number of particle i cell
   int k_z = 0; // number of particle k cell
   int i_r_shift = 0; // number of particle i cell
@@ -200,16 +194,16 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   dz2 = longitude - k_z * dz;
   r2 = (i_r + 1) * dr;
   //weighting Er[i][k]//
-  cmp[0] += field[0].get(i_r_shift, k_z_shift) * CYL_RNG_VOL(dz1, r1, r2) / vol_1;
+  cmp[0] += field(0, i_r_shift, k_z_shift) * CYL_RNG_VOL(dz1, r1, r2) / vol_1;
 
   //weighting Er[i+1][k]//
-  cmp[0] += field[0].get(i_r_shift + 1, k_z_shift) * CYL_RNG_VOL(dz1, r2, r3) / vol_2;
+  cmp[0] += field(0, i_r_shift + 1, k_z_shift) * CYL_RNG_VOL(dz1, r2, r3) / vol_2;
 
   //weighting Er[i][k+1]//
-  cmp[0] += field[0].get(i_r_shift, k_z_shift + 1) * CYL_RNG_VOL(dz2, r1, r2) / vol_1;
+  cmp[0] += field(0, i_r_shift, k_z_shift + 1) * CYL_RNG_VOL(dz2, r1, r2) / vol_1;
 
   //weighting Er[i+1][k+1]//
-  cmp[0] += field[0].get(i_r_shift + 1, k_z_shift + 1) * CYL_RNG_VOL(dz2, r2, r3) / vol_2;
+  cmp[0] += field(0, i_r_shift + 1, k_z_shift + 1) * CYL_RNG_VOL(dz2, r2, r3) / vol_2;
 
   // weighting of E_z
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =0;!!
@@ -223,7 +217,7 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   if (k_z < 0) k_z = 0;
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
-  
+
   if (radius > dr)
     vol_1 = CELL_VOLUME(i_r, dr, dz);
   else
@@ -235,16 +229,16 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   dz2 = longitude - (k_z + 0.5) * dz;
 
   // weighting Ez[i][k]
-  cmp[2] += field[2].get(i_r_shift, k_z_shift) * CYL_RNG_VOL(dz1, r1, r2) / vol_1;
+  cmp[2] += field(2, i_r_shift, k_z_shift) * CYL_RNG_VOL(dz1, r1, r2) / vol_1;
 
   // weighting Ez[i+1][k]
-  cmp[2] += field[2].get(i_r_shift+1, k_z_shift) * CYL_RNG_VOL(dz1, r2, r3) / vol_2;
+  cmp[2] += field(2, i_r_shift+1, k_z_shift) * CYL_RNG_VOL(dz1, r2, r3) / vol_2;
 
   // weighting Ez[i][k+1]
-  cmp[2] += field[2].get(i_r_shift, k_z_shift+1) * CYL_RNG_VOL(dz2, r1, r2) / vol_1;
+  cmp[2] += field(2, i_r_shift, k_z_shift+1) * CYL_RNG_VOL(dz2, r1, r2) / vol_1;
 
   //weighting Ez[i+1][k+1]//
-  cmp[2] += field[2].get(i_r_shift+1, k_z_shift+1) * CYL_RNG_VOL(dz2, r2, r3) / vol_2;
+  cmp[2] += field(2, i_r_shift+1, k_z_shift+1) * CYL_RNG_VOL(dz2, r2, r3) / vol_2;
 
   // weighting of E_fi
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =1;
@@ -271,16 +265,16 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   dz2 = longitude - k_z * dz;
 
   // weighting Efi[i][k]
-  cmp[1] += field[1].get(i_r_shift, k_z_shift) * CYL_RNG_VOL(dz1, r1, r2) / vol_1;
+  cmp[1] += field(1, i_r_shift, k_z_shift) * CYL_RNG_VOL(dz1, r1, r2) / vol_1;
 
   // weighting Efi[i+1][k]
-  cmp[1] += field[1].get(i_r_shift+1, k_z_shift) * CYL_RNG_VOL(dz1, r2, r3) / vol_2;
+  cmp[1] += field(1, i_r_shift+1, k_z_shift) * CYL_RNG_VOL(dz1, r2, r3) / vol_2;
 
   // weighting Efi[i][k+1]
-  cmp[1] += field[1].get(i_r_shift, k_z_shift+1) * CYL_RNG_VOL(dz2, r1, r2) / vol_1;
+  cmp[1] += field(1, i_r_shift, k_z_shift+1) * CYL_RNG_VOL(dz2, r1, r2) / vol_1;
 
   // weighting Efi[i+1][k+1]
-  cmp[2] += field[1].get(i_r_shift+1, k_z_shift+1) * CYL_RNG_VOL(dz2, r2, r3) / vol_2;
+  cmp[2] += field(1, i_r_shift+1, k_z_shift+1) * CYL_RNG_VOL(dz2, r2, r3) / vol_2;
 
   return cmp;
 }

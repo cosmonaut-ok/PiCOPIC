@@ -21,16 +21,16 @@ public:
   {
     field = Grid3D<double> (geometry->r_grid_amount + 2, geometry->z_grid_amount + 2);
     time = t;
-    field.setall(0);
+    field = 0;
   };
 
   ~Field(void) {};
 
   void set_homogenous_field(double r_value, double phi_value, double z_value)
   {
-    field[0].setall(r_value);
-    field[1].setall(phi_value);
-    field[2].setall(z_value);
+    field[0] = r_value;
+    field[1] = phi_value;
+    field[2] = z_value;
   };
 
   vector3d<double> get_field_dummy(__attribute__((unused)) double radius, __attribute__((unused)) double longitude)

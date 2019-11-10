@@ -42,7 +42,7 @@ DataWriter::DataWriter(string a_path, string a_component,
   time = a_time;
   areas = a_areas;
 
-  out_data = Grid<double> (geometry->r_grid_amount+1, geometry->z_grid_amount+1);
+  out_data = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount);
   out_data_plain = vector<double> (0);
   // string shape_name, size_name;
 
@@ -160,7 +160,7 @@ void DataWriter::go()
     }
     else
     {
-      out_data.setall(0);
+      out_data = 0;
       merge_areas(component, specie);
 
       // shape: dot (3), column (col - 1), row (2), rectangle (rec - 0)
@@ -220,7 +220,7 @@ void DataWriter::merge_areas(string component, string specie)
     for (unsigned int z = 0; z < geometry->areas_by_z; ++z)
     {
 
-      Area *sim_area = areas.get(r, z);
+      Area *sim_area = areas(r, z);
 
       if (component.compare("charge") == 0)
       {
@@ -235,7 +235,7 @@ void DataWriter::merge_areas(string component, string specie)
     for (unsigned int z = 0; z < geometry->areas_by_z; ++z)
     {
       Grid<double> value;
-      Area *sim_area = areas.get(r, z);
+      Area *sim_area = areas(r, z);
 
       if (component.compare("charge") == 0)
         value = sim_area->charge->density;
@@ -264,11 +264,11 @@ void DataWriter::merge_areas(string component, string specie)
       else
         LOG_ERR("Unknown DataWriter component ``" << component << "''");
 
-      for (int i = 0; i < value.size_x() - 1; ++i)
-        for (int j = 0; j < value.size_y() - 1; ++j)
+      for (unsigned int i = 0; i < value.size_x() - 2; ++i)
+        for (unsigned int j = 0; j < value.size_y() - 2; ++j)
           out_data.set (i + r * sim_area->geometry.r_grid_amount,
                         j + z * sim_area->geometry.z_grid_amount,
-                        value.get(i, j));
+                        value(i, j));
     }
 }
 
@@ -282,7 +282,7 @@ void DataWriter::merge_particle_areas(string parameter,
     for (unsigned int r = 0; r < geometry->areas_by_r; ++r)
       for (unsigned int z = 0; z < geometry->areas_by_z; ++z)
       {
-        Area *sim_area = areas.get(r, z);
+        Area *sim_area = areas(r, z);
         vector<SpecieP *> species = sim_area->species_p;
 
         for (auto ps = species.begin(); ps != species.end(); ++ps)
