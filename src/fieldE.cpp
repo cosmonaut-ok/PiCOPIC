@@ -88,7 +88,7 @@ void FieldE::calc_field_cylindrical()
 // #pragma omp parallel
   {
 // #pragma omp for
-    for(int k = 1; k < (geometry->z_grid_amount - 1); k++)
+    for(int k = 1; k < geometry->z_grid_amount; k++)
     {
       int i = 0;
       double epsilonx2 = 2 * epsilon(i, k);
@@ -103,7 +103,7 @@ void FieldE::calc_field_cylindrical()
 
     // Ez=on axis
 // #pragma omp for
-    for(int k = 0; k < (geometry->z_grid_amount - 1); k++)
+    for(int k = 0; k < geometry->z_grid_amount; k++)
     {
       int i = 0;
       double epsilonx2 = 2 * epsilon(i, k);
@@ -117,8 +117,8 @@ void FieldE::calc_field_cylindrical()
     }
 
 // #pragma omp for
-    for(int i=1; i < (geometry->r_grid_amount - 1); i++)
-      for(int k=1; k < (geometry->z_grid_amount - 1); k++)
+    for(int i = 1; i < geometry->r_grid_amount; i++)
+      for(int k = 1; k < geometry->z_grid_amount; k++)
       {
         double epsilonx2 = 2 * epsilon(i, k);
         double sigma_t = sigma(i, k) * time->step;
@@ -139,9 +139,9 @@ void FieldE::calc_field_cylindrical()
       }
 
 // #pragma omp for
-    for(int i=1; i < (geometry->r_grid_amount-1); i++)
+    for(unsigned int i = 1; i < geometry->r_grid_amount; i++)
     {
-      int k = 0;
+      unsigned int k = 0;
       double epsilonx2 = 2 * epsilon(i, k);
       double sigma_t = sigma(i, k) * time->step;
 

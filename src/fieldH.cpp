@@ -25,23 +25,23 @@ void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
   // double alpha;
 
   // Hr - last i value
-#pragma omp parallel
+// #pragma omp parallel
   {
-#pragma omp for
-    for(int k = 0; k<(geometry->z_grid_amount - 1); k++)
+// #pragma omp for
+    for(int k = 0; k < geometry->z_grid_amount; k++)
     {
-      int i=geometry->r_grid_amount - 1;
+      int i=geometry->r_grid_amount;
       // alpha constant and delta_t production (to optimize calculations)
       double alpha_t = time->step
-        * (e_phi(i, k+1) - e_phi(i, k)) / (dz * MAGN_CONST);
+        * (e_phi(i, k + 1) - e_phi(i, k)) / (dz * MAGN_CONST);
 
       field[0].set(i, k, field_at_et(0, i, k) + alpha_t / 2);
       field_at_et[0].inc(i, k, alpha_t);
     }
 
 // #pragma omp for
-    for(int i = 0; i < (geometry->r_grid_amount - 1); i++)
-      for(int k = 0; k < (geometry->z_grid_amount - 1); k++)
+    for(int i = 0; i < geometry->r_grid_amount; i++)
+      for(int k = 0; k < geometry->z_grid_amount; k++)
       {
         double alpha_t = time->step
           * (e_phi(i, k+1) - e_phi(i, k)) / (dz * MAGN_CONST);
@@ -51,8 +51,8 @@ void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
       }
 
 // #pragma omp for
-    for(int i = 0; i < (geometry->r_grid_amount - 1); i++)
-      for(int k = 0; k < (geometry->z_grid_amount - 1); k++)
+    for(int i = 0; i < geometry->r_grid_amount; i++)
+      for(int k = 0; k < geometry->z_grid_amount; k++)
       {
         double alpha_t = time->step
           * ((e_z(i+1, k) - e_z(i, k)) / dr
@@ -64,8 +64,8 @@ void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
       }
 
 // #pragma omp for
-    for(int i = 0; i < (geometry->r_grid_amount - 1); i++)
-      for(int k = 0; k < (geometry->z_grid_amount - 1); k++)
+    for(int i = 0; i < geometry->r_grid_amount; i++)
+      for(int k = 0; k < geometry->z_grid_amount; k++)
       {
         double alpha_t = time->step
           * (
@@ -179,8 +179,8 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (k_z_shift < 0) k_z_shift = 0;
 
   r2 = (i_r+1) * dr;
-  vol_1 = CELL_VOLUME(i_r+1, dr, dz);
-  vol_2 = CELL_VOLUME(i_r+3, dr, dz);
+  vol_1 = CELL_VOLUME(i_r + 1, dr, dz);
+  vol_2 = CELL_VOLUME(i_r + 3, dr, dz);
   dz1 = (k_z+1.5) * dz - longitude;
   dz2 = longitude - (k_z+0.5) * dz;
 

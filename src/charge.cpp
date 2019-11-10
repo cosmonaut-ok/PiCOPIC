@@ -6,8 +6,10 @@ Charge::Charge(Geometry *geom, vector<SpecieP *> species): geometry(geom)
   // ! to avoid Segfaults while weighting
   MSG_FIXME("That +1 is really temporary solution to avoid Segfaults while weighting");
 
-  density = Grid<double>(geometry->r_grid_amount+1, geometry->z_grid_amount+1);
+  density = Grid<double>(geometry->r_grid_amount+2, geometry->z_grid_amount+2);
   species_p = species;
+
+  density = 0;
 }
 
 void Charge::weight_cylindrical ()
