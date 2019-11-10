@@ -89,7 +89,7 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
   for (unsigned int i=0; i < r_areas; i++)
     for (unsigned int j = 0; j < z_areas; j++)
     {
-      Area *sim_area = areas.get(i, j);
+      Area *sim_area = areas(i, j);
 
       for (auto ps = sim_area->species_p.begin(); ps != sim_area->species_p.end(); ++ps)
       {
@@ -129,7 +129,7 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
                            {
                              ++j_c;
 
-                             Area *dst_area = areas.get(i_dst, j_dst);
+                             Area *dst_area = areas(i_dst, j_dst);
                              for (auto pd = dst_area->species_p.begin(); pd != dst_area->species_p.end(); ++pd)
                                if ((**pd).id == (**ps).id)
                                {
@@ -152,73 +152,32 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
       // update grid
       if (i < geometry_global->areas_by_r - 1)
       {
-        Area *dst_area = areas.get(i+1, j);
-        for (int v = 0; v < sim_area->geometry.z_grid_amount; ++v)
-        {
-          // set current
-          dst_area->current->current[0].inc(0, v, sim_area->current->current[0].get(sim_area->geometry.r_grid_amount, v));
-          dst_area->current->current[1].inc(0, v, sim_area->current->current[1].get(sim_area->geometry.r_grid_amount, v));
-          dst_area->current->current[2].inc(0, v, sim_area->current->current[2].get(sim_area->geometry.r_grid_amount, v));
+        Area *dst_area = areas(i+1, j);
 
-          // set eField
-          dst_area->field_e->field[0].inc(0, v, sim_area->field_e->field[0].get(sim_area->geometry.r_grid_amount, v));
-          dst_area->field_e->field[1].inc(0, v, sim_area->field_e->field[1].get(sim_area->geometry.r_grid_amount, v));
-          dst_area->field_e->field[2].inc(0, v, sim_area->field_e->field[2].get(sim_area->geometry.r_grid_amount, v));
-
-          // set hField
-          dst_area->field_h->field[0].inc(0, v, sim_area->field_h->field[0].get(sim_area->geometry.r_grid_amount, v));
-          dst_area->field_h->field[1].inc(0, v, sim_area->field_h->field[1].get(sim_area->geometry.r_grid_amount, v));
-          dst_area->field_h->field[2].inc(0, v, sim_area->field_h->field[2].get(sim_area->geometry.r_grid_amount, v));
-          dst_area->field_h->field_at_et[0].inc(0, v, sim_area->field_h->field_at_et[0].get(sim_area->geometry.r_grid_amount, v));
-          dst_area->field_h->field_at_et[1].inc(0, v, sim_area->field_h->field_at_et[1].get(sim_area->geometry.r_grid_amount, v));
-          dst_area->field_h->field_at_et[2].inc(0, v, sim_area->field_h->field_at_et[2].get(sim_area->geometry.r_grid_amount, v));
-        }
+        sim_area->current->current.overlay_top(dst_area->current->current);
+        sim_area->field_e->field.overlay_top(dst_area->field_e->field);
+        sim_area->field_h->field.overlay_top(dst_area->field_h->field);
+        sim_area->field_h->field_at_et.overlay_top(dst_area->field_h->field_at_et);
       }
 
       if (j < geometry_global->areas_by_z - 1)
       {
-        Area *dst_area = areas.get(i, j + 1);
-        for (int v = 0; v < sim_area->geometry.r_grid_amount; ++v)
-        {
-          dst_area->current->current[0].inc(v, 0, sim_area->current->current[0].get(v, sim_area->geometry.z_grid_amount));
-          dst_area->current->current[1].inc(v, 0, sim_area->current->current[1].get(v, sim_area->geometry.z_grid_amount));
-          dst_area->current->current[2].inc(v, 0, sim_area->current->current[2].get(v, sim_area->geometry.z_grid_amount));
+        Area *dst_area = areas(i, j + 1);
 
-          // set eField
-          dst_area->field_e->field[0].inc(v, 0, sim_area->field_e->field[0].get(v, sim_area->geometry.z_grid_amount));
-          dst_area->field_e->field[1].inc(v, 0, sim_area->field_e->field[1].get(v, sim_area->geometry.z_grid_amount));
-          dst_area->field_e->field[2].inc(v, 0, sim_area->field_e->field[2].get(v, sim_area->geometry.z_grid_amount));
+        sim_area->current->current.overlay_right(dst_area->current->current);
+        sim_area->field_e->field.overlay_right(dst_area->field_e->field);
+        sim_area->field_h->field.overlay_right(dst_area->field_h->field);
+        sim_area->field_h->field_at_et.overlay_right(dst_area->field_h->field_at_et);
+      }
 
-          // set hField
-          dst_area->field_h->field[0].inc(v, 0, sim_area->field_h->field[0].get(v, sim_area->geometry.z_grid_amount));
-          dst_area->field_h->field[1].inc(v, 0, sim_area->field_h->field[1].get(v, sim_area->geometry.z_grid_amount));
-          dst_area->field_h->field[2].inc(v, 0, sim_area->field_h->field[2].get(v, sim_area->geometry.z_grid_amount));
-          dst_area->field_h->field_at_et[0].inc(v, 0, sim_area->field_h->field_at_et[0].get(v, sim_area->geometry.z_grid_amount));
-          dst_area->field_h->field_at_et[1].inc(v, 0, sim_area->field_h->field_at_et[1].get(v, sim_area->geometry.z_grid_amount));
-          dst_area->field_h->field_at_et[2].inc(v, 0, sim_area->field_h->field_at_et[2].get(v, sim_area->geometry.z_grid_amount));
-        }
+      if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      {
+        Area *dst_area = areas(i + 1, j + 1);
 
-        if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-        {
-          Area *dst_area = areas.get(i + 1, j + 1);
-
-          dst_area->current->current[0].inc(0, 0, sim_area->current->current[0].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-          dst_area->current->current[1].inc(0, 0, sim_area->current->current[1].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-          dst_area->current->current[2].inc(0, 0, sim_area->current->current[2].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-
-          // set eField
-          dst_area->field_e->field[0].inc(0, 0, sim_area->field_e->field[0].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-          dst_area->field_e->field[1].inc(0, 0, sim_area->field_e->field[1].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-          dst_area->field_e->field[2].inc(0, 0, sim_area->field_e->field[2].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-
-          // set hField
-          dst_area->field_h->field[0].inc(0, 0, sim_area->field_h->field[0].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-          dst_area->field_h->field[1].inc(0, 0, sim_area->field_h->field[1].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-          dst_area->field_h->field[2].inc(0, 0, sim_area->field_h->field[2].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-          dst_area->field_h->field_at_et[0].inc(0, 0, sim_area->field_h->field_at_et[0].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-          dst_area->field_h->field_at_et[1].inc(0, 0, sim_area->field_h->field_at_et[1].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-          dst_area->field_h->field_at_et[2].inc(0, 0, sim_area->field_h->field_at_et[2].get(sim_area->geometry.r_grid_amount, sim_area->geometry.z_grid_amount));
-        }
+        sim_area->current->current.overlay_top_right(dst_area->current->current);
+        sim_area->field_e->field.overlay_top_right(dst_area->field_e->field);
+        sim_area->field_h->field.overlay_top_right(dst_area->field_h->field);
+        sim_area->field_h->field_at_et.overlay_top_right(dst_area->field_h->field_at_et);
       }
     }
   LOG_DBG("Amount of particles to jump between areas: " << j_c << ", amount of particles to remove: " << r_c);
@@ -395,7 +354,7 @@ int main(int argc, char **argv)
   for (unsigned int i=0; i < r_areas; i++)
     for (unsigned int j = 0; j < z_areas; j++)
     {
-      Area *sim_area = areas.get(i, j);
+      Area *sim_area = areas(i, j);
 
       sim_area->distribute(); // spatial and velocity distribution
     }
@@ -438,7 +397,7 @@ int main(int argc, char **argv)
     for (unsigned int i=0; i < r_areas; i++)
       for (unsigned int j = 0; j < z_areas; j++)
       {
-        Area *sim_area = areas.get(i, j);
+        Area *sim_area = areas(i, j);
 
         // ! 1. manage beam
 	if (! cfg.particle_beams.empty())
@@ -466,7 +425,7 @@ int main(int argc, char **argv)
     for (unsigned int i=0; i < r_areas; i++)
       for (unsigned int j = 0; j < z_areas; j++)
       {
-        Area *sim_area = areas.get(i, j);
+        Area *sim_area = areas(i, j);
 
         // current distribution
         sim_area->weight_current_azimuthal();
@@ -484,7 +443,7 @@ int main(int argc, char **argv)
     for (unsigned int i=0; i < r_areas; i++)
       for (unsigned int j = 0; j < z_areas; j++)
       {
-        Area *sim_area = areas.get(i, j);
+        Area *sim_area = areas(i, j);
 
         sim_area->weight_current();
         sim_area->particles_back_velocity_to_rz();

@@ -32,8 +32,14 @@ Cfg::Cfg(const char *json_file_name)
   //! check if use hdf5 backend
   use_hdf5 = json_data.get<object>()["hdf5"].get<bool>();
 
-  //! check if use hdf5 backend
+  //! set amount of macroparticles
   macro_amount = json_data.get<object>()["macro_amount"].get<double>();
+
+  //! make beam macroparticles X times smaller, than
+  //! macroparticles of background plasma particle species
+  //! required for short beams, which has really small volume
+  //! related to whole simulation volume
+  beam_macro_ratio = (unsigned int)json_data.get<object>()["beam_plasma_macro_size_ratio"].get<double>();
 
   //! initialize geometry, set PML
   init_geometry();
@@ -270,10 +276,6 @@ void Cfg::weight_macro_amount()
 {
   double norm_sum = 0;
 
-  // make beam macroparticles X times smaller, than
-  // macroparticles of regular particle species
-  const unsigned int beam_macro_const = 2;
-
 // increase normalization sum for particle species (assume, that specie size times species amount)
   norm_sum += geometry->r_grid_amount * geometry->z_grid_amount * particle_species.size();
 
@@ -283,7 +285,7 @@ void Cfg::weight_macro_amount()
     double beam_r_grid_size = (*b).bunch_radius / geometry->r_cell_size;
     double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->z_cell_size;
 
-    norm_sum += beam_r_grid_size * beam_z_grid_size * beam_macro_const;
+    norm_sum += beam_r_grid_size * beam_z_grid_size * beam_macro_ratio;
   }
 
   // calculate normalization coeffitient
@@ -304,7 +306,7 @@ void Cfg::weight_macro_amount()
     double beam_r_grid_size = (*b).bunch_radius / geometry->r_cell_size;
     double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->z_cell_size;
 
-    (*b).macro_amount = (unsigned int)(beam_r_grid_size * beam_z_grid_size * norm * beam_macro_const);
+    (*b).macro_amount = (unsigned int)(beam_r_grid_size * beam_z_grid_size * norm * beam_macro_ratio);
     LOG_INFO("Macro amount for ``" << (*b).name << "'' beam is " << (*b).macro_amount);
   }
 }
