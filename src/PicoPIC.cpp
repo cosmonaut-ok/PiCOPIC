@@ -103,8 +103,8 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
                            int r_cell = CELL_NUMBER(P_POS_R((*o)), sim_area->geometry.r_cell_size);
                            int z_cell = CELL_NUMBER(P_POS_Z((*o)), sim_area->geometry.z_cell_size);
 
-                           int i_dst = (int)ceil(r_cell / sim_area->geometry.r_grid_amount);
-                           int j_dst = (int)ceil(z_cell / sim_area->geometry.z_grid_amount);
+                           unsigned int i_dst = (unsigned int)ceil(r_cell / sim_area->geometry.r_grid_amount);
+                           unsigned int j_dst = (unsigned int)ceil(z_cell / sim_area->geometry.z_grid_amount);
 
                            if (r_cell < 0 || z_cell < 0)
                            {
@@ -125,14 +125,22 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
                            }
 
                            // move particles between cells
-                           else if (i_dst != (int)i || j_dst != (int)j) // check that destination area is different, than source
+                           else if (i_dst != i || j_dst != j) // check that destination area is different, than source
                            {
                              ++j_c;
 
                              Area *dst_area = areas.get(i_dst, j_dst);
                              for (auto pd = dst_area->species_p.begin(); pd != dst_area->species_p.end(); ++pd)
                                if ((**pd).id == (**ps).id)
+                               {
+                                 LOG_DBG("Particle with specie "
+                                         << (**ps).id
+                                         << " jump from area "
+                                         << i << "," << j
+                                         << " to area "
+                                         << i_dst << "," << j_dst);
                                  (**pd).particles.push_back(o);
+                               }
 
                              res = true;
                            }
@@ -435,7 +443,7 @@ int main(int argc, char **argv)
         // ! 1. manage beam
 	if (! cfg.particle_beams.empty())
 	  sim_area->manage_beam();
-	
+
         // ! 2. Calculate magnetic field (H)
         sim_area->weight_field_h(); // +
 
