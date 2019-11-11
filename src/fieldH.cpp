@@ -16,9 +16,7 @@ FieldH::FieldH(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(ge
 // Field calculation
 void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
 {
-  Grid<double> e_r = field_e->field[0];
-  Grid<double> e_phi = field_e->field[1];
-  Grid<double> e_z = field_e->field[2];
+  Grid3D<double> el_field = field_e->field;
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
@@ -33,7 +31,7 @@ void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
       int i=geometry->r_grid_amount;
       // alpha constant and delta_t production (to optimize calculations)
       double alpha_t = time->step
-        * (e_phi(i, k + 1) - e_phi(i, k)) / (dz * MAGN_CONST);
+        * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
 
       field[0].set(i, k, field_at_et(0, i, k) + alpha_t / 2);
       field_at_et[0].inc(i, k, alpha_t);
@@ -44,7 +42,7 @@ void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
       for(int k = 0; k < geometry->z_grid_amount; k++)
       {
         double alpha_t = time->step
-          * (e_phi(i, k+1) - e_phi(i, k)) / (dz * MAGN_CONST);
+          * (el_field(1, i, k+1) - el_field(1, i, k)) / (dz * MAGN_CONST);
 
         field[0].set(i, k, field_at_et(0, i, k) + alpha_t / 2);
         field_at_et[0].inc(i, k, alpha_t);
@@ -55,8 +53,8 @@ void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
       for(int k = 0; k < geometry->z_grid_amount; k++)
       {
         double alpha_t = time->step
-          * ((e_z(i+1, k) - e_z(i, k)) / dr
-             - (e_r(i, k+1) - e_r(i, k)) / dz)
+          * ((el_field(2, i+1, k) - el_field(2, i, k)) / dr
+             - (el_field(0, i, k+1) - el_field(0, i, k)) / dz)
           / MAGN_CONST;
 
         field[1].set(i, k, field_at_et(1, i, k) + alpha_t / 2);
@@ -69,8 +67,8 @@ void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
       {
         double alpha_t = time->step
           * (
-            (e_phi(i+1, k) + e_phi(i, k)) / (2. * dr * (i + 0.5))
-            + (e_phi(i+1, k) - e_phi(i, k)) / dr)
+            (el_field(1, i+1, k) + el_field(1, i, k)) / (2. * dr * (i + 0.5))
+            + (el_field(1, i+1, k) - el_field(1, i, k)) / dr)
           / MAGN_CONST;
 
         field[2].set(i, k, field_at_et(2, i, k) - alpha_t / 2);

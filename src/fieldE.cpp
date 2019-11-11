@@ -75,12 +75,9 @@ void FieldE::set_pml()
 // Electric field calculation
 void FieldE::calc_field_cylindrical()
 {
-  Grid<double> j_r = current->current[0];
-  Grid<double> j_phi = current->current[1];
-  Grid<double> j_z = current->current[2];
-  Grid<double> h_r = field_h->field_at_et[0];
-  Grid<double> h_phi = field_h->field_at_et[1];
-  Grid<double> h_z = field_h->field_at_et[2];
+  Grid3D<double> curr = current->current;
+  Grid3D<double> magn_fld = field_h->field_at_et;
+
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
@@ -98,7 +95,7 @@ void FieldE::calc_field_cylindrical()
       double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
 
       field[0].m_a(i, k, koef_e);
-      field[0].dec(i, k, (j_r(i, k) + (h_phi(i, k) - h_phi(i, k-1)) / dz) * koef_h);
+      field[0].dec(i, k, (curr(0, i, k) + (magn_fld(1, i, k) - magn_fld(1, i, k-1)) / dz) * koef_h);
     }
 
     // Ez=on axis
@@ -113,7 +110,7 @@ void FieldE::calc_field_cylindrical()
       double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
 
       field[2].m_a(i, k, koef_e);
-      field[2].dec(i, k, (j_z(i, k) - 4. / dr * h_phi(i, k)) * koef_h);
+      field[2].dec(i, k, (curr(2, i, k) - 4. / dr * magn_fld(1, i, k)) * koef_h);
     }
 
 // #pragma omp for
@@ -127,15 +124,15 @@ void FieldE::calc_field_cylindrical()
         double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
 
         field[0].m_a(i, k, koef_e);
-        field[0].dec(i, k, (j_r(i, k) + (h_phi(i, k) - h_phi(i, k-1)) / dz) * koef_h);
+        field[0].dec(i, k, (curr(0, i, k) + (magn_fld(1, i, k) - magn_fld(1, i, k-1)) / dz) * koef_h);
 
         field[1].m_a(i, k, koef_e);
-        field[1].dec(i, k, (j_phi(i, k) - (h_r(i, k) - h_r(i, k-1))
-                            / dz + (h_z(i, k) - h_z(i-1, k)) / dr) * koef_h);
+        field[1].dec(i, k, (curr(1, i, k) - (magn_fld(0, i, k) - magn_fld(0, i, k - 1))
+                            / dz + (magn_fld(2, i, k) - magn_fld(2, i - 1, k)) / dr) * koef_h);
 
         field[2].m_a(i, k, koef_e);
-        field[2].dec(i, k, (j_z(i, k) - (h_phi(i, k) - h_phi(i-1, k)) / dr
-                            - (h_phi(i, k) + h_phi(i-1, k)) / (2. * dr * i)) * koef_h);
+        field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i-1, k)) / dr
+                            - (magn_fld(1, i, k) + magn_fld(1, i-1, k)) / (2. * dr * i)) * koef_h);
       }
 
 // #pragma omp for
@@ -149,8 +146,8 @@ void FieldE::calc_field_cylindrical()
       double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
 
       field[2].m_a(i, k, koef_e);
-      field[2].dec(i, k, (j_z(i, k) - (h_phi(i, k) - h_phi(i-1, k)) / dr
-                          - (h_phi(i, k) + h_phi(i-1, k)) / (2. * dr * i) ) * koef_h);
+      field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
+                          - (magn_fld(1, i, k) + magn_fld(1, i - 1, k)) / (2. * dr * i) ) * koef_h);
     }
   }
 }
