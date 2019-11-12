@@ -112,14 +112,10 @@ void FieldE::calc_field_cylindrical()
       // E_r at the center axis (r=0)
       field[0].m_a(i, k, koef_e);
       field[0].dec(i, k, (curr(0, i, k) + (magn_fld(1, i, k) - magn_fld(1, i, k-1)) / dz) * koef_h);
-      field[0].d_a(i, k, 1.4);
-
-      field[1].d_a(i, k, 1.4);
 
       // E_z at the center on axis
       field[2].m_a(i, k, koef_e);
       field[2].dec(i, k, (curr(2, i, k) - magn_fld(1, i, k) / dr) * koef_h);
-      field[2].d_a(i, k, 1.4);
     }
 
   // E_z at the left wall (z = 0) case
