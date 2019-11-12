@@ -14,7 +14,7 @@ FieldH::FieldH(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(ge
 }
 
 // Field calculation
-void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
+void FieldH::calc_field_cylindrical()
 {
   field.reset_overlay_area();
   field_at_et.reset_overlay_area();
@@ -23,15 +23,28 @@ void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
-  // double alpha;
+  // emulate dielectric walls
+  unsigned int r_begin = 0;
+  unsigned int z_begin = 0;
+  unsigned int r_end = geometry->r_grid_amount;
+  unsigned int z_end = geometry->z_grid_amount;
+  if (geometry->walls[0]) // r=0
+    r_begin = 1;
 
-  // Hr - last i value
-// #pragma omp parallel
-  {
-// #pragma omp for
+  if (geometry->walls[1]) // z=0
+    z_begin = 1;
+
+  if (geometry->walls[2]) // r=r
+    r_end = geometry->r_grid_amount - 1;
+
+  if (geometry->walls[3]) // z=z
+    z_end = geometry->z_grid_amount - 1;
+
+  // H_r on outer wall (r=r)
+  if (geometry->walls[2])
     for(int k = 0; k < geometry->z_grid_amount; k++)
     {
-      int i=geometry->r_grid_amount;
+      int i = geometry->r_grid_amount;
       // alpha constant and delta_t production (to optimize calculations)
       double alpha_t = time->step
         * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
@@ -40,44 +53,33 @@ void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
       field_at_et[0].inc(i, k, alpha_t);
     }
 
-// #pragma omp for
-    for(int i = 0; i < geometry->r_grid_amount; i++)
-      for(int k = 0; k < geometry->z_grid_amount; k++)
-      {
-        double alpha_t = time->step
-          * (el_field(1, i, k+1) - el_field(1, i, k)) / (dz * MAGN_CONST);
+  // regular case
+  for(int i = 0; i < r_end; i++)
+    for(int k = 0; k < z_end; k++)
+    {
+      double alpha_t_r = time->step
+        * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
 
-        field[0].set(i, k, field_at_et(0, i, k) + alpha_t / 2);
-        field_at_et[0].inc(i, k, alpha_t);
-      }
+      field[0].set(i, k, field_at_et(0, i, k) + alpha_t_r / 2);
+      field_at_et[0].inc(i, k, alpha_t_r);
 
-// #pragma omp for
-    for(int i = 0; i < geometry->r_grid_amount; i++)
-      for(int k = 0; k < geometry->z_grid_amount; k++)
-      {
-        double alpha_t = time->step
-          * ((el_field(2, i+1, k) - el_field(2, i, k)) / dr
-             - (el_field(0, i, k+1) - el_field(0, i, k)) / dz)
-          / MAGN_CONST;
+      double alpha_t_phi = time->step
+        * ((el_field(2, i+1, k) - el_field(2, i, k)) / dr
+           - (el_field(0, i, k+1) - el_field(0, i, k)) / dz)
+        / MAGN_CONST;
 
-        field[1].set(i, k, field_at_et(1, i, k) + alpha_t / 2);
-        field_at_et[1].inc(i, k, alpha_t);
-      }
+      field[1].set(i, k, field_at_et(1, i, k) + alpha_t_phi / 2);
+      field_at_et[1].inc(i, k, alpha_t_phi);
 
-// #pragma omp for
-    for(int i = 0; i < geometry->r_grid_amount; i++)
-      for(int k = 0; k < geometry->z_grid_amount; k++)
-      {
-        double alpha_t = time->step
-          * (
-            (el_field(1, i+1, k) + el_field(1, i, k)) / (2. * dr * (i + 0.5))
-            + (el_field(1, i+1, k) - el_field(1, i, k)) / dr)
-          / MAGN_CONST;
+      double alpha_t_z = time->step
+        * (
+          (el_field(1, i+1, k) + el_field(1, i, k)) / (2. * dr * (i + 0.5))
+          + (el_field(1, i+1, k) - el_field(1, i, k)) / dr)
+        / MAGN_CONST;
 
-        field[2].set(i, k, field_at_et(2, i, k) - alpha_t / 2);
-        field_at_et[2].dec(i, k, alpha_t);
-      }
-  }
+      field[2].set(i, k, field_at_et(2, i, k) - alpha_t_z / 2);
+      field_at_et[2].dec(i, k, alpha_t_z);
+    }
 }
 
 vector3d<double> FieldH::get_field(double radius, double longitude)

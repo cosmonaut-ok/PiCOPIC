@@ -75,21 +75,31 @@ void FieldE::set_pml()
 // Electric field calculation
 void FieldE::calc_field_cylindrical()
 {
-  field.reset_overlay_area();
-  
   Grid3D<double> curr = current->current;
   Grid3D<double> magn_fld = field_h->field_at_et;
 
-  curr.reset_overlay_area();
-  magn_fld.reset_overlay_area();
- 
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
-  // Er first[i] value
-// #pragma omp parallel
-  {
-// #pragma omp for
+  // emulate dielectric walls
+  unsigned int r_begin = 0;
+  unsigned int z_begin = 0;
+  unsigned int r_end = geometry->r_grid_amount;
+  unsigned int z_end = geometry->z_grid_amount;
+  if (geometry->walls[0]) // r=0
+    r_begin = 1;
+
+  if (geometry->walls[1]) // z=0
+    z_begin = 1;
+
+  if (geometry->walls[2]) // r=r
+    r_end = geometry->r_grid_amount - 1;
+
+  if (geometry->walls[3]) // z=z
+    z_end = geometry->z_grid_amount - 1;
+
+  // E at the center axis (r=0) case
+  if (geometry->walls[0]) // calculate only at the center axis (r=0)
     for(int k = 1; k < geometry->z_grid_amount; k++)
     {
       int i = 0;
@@ -99,62 +109,56 @@ void FieldE::calc_field_cylindrical()
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
 
+      // E_r at the center axis (r=0)
       field[0].m_a(i, k, koef_e);
       field[0].dec(i, k, (curr(0, i, k) + (magn_fld(1, i, k) - magn_fld(1, i, k-1)) / dz) * koef_h);
-    }
+      field[0].d_a(i, k, 1.4);
 
-    // Ez=on axis
-// #pragma omp for
-    for(int k = 0; k < geometry->z_grid_amount; k++)
-    {
-      int i = 0;
-      double epsilonx2 = 2 * epsilon(i, k);
-      double sigma_t = sigma(i, k) * time->step;
+      field[1].d_a(i, k, 1.4);
 
-      double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
-      double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
-
+      // E_z at the center on axis
       field[2].m_a(i, k, koef_e);
-      field[2].dec(i, k, (curr(2, i, k) - 4. / dr * magn_fld(1, i, k)) * koef_h);
+      field[2].dec(i, k, (curr(2, i, k) - magn_fld(1, i, k) / dr) * koef_h);
+      field[2].d_a(i, k, 1.4);
     }
 
-// #pragma omp for
-    for(int i = 1; i < geometry->r_grid_amount; i++)
-      for(int k = 1; k < geometry->z_grid_amount; k++)
-      {
-        double epsilonx2 = 2 * epsilon(i, k);
-        double sigma_t = sigma(i, k) * time->step;
+  // E_z at the left wall (z = 0) case
+  // if (geometry->walls[1]) // calculate only at the left wall (z=0)
+  //   for(unsigned int i = 1; i < geometry->r_grid_amount; i++)
+  //   {
+  //     unsigned int k = 0;
+  //     double epsilonx2 = 2 * epsilon(i, k);
+  //     double sigma_t = sigma(i, k) * time->step;
 
-        double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
-        double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
+  //     double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
+  //     double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
 
-        field[0].m_a(i, k, koef_e);
-        field[0].dec(i, k, (curr(0, i, k) + (magn_fld(1, i, k) - magn_fld(1, i, k-1)) / dz) * koef_h);
+  //     field[2].m_a(i, k, koef_e);
+  //     field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
+  //                         - (magn_fld(1, i, k) + magn_fld(1, i - 1, k)) / (2. * dr * i) ) * koef_h);
+  //   }
 
-        field[1].m_a(i, k, koef_e);
-        field[1].dec(i, k, (curr(1, i, k) - (magn_fld(0, i, k) - magn_fld(0, i, k - 1))
-                            / dz + (magn_fld(2, i, k) - magn_fld(2, i - 1, k)) / dr) * koef_h);
-
-        field[2].m_a(i, k, koef_e);
-        field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i-1, k)) / dr
-                            - (magn_fld(1, i, k) + magn_fld(1, i-1, k)) / (2. * dr * i)) * koef_h);
-      }
-
-// #pragma omp for
-    for(unsigned int i = 1; i < geometry->r_grid_amount; i++)
+// regular case
+  for(int i = 1; i < r_end; i++) // TODO: it should be r_begin, instead of 1
+    for(int k = 1; k < z_end; k++) // TODO: it should be z_begin, instead of 1
     {
-      unsigned int k = 0;
       double epsilonx2 = 2 * epsilon(i, k);
       double sigma_t = sigma(i, k) * time->step;
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
+
+      field[0].m_a(i, k, koef_e);
+      field[0].dec(i, k, (curr(0, i, k) + (magn_fld(1, i, k) - magn_fld(1, i, k-1)) / dz) * koef_h);
+
+      field[1].m_a(i, k, koef_e);
+      field[1].dec(i, k, (curr(1, i, k) - (magn_fld(0, i, k) - magn_fld(0, i, k - 1))
+                          / dz + (magn_fld(2, i, k) - magn_fld(2, i - 1, k)) / dr) * koef_h);
 
       field[2].m_a(i, k, koef_e);
       field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
-                          - (magn_fld(1, i, k) + magn_fld(1, i - 1, k)) / (2. * dr * i) ) * koef_h);
+                          - (magn_fld(1, i, k) + magn_fld(1, i-1, k)) / (2. * dr * i)) * koef_h);
     }
-  }
 }
 
 vector3d<double> FieldE::get_field(double radius, double longitude)

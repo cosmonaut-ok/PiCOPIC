@@ -121,6 +121,9 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
                              )
                            {
                              ++r_c;
+                             LOG_WARN("Particle position is out of simulation area: ["
+                                      << P_POS_R((*o)) << ", "
+                                      << P_POS_Z((*o)) << "]. Removing");
                              res = true;
                            }
 
@@ -149,9 +152,13 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
           (**ps).particles.end());
       }
     }
-  if (j_c > 0 || r_c > 0)
+  if (j_c > 0)
   {
-    LOG_DBG("Amount of particles to jump between areas: " << j_c << ", amount of particles to remove: " << r_c);
+    LOG_DBG("Amount of particles to jump between areas: " << j_c);
+  }
+  if (r_c > 0)
+  {
+    LOG_DBG("Amount of particles to remove: " << r_c);
   }
 }
 
