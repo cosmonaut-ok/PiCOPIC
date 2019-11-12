@@ -148,39 +148,11 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
                          }),
           (**ps).particles.end());
       }
-
-      // // update grid
-      // if (i < geometry_global->areas_by_r - 1)
-      // {
-      //   Area *dst_area = areas(i+1, j);
-
-      //   sim_area->current->current.overlay_top(dst_area->current->current);
-      //   sim_area->field_e->field.overlay_top(dst_area->field_e->field);
-      //   sim_area->field_h->field.overlay_top(dst_area->field_h->field);
-      //   sim_area->field_h->field_at_et.overlay_top(dst_area->field_h->field_at_et);
-      // }
-
-      // if (j < geometry_global->areas_by_z - 1)
-      // {
-      //   Area *dst_area = areas(i, j + 1);
-
-      //   sim_area->current->current.overlay_right(dst_area->current->current);
-      //   sim_area->field_e->field.overlay_right(dst_area->field_e->field);
-      //   sim_area->field_h->field.overlay_right(dst_area->field_h->field);
-      //   sim_area->field_h->field_at_et.overlay_right(dst_area->field_h->field_at_et);
-      // }
-
-      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-      // {
-      //   Area *dst_area = areas(i + 1, j + 1);
-
-      //   sim_area->current->current.overlay_top_right(dst_area->current->current);
-      //   sim_area->field_e->field.overlay_top_right(dst_area->field_e->field);
-      //   sim_area->field_h->field.overlay_top_right(dst_area->field_h->field);
-      //   sim_area->field_h->field_at_et.overlay_top_right(dst_area->field_h->field_at_et);
-      // }
     }
-  LOG_DBG("Amount of particles to jump between areas: " << j_c << ", amount of particles to remove: " << r_c);
+  if (j_c > 0 || r_c > 0)
+  {
+    LOG_DBG("Amount of particles to jump between areas: " << j_c << ", amount of particles to remove: " << r_c);
+  }
 }
 
 void current_overlay (Grid<Area*> areas, Geometry *geometry_global)
@@ -307,8 +279,6 @@ int main(int argc, char **argv)
   LOG_DBG("Reading Configuration File ``" << cfgname << "''");
   Cfg cfg = Cfg(cfgname.c_str());
 
-  LOG_DBG("Checking if Configuration is Correct (TBD)");
-
   Geometry* geometry_global = cfg.geometry;
 
   TimeSim* sim_time_clock = cfg.time;
@@ -422,24 +392,25 @@ int main(int argc, char **argv)
 
       // init particle beams
       if (! cfg.particle_beams.empty())
-	for (auto bm = cfg.particle_beams.begin(); bm != cfg.particle_beams.end(); ++bm)
-	  {
-	    if (bm->bunches_amount > 0)
-	      {
-		BeamP *beam = new BeamP (b_id_counter, ((string)"beam_").append(bm->name),
-					 bm->charge, bm->mass, bm->macro_amount,
-					 bm->start_time, bm->bunch_radius, bm->density,
-					 bm->bunches_amount, bm->bunch_length,
-					 bm->bunches_distance, bm->velocity,
-					 geom_area, sim_time_clock);
+        for (auto bm = cfg.particle_beams.begin(); bm != cfg.particle_beams.end(); ++bm)
+        {
+          if (bm->bunches_amount > 0)
+          {
+            BeamP *beam = new BeamP (b_id_counter, ((string)"beam_").append(bm->name),
+                                     bm->charge, bm->mass, bm->macro_amount,
+                                     bm->start_time, bm->bunch_radius, bm->density,
+                                     bm->bunches_amount, bm->bunch_length,
+                                     bm->bunches_distance, bm->velocity,
+                                     geom_area, sim_time_clock);
 
-		species_p.push_back(beam);
-	      }
-	    ++b_id_counter;
-	  }
+            species_p.push_back(beam);
+          }
+          ++b_id_counter;
+        }
       else
-	LOG_WARN("There is no particle beams");
-
+      {
+        LOG_WARN("There is no particle beams");
+      }
       Area *sim_area = new Area(*geom_area, species_p, sim_time_clock);
       areas.set(i, j, sim_area);
     };
@@ -487,7 +458,7 @@ int main(int argc, char **argv)
 
   while (sim_time_clock->current < sim_time_clock->end)
   {
-    LOG_DBG("Processing areas at time: " << sim_time_clock->current);
+    LOG_DBG("Run calculation loop for timestamp: " << sim_time_clock->current);
 
 #pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_areas; i++)
@@ -522,7 +493,7 @@ int main(int argc, char **argv)
     // field_h_overlay(areas, geometry_global);
 
     // process borders
-    LOG_DBG("Processing borders at time: " << cfg.time->current);
+    // LOG_DBG("Processing borders at time: " << cfg.time->current);
     particles_runaway_collector(areas, geometry_global);
 
 #pragma omp parallel for collapse(2)
@@ -540,7 +511,7 @@ int main(int argc, char **argv)
       }
 
     // process borders
-    LOG_DBG("Processing borders at time: " << cfg.time->current);
+    // LOG_DBG("Processing borders at time: " << cfg.time->current);
     particles_runaway_collector(areas, geometry_global);
     // current_overlay(areas, geometry_global);
 

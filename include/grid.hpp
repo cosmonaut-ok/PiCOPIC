@@ -64,13 +64,11 @@ public:
     if (x_size == rgrid.size_x())
       for (unsigned int i = 0; i < x_size; ++i)
       {
-        // LOG_DBG("AAAAAA " << grid[i][y-2] << " " << rgrid(i, 0) << " ");
-        rgrid.inc(i, 0,  grid[i][y_size-2]);
+        rgrid.inc(i, 0, grid[i][y_size-2]);
         rgrid.inc(i, 1, grid[i][y_size-1]);
 
-        grid[i][y_size-2] = rgrid(i, 0);
-        grid[i][y_size-1] = rgrid(i, 1);
-        // LOG_DBG("BBBBBB " << grid[i][y-2] << " " << rgrid(i, 0) << " ");
+        // grid[i][y_size-2] = rgrid(i, 0);
+        // grid[i][y_size-1] = rgrid(i, 1);
       }
     else
     {
@@ -86,8 +84,8 @@ public:
         tgrid.inc(0, i, grid[x_size-2][i]);
         tgrid.inc(1, i, grid[x_size-1][i]);
 
-	grid[x_size-2][i] = tgrid(0, i);
-	grid[x_size-1][i] = tgrid(1, i);
+        // grid[x_size-2][i] = tgrid(0, i);
+        // grid[x_size-1][i] = tgrid(1, i);
       }
     else
     {
