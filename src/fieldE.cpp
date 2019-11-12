@@ -75,9 +75,14 @@ void FieldE::set_pml()
 // Electric field calculation
 void FieldE::calc_field_cylindrical()
 {
+  field.reset_overlay_area();
+  
   Grid3D<double> curr = current->current;
   Grid3D<double> magn_fld = field_h->field_at_et;
 
+  curr.reset_overlay_area();
+  magn_fld.reset_overlay_area();
+ 
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 

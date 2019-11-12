@@ -149,13 +149,85 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
           (**ps).particles.end());
       }
 
+      // // update grid
+      // if (i < geometry_global->areas_by_r - 1)
+      // {
+      //   Area *dst_area = areas(i+1, j);
+
+      //   sim_area->current->current.overlay_top(dst_area->current->current);
+      //   sim_area->field_e->field.overlay_top(dst_area->field_e->field);
+      //   sim_area->field_h->field.overlay_top(dst_area->field_h->field);
+      //   sim_area->field_h->field_at_et.overlay_top(dst_area->field_h->field_at_et);
+      // }
+
+      // if (j < geometry_global->areas_by_z - 1)
+      // {
+      //   Area *dst_area = areas(i, j + 1);
+
+      //   sim_area->current->current.overlay_right(dst_area->current->current);
+      //   sim_area->field_e->field.overlay_right(dst_area->field_e->field);
+      //   sim_area->field_h->field.overlay_right(dst_area->field_h->field);
+      //   sim_area->field_h->field_at_et.overlay_right(dst_area->field_h->field_at_et);
+      // }
+
+      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      // {
+      //   Area *dst_area = areas(i + 1, j + 1);
+
+      //   sim_area->current->current.overlay_top_right(dst_area->current->current);
+      //   sim_area->field_e->field.overlay_top_right(dst_area->field_e->field);
+      //   sim_area->field_h->field.overlay_top_right(dst_area->field_h->field);
+      //   sim_area->field_h->field_at_et.overlay_top_right(dst_area->field_h->field_at_et);
+      // }
+    }
+  LOG_DBG("Amount of particles to jump between areas: " << j_c << ", amount of particles to remove: " << r_c);
+}
+
+void current_overlay (Grid<Area*> areas, Geometry *geometry_global)
+{
+  unsigned int r_areas = areas.size_x();
+  unsigned int z_areas = areas.size_x();
+
+  for (unsigned int i=0; i < r_areas; i++)
+    for (unsigned int j = 0; j < z_areas; j++)
+    {
+      Area *sim_area = areas(i, j);
+
       // update grid
       if (i < geometry_global->areas_by_r - 1)
       {
         Area *dst_area = areas(i+1, j);
-
         sim_area->current->current.overlay_top(dst_area->current->current);
-        sim_area->field_e->field.overlay_top(dst_area->field_e->field);
+      }
+
+      if (j < geometry_global->areas_by_z - 1)
+      {
+        Area *dst_area = areas(i, j + 1);
+        sim_area->current->current.overlay_right(dst_area->current->current);
+      }
+
+      if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      {
+        Area *dst_area = areas(i + 1, j + 1);
+        sim_area->current->current.overlay_top_right(dst_area->current->current);
+      }
+    }
+}
+
+void field_h_overlay (Grid<Area*> areas, Geometry *geometry_global)
+{
+  unsigned int r_areas = areas.size_x();
+  unsigned int z_areas = areas.size_x();
+
+  for (unsigned int i=0; i < r_areas; i++)
+    for (unsigned int j = 0; j < z_areas; j++)
+    {
+      Area *sim_area = areas(i, j);
+
+      // update grid
+      if (i < geometry_global->areas_by_r - 1)
+      {
+        Area *dst_area = areas(i+1, j);
         sim_area->field_h->field.overlay_top(dst_area->field_h->field);
         sim_area->field_h->field_at_et.overlay_top(dst_area->field_h->field_at_et);
       }
@@ -163,9 +235,6 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
       if (j < geometry_global->areas_by_z - 1)
       {
         Area *dst_area = areas(i, j + 1);
-
-        sim_area->current->current.overlay_right(dst_area->current->current);
-        sim_area->field_e->field.overlay_right(dst_area->field_e->field);
         sim_area->field_h->field.overlay_right(dst_area->field_h->field);
         sim_area->field_h->field_at_et.overlay_right(dst_area->field_h->field_at_et);
       }
@@ -173,14 +242,41 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
       if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
       {
         Area *dst_area = areas(i + 1, j + 1);
-
-        sim_area->current->current.overlay_top_right(dst_area->current->current);
-        sim_area->field_e->field.overlay_top_right(dst_area->field_e->field);
         sim_area->field_h->field.overlay_top_right(dst_area->field_h->field);
         sim_area->field_h->field_at_et.overlay_top_right(dst_area->field_h->field_at_et);
       }
     }
-  LOG_DBG("Amount of particles to jump between areas: " << j_c << ", amount of particles to remove: " << r_c);
+}
+
+void field_e_overlay (Grid<Area*> areas, Geometry *geometry_global)
+{
+  unsigned int r_areas = areas.size_x();
+  unsigned int z_areas = areas.size_x();
+
+  for (unsigned int i=0; i < r_areas; i++)
+    for (unsigned int j = 0; j < z_areas; j++)
+    {
+      Area *sim_area = areas(i, j);
+
+      // update grid
+      if (i < geometry_global->areas_by_r - 1)
+      {
+        Area *dst_area = areas(i+1, j);
+        sim_area->field_e->field.overlay_top(dst_area->field_e->field);
+      }
+
+      if (j < geometry_global->areas_by_z - 1)
+      {
+        Area *dst_area = areas(i, j + 1);
+        sim_area->field_e->field.overlay_right(dst_area->field_e->field);
+      }
+
+      if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      {
+        Area *dst_area = areas(i + 1, j + 1);
+        sim_area->field_e->field.overlay_top_right(dst_area->field_e->field);
+      }
+    }
 }
 
 int main(int argc, char **argv)
@@ -400,15 +496,22 @@ int main(int argc, char **argv)
         Area *sim_area = areas(i, j);
 
         // ! 1. manage beam
-	if (! cfg.particle_beams.empty())
-	  sim_area->manage_beam();
+        if (! cfg.particle_beams.empty())
+          sim_area->manage_beam();
 
         // ! 2. Calculate magnetic field (H)
         sim_area->weight_field_h(); // +
+        // +++
+      }
+
+#pragma omp parallel for collapse(2)
+    for (unsigned int i=0; i < r_areas; i++)
+      for (unsigned int j = 0; j < z_areas; j++)
+      {
+        Area *sim_area = areas(i, j);
+        sim_area->reset_current(); // +
 
         // ! 3. Calculate velocity
-        sim_area->reset_current(); // +
-        // TODO: sim_area->reset_charge(); // + for c_rho_old, c_rho_bunch
         sim_area->push_particles(); // +
         sim_area->dump_particle_positions_to_old(); // +
         sim_area->update_particles_coords_at_half(); // + +reflect
@@ -416,6 +519,7 @@ int main(int argc, char **argv)
         sim_area->reflect(); // +
         // TODO: break and process area borders
       }
+    // field_h_overlay(areas, geometry_global);
 
     // process borders
     LOG_DBG("Processing borders at time: " << cfg.time->current);
@@ -438,6 +542,7 @@ int main(int argc, char **argv)
     // process borders
     LOG_DBG("Processing borders at time: " << cfg.time->current);
     particles_runaway_collector(areas, geometry_global);
+    // current_overlay(areas, geometry_global);
 
 #pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_areas; i++)
@@ -450,11 +555,9 @@ int main(int argc, char **argv)
 
         // ! 5. Calculate electric field (E)
         sim_area->weight_field_e(); // +
-
-        // ! 6. Continuity equation
-        // sim_area->reset_charge(); // TODO: for c_rho_new
-        // sim_area->weight_charge(); // TODO: r_who_new, c_bunch
       }
+    // current_overlay(areas, geometry_global);
+    field_e_overlay(areas, geometry_global);
 
     // dump data
 // #pragma omp parallel for

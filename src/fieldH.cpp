@@ -16,6 +16,9 @@ FieldH::FieldH(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(ge
 // Field calculation
 void FieldH::calc_field_cylindrical() // EField *e_field1, Time *time1
 {
+  field.reset_overlay_area();
+  field_at_et.reset_overlay_area();
+
   Grid3D<double> el_field = field_e->field;
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;

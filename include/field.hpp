@@ -38,6 +38,5 @@ public:
     // just dummy method for test/debug
     vector3d<double> cmp(0, 0, 0); // field components
     return cmp;
-  }
-
+  };
 };
