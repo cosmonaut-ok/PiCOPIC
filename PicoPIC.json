@@ -113,6 +113,22 @@
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
+      },
+      {
+        "component": "velocity",
+        "specie": "beam_electrons",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 128, "z": 512 }
+      },
+      {
+        "component": "position",
+        "specie": "ions",
+        "schedule": 10,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 128, "z": 512 }
       }
     ],
     "plot": {
