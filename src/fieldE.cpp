@@ -3,8 +3,8 @@
 FieldE::FieldE(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(geom, t)
 {
   species_p = species;
-  epsilon = Grid<double> (geometry->r_grid_amount + 2, geometry->z_grid_amount + 2);
-  sigma = Grid<double> (geometry->r_grid_amount + 2, geometry->z_grid_amount + 2);
+  epsilon = Grid<double> (geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
+  sigma = Grid<double> (geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
 
   epsilon = EPSILON0;
   sigma = 0;
@@ -75,34 +75,19 @@ void FieldE::set_pml()
 // Electric field calculation
 void FieldE::calc_field_cylindrical()
 {
+  field.overlay_reset();
+
   Grid3D<double> curr = current->current;
   Grid3D<double> magn_fld = field_h->field_at_et;
 
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
-  // emulate dielectric walls
-  unsigned int r_begin = 0;
-  unsigned int z_begin = 0;
-  unsigned int r_end = geometry->r_grid_amount;
-  unsigned int z_end = geometry->z_grid_amount;
-  if (geometry->walls[0]) // r=0
-    r_begin = 1;
-
-  if (geometry->walls[1]) // z=0
-    z_begin = 1;
-
-  if (geometry->walls[2]) // r=r
-    r_end = geometry->r_grid_amount - 1;
-
-  if (geometry->walls[3]) // z=z
-    z_end = geometry->z_grid_amount - 1;
-
   // E at the center axis (r=0) case
   if (geometry->walls[0]) // calculate only at the center axis (r=0)
-    for(int k = 1; k < geometry->z_grid_amount; k++)
+    for(int k = z_begin; k < geometry->z_grid_amount; k++)
     {
-      int i = 0;
+      int i = r_begin;
       double epsilonx2 = 2 * epsilon(i, k);
       double sigma_t = sigma(i, k) * time->step;
 
@@ -118,25 +103,9 @@ void FieldE::calc_field_cylindrical()
       field[2].dec(i, k, (curr(2, i, k) - magn_fld(1, i, k) / dr) * koef_h);
     }
 
-  // E_z at the left wall (z = 0) case
-  // if (geometry->walls[1]) // calculate only at the left wall (z=0)
-  //   for(unsigned int i = 1; i < geometry->r_grid_amount; i++)
-  //   {
-  //     unsigned int k = 0;
-  //     double epsilonx2 = 2 * epsilon(i, k);
-  //     double sigma_t = sigma(i, k) * time->step;
-
-  //     double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
-  //     double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
-
-  //     field[2].m_a(i, k, koef_e);
-  //     field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
-  //                         - (magn_fld(1, i, k) + magn_fld(1, i - 1, k)) / (2. * dr * i) ) * koef_h);
-  //   }
-
 // regular case
-  for(int i = 1; i < r_end; i++) // TODO: it should be r_begin, instead of 1
-    for(int k = 1; k < z_end; k++) // TODO: it should be z_begin, instead of 1
+  for(int i = r_begin; i < r_end; i++) // TODO: it should be r_begin, instead of 1
+    for(int k = z_begin; k < z_end; k++) // TODO: it should be z_begin, instead of 1
     {
       double epsilonx2 = 2 * epsilon(i, k);
       double sigma_t = sigma(i, k) * time->step;
@@ -179,8 +148,8 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
 
   // weighting of E_r
   // finding number of cell. example dr=0.5, radius = 0.7, i_r =0;!!
-  i_r = CELL_NUMBER(radius - 0.5 * dr, dr);
-  k_z = CELL_NUMBER(longitude, dz);
+  i_r = CELL_NUMBER_OVERLAY(radius - 0.5 * dr, dr);
+  k_z = CELL_NUMBER_OVERLAY(longitude, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
   // TODO: workaround: sometimes it gives -1.
@@ -209,8 +178,8 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
 
   // weighting of E_z
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =0;!!
-  i_r = CELL_NUMBER(radius, dr);
-  k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
+  i_r = CELL_NUMBER_OVERLAY(radius, dr);
+  k_z = CELL_NUMBER_OVERLAY(longitude - 0.5 * dz, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
   // TODO: workaround: sometimes it gives -1.
@@ -245,8 +214,8 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   // weighting of E_fi
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =1;
 
-  i_r = CELL_NUMBER(radius, dr);
-  k_z = CELL_NUMBER(longitude, dz);
+  i_r = CELL_NUMBER_OVERLAY(radius, dr);
+  k_z = CELL_NUMBER_OVERLAY(longitude, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
   // TODO: workaround: sometimes it gives -1.

@@ -41,11 +41,11 @@ public:
     z_component.overlay_top(trgrid.z_component);
   };
 
-  void reset_overlay_area()
+  void overlay_reset()
   {
-    r_component.reset_overlay_area();
-    phi_component.reset_overlay_area();
-    z_component.reset_overlay_area();
+    r_component.overlay_reset();
+    phi_component.overlay_reset();
+    z_component.overlay_reset();
   };
 
   Grid3D<T>& operator= (const T value)

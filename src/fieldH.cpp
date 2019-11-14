@@ -7,7 +7,7 @@ FieldH::FieldH(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(ge
   // ! (same timestamp, as for electrical field)
   // ! it useful to have single implementation of ``get_field'' method
   // ! for both classes - FieldE and FieldH
-  field_at_et = Grid3D<double> (geometry->r_grid_amount + 2, geometry->z_grid_amount + 2);
+  field_at_et = Grid3D<double> (geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
   species_p = species;
 
   field_at_et = 0;
@@ -16,35 +16,18 @@ FieldH::FieldH(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(ge
 // Field calculation
 void FieldH::calc_field_cylindrical()
 {
-  field.reset_overlay_area();
-  field_at_et.reset_overlay_area();
+  field.overlay_reset();
+  field_at_et.overlay_reset();
 
   Grid3D<double> el_field = field_e->field;
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
-  // emulate dielectric walls
-  unsigned int r_begin = 0;
-  unsigned int z_begin = 0;
-  unsigned int r_end = geometry->r_grid_amount;
-  unsigned int z_end = geometry->z_grid_amount;
-  if (geometry->walls[0]) // r=0
-    r_begin = 1;
-
-  if (geometry->walls[1]) // z=0
-    z_begin = 1;
-
-  if (geometry->walls[2]) // r=r
-    r_end = geometry->r_grid_amount - 1;
-
-  if (geometry->walls[3]) // z=z
-    z_end = geometry->z_grid_amount - 1;
-
   // H_r on outer wall (r=r)
   if (geometry->walls[2])
-    for(int k = 0; k < geometry->z_grid_amount; k++)
+    for(int k = z_begin - 1; k < geometry->z_grid_amount; k++)
     {
-      int i = geometry->r_grid_amount;
+      int i = r_end;
       // alpha constant and delta_t production (to optimize calculations)
       double alpha_t = time->step
         * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
@@ -54,8 +37,8 @@ void FieldH::calc_field_cylindrical()
     }
 
   // regular case
-  for(int i = 0; i < r_end; i++)
-    for(int k = 0; k < z_end; k++)
+  for(int i = r_begin; i < r_end; i++)
+    for(int k = z_begin; k < z_end; k++)
     {
       double alpha_t_r = time->step
         * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
@@ -103,8 +86,8 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
 
   //// weighting of H_z
   //finding number of cell. example dr=0.5, radius = 0.7, i_r =0;!!
-  i_r = CELL_NUMBER(radius - 0.5 * dr, dr);
-  k_z = CELL_NUMBER(longitude, dz);
+  i_r = CELL_NUMBER_OVERLAY(radius - 0.5 * dr, dr);
+  k_z = CELL_NUMBER_OVERLAY(longitude, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
   // TODO: workaround: sometimes it gives -1.
@@ -114,8 +97,8 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
 
-  vol_1 = CELL_VOLUME(i_r+1, dr, dz);
-  vol_2 = CELL_VOLUME(i_r+3, dr, dz);
+  vol_1 = CELL_VOLUME_OVERLAY(i_r+1, dr, dz);
+  vol_2 = CELL_VOLUME_OVERLAY(i_r+3, dr, dz);
   dz1 = (k_z + 1) * dz - longitude;
   dz2 = longitude - k_z * dz;
   r2 = (i_r + 1) * dr;
@@ -134,8 +117,8 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
 
   //// weighting of Hr
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =0;!!
-  i_r = CELL_NUMBER(radius, dr);
-  k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
+  i_r = CELL_NUMBER_OVERLAY(radius, dr);
+  k_z = CELL_NUMBER_OVERLAY(longitude - 0.5 * dz, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
   // TODO: workaround: sometimes it gives -1.
@@ -146,13 +129,13 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (k_z_shift < 0) k_z_shift = 0;
 
   if(radius>dr)
-    vol_1 = CELL_VOLUME(i_r, dr, dz);
+    vol_1 = CELL_VOLUME_OVERLAY(i_r, dr, dz);
   else
     vol_1 = CYL_VOL(dz, dr); // volume of first cell
 
   r2 = (i_r + 0.5) * dr;
 
-  vol_2 = CELL_VOLUME(i_r+2, dr, dz);
+  vol_2 = CELL_VOLUME_OVERLAY(i_r+2, dr, dz);
   dz1 = (k_z + 1.5) * dz - longitude;
   dz2 = longitude - (k_z + 0.5) * dz;
 
@@ -170,8 +153,8 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
 
   //// weighting of H_fi
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =0;
-  i_r = CELL_NUMBER(radius - 0.5 * dr, dr);
-  k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
+  i_r = CELL_NUMBER_OVERLAY(radius - 0.5 * dr, dr);
+  k_z = CELL_NUMBER_OVERLAY(longitude - 0.5 * dz, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
   // TODO: workaround: sometimes it gives -1.
@@ -182,8 +165,8 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (k_z_shift < 0) k_z_shift = 0;
 
   r2 = (i_r+1) * dr;
-  vol_1 = CELL_VOLUME(i_r + 1, dr, dz);
-  vol_2 = CELL_VOLUME(i_r + 3, dr, dz);
+  vol_1 = CELL_VOLUME_OVERLAY(i_r + 1, dr, dz);
+  vol_2 = CELL_VOLUME_OVERLAY(i_r + 3, dr, dz);
   dz1 = (k_z+1.5) * dz - longitude;
   dz2 = longitude - (k_z+0.5) * dz;
 

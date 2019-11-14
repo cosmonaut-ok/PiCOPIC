@@ -12,8 +12,12 @@ public:
   Geometry *geometry;
   TimeSim *time;
 
-// private:
-// vector<SpecieP> *species_p;
+protected:
+  // vector<SpecieP> *species_p;
+  unsigned int r_begin;
+  unsigned int z_begin;
+  unsigned int r_end;
+  unsigned int z_end;
 
 public:
   Field(void) {};
@@ -29,9 +33,28 @@ public:
     //! and count it from 1 to geometry->(r,z)_grid_amount
     //! instead of 0 to geometry->(r,z)_grid_amount
 
-    field = Grid3D<double> (geometry->r_grid_amount + 2, geometry->z_grid_amount + 2);
+    field = Grid3D<double> (geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
     time = t;
     field = 0;
+
+    // shift to use overlay area (2 before and 2 after main grid)
+    r_begin = 2;
+    z_begin = 2;
+    r_end = geometry->r_grid_amount + 2;
+    z_end = geometry->z_grid_amount + 2;
+
+    // emulate dielectric walls
+    if (geometry->walls[0]) // r=0
+      r_begin = 3;
+
+    if (geometry->walls[1]) // z=0
+      z_begin = 3;
+
+    if (geometry->walls[2]) // r=r
+      r_end = geometry->r_grid_amount + 1;
+
+    if (geometry->walls[3]) // z=z
+      z_end = geometry->z_grid_amount + 1;
   };
 
   ~Field(void) {};

@@ -115,6 +115,27 @@
         "end": { "r": 128, "z": 512 }
       },
       {
+        "component": "J_r",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 128, "z": 512 }
+      },
+      {
+        "component": "J_phi",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 128, "z": 512 }
+      },
+      {
+        "component": "J_z",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 128, "z": 512 }
+      },
+      {
         "component": "velocity",
         "specie": "electrons",
         "schedule": 10,
