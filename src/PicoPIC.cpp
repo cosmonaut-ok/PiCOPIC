@@ -465,6 +465,24 @@ int main(int argc, char **argv)
 
   while (sim_time_clock->current < sim_time_clock->end)
   {
+    // 1. init beam
+    // 2. weight H
+    //    == overlay ==
+    // 3. reset J
+    // 4. reset RHO old
+    // 5. reset RHO bunch
+    // 6. step_v
+    // 7. dump position to old
+    // 8. half step position
+    //    == runaway == ??
+    // 9. back position to RZ
+    // 10. azimutal current
+    // 11. half step position
+    // 12. reflect
+    // 13. back position to RZ
+    // 14. current
+    // 15. back velocity to RZ
+
     LOG_DBG("Run calculation loop for timestamp: " << sim_time_clock->current);
 
 #pragma omp parallel for collapse(2)
