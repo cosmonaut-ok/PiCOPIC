@@ -185,11 +185,11 @@ void current_overlay (Grid<Area*> areas, Geometry *geometry_global)
         sim_area->current->current.overlay_right(dst_area->current->current);
       }
 
-      if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-      {
-        Area *dst_area = areas(i + 1, j + 1);
-        sim_area->current->current.overlay_top_right(dst_area->current->current);
-      }
+      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      // {
+      //   Area *dst_area = areas(i + 1, j + 1);
+      //   sim_area->current->current.overlay_top_right(dst_area->current->current);
+      // }
     }
 }
 
@@ -218,12 +218,12 @@ void field_h_overlay (Grid<Area*> areas, Geometry *geometry_global)
         sim_area->field_h->field_at_et.overlay_right(dst_area->field_h->field_at_et);
       }
 
-      if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-      {
-        Area *dst_area = areas(i + 1, j + 1);
-        sim_area->field_h->field.overlay_top_right(dst_area->field_h->field);
-        sim_area->field_h->field_at_et.overlay_top_right(dst_area->field_h->field_at_et);
-      }
+      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      // {
+      //   Area *dst_area = areas(i + 1, j + 1);
+      //   sim_area->field_h->field.overlay_top_right(dst_area->field_h->field);
+      //   sim_area->field_h->field_at_et.overlay_top_right(dst_area->field_h->field_at_et);
+      // }
     }
 }
 
@@ -250,11 +250,11 @@ void field_e_overlay (Grid<Area*> areas, Geometry *geometry_global)
         sim_area->field_e->field.overlay_right(dst_area->field_e->field);
       }
 
-      if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-      {
-        Area *dst_area = areas(i + 1, j + 1);
-        sim_area->field_e->field.overlay_top_right(dst_area->field_e->field);
-      }
+      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      // {
+      //   Area *dst_area = areas(i + 1, j + 1);
+      //   sim_area->field_e->field.overlay_top_right(dst_area->field_e->field);
+      // }
     }
 }
 
@@ -479,15 +479,14 @@ int main(int argc, char **argv)
 
         // ! 2. Calculate magnetic field (H)
         sim_area->weight_field_h(); // +
-        // +++
       }
+    field_h_overlay(areas, geometry_global);
 
 #pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_areas; i++)
       for (unsigned int j = 0; j < z_areas; j++)
       {
         Area *sim_area = areas(i, j);
-        sim_area->reset_current(); // +
 
         // ! 3. Calculate velocity
         sim_area->push_particles(); // +
@@ -497,10 +496,6 @@ int main(int argc, char **argv)
         sim_area->reflect(); // +
         // TODO: break and process area borders
       }
-    // field_h_overlay(areas, geometry_global);
-
-    // process borders
-    // LOG_DBG("Processing borders at time: " << cfg.time->current);
     particles_runaway_collector(areas, geometry_global);
 
 #pragma omp parallel for collapse(2)
@@ -510,17 +505,16 @@ int main(int argc, char **argv)
         Area *sim_area = areas(i, j);
 
         // current distribution
+        sim_area->reset_current();
         sim_area->weight_current_azimuthal();
-        sim_area->update_particles_coords_at_half(); // +
-        sim_area->particles_back_position_to_rz(); // +
+        sim_area->update_particles_coords_at_half();
+        sim_area->particles_back_position_to_rz();
         sim_area->reflect(); // +
-        // TODO: break and process area borders
+        sim_area->particles_back_velocity_to_rz();
       }
 
-    // process borders
-    // LOG_DBG("Processing borders at time: " << cfg.time->current);
     particles_runaway_collector(areas, geometry_global);
-    // current_overlay(areas, geometry_global);
+    current_overlay(areas, geometry_global);
 
 #pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_areas; i++)
@@ -529,12 +523,18 @@ int main(int argc, char **argv)
         Area *sim_area = areas(i, j);
 
         sim_area->weight_current();
-        sim_area->particles_back_velocity_to_rz();
+      }
+    current_overlay(areas, geometry_global);
+
+#pragma omp parallel for collapse(2)
+    for (unsigned int i=0; i < r_areas; i++)
+      for (unsigned int j = 0; j < z_areas; j++)
+      {
+        Area *sim_area = areas(i, j);
 
         // ! 5. Calculate electric field (E)
         sim_area->weight_field_e(); // +
       }
-    // current_overlay(areas, geometry_global);
     field_e_overlay(areas, geometry_global);
 
     // dump data
