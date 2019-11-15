@@ -465,23 +465,27 @@ int main(int argc, char **argv)
 
   while (sim_time_clock->current < sim_time_clock->end)
   {
+    // Steps:
     // 1. init beam
-    // 2. weight H
-    //    == overlay ==
-    // 3. reset J
-    // 4. reset RHO old
-    // 5. reset RHO bunch
-    // 6. step_v
-    // 7. dump position to old
-    // 8. half step position
-    //    == runaway == ??
-    // 9. back position to RZ
-    // 10. azimutal current
-    // 11. half step position
-    // 12. reflect
-    // 13. back position to RZ
-    // 14. current
-    // 15. back velocity to RZ
+    // 2. hfield->calc_field
+    // == hfield overlay ==
+    // 3. c_current->reset_j
+    // 6. boris_pusher
+    // 7. dump_position_to_old
+    // 8. half_step_pos
+    // 9. back_position_to_rz
+    // == runaway ==
+    // 10. azimuthal_current_distribution
+    // 11. half_step_pos
+    // 13. back_position_to_rz
+    // 12. reflection
+    // == runaway ==
+    // == current overlay ==
+    // 14. current_distribution
+    // 15. back_velocity_to_rz
+    // == current overlay ==
+    // efield->calc_field
+    // == efield overlay ==
 
     LOG_DBG("Run calculation loop for timestamp: " << sim_time_clock->current);
 
@@ -506,13 +510,13 @@ int main(int argc, char **argv)
       {
         Area *sim_area = areas(i, j);
 
+        sim_area->reset_current();
         // ! 3. Calculate velocity
         sim_area->push_particles(); // +
         sim_area->dump_particle_positions_to_old(); // +
         sim_area->update_particles_coords_at_half(); // + +reflect
         sim_area->particles_back_position_to_rz(); // +
-        sim_area->reflect(); // +
-        // TODO: break and process area borders
+        // sim_area->reflect();
       }
     particles_runaway_collector(areas, geometry_global);
 
@@ -523,14 +527,11 @@ int main(int argc, char **argv)
         Area *sim_area = areas(i, j);
 
         // current distribution
-        sim_area->reset_current();
         sim_area->weight_current_azimuthal();
         sim_area->update_particles_coords_at_half();
         sim_area->particles_back_position_to_rz();
         sim_area->reflect(); // +
-        sim_area->particles_back_velocity_to_rz();
       }
-
     particles_runaway_collector(areas, geometry_global);
     current_overlay(areas, geometry_global);
 
@@ -541,6 +542,7 @@ int main(int argc, char **argv)
         Area *sim_area = areas(i, j);
 
         sim_area->weight_current();
+        sim_area->particles_back_velocity_to_rz();
       }
     current_overlay(areas, geometry_global);
 
