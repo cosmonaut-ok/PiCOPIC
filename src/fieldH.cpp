@@ -101,13 +101,13 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   // for some unknown reason
   if (i_r_shift > field[0].size_x() - 2)
   {
-    MSG_FIXME("fieldH::get_field: i_r_shift is more, than field[0].size_x() - 2. Workaround applying");
+    MSG_FIXME("fieldH::get_field: i_r_shift is more, than field[0].size_x() - 2. Applying workaround");
     i_r_shift = field[0].size_x() - 2;
   }
 
   if (k_z_shift > field[0].size_y() - 2)
   {
-    MSG_FIXME("fieldH::get_field: k_z_shift is more, than current[0].size_y() - 2 . Workaround applying");
+    MSG_FIXME("fieldH::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
       k_z_shift = field[0].size_y() - 2;
   }
 
@@ -141,6 +141,20 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (k_z < 0) k_z = 0;
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
+
+  // FIXME: it can be more, than current.size_x - 2
+  // for some unknown reason
+  if (i_r_shift > field[0].size_x() - 2)
+  {
+    MSG_FIXME("fieldH::get_field: i_r_shift is more, than field[0].size_x() - 2. Applying workaround");
+    i_r_shift = field[0].size_x() - 2;
+  }
+
+  if (k_z_shift > field[0].size_y() - 2)
+  {
+    MSG_FIXME("fieldH::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
+      k_z_shift = field[0].size_y() - 2;
+  }
 
   if(radius>dr)
     vol_1 = CELL_VOLUME_OVERLAY(i_r, dr, dz);
@@ -177,6 +191,20 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (k_z < 0) k_z = 0;
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
+
+  // FIXME: it can be more, than current.size_x - 2
+  // for some unknown reason
+  if (i_r_shift > field[0].size_x() - 2)
+  {
+    MSG_FIXME("fieldH::get_field: i_r_shift is more, than field[0].size_x() - 2. Applying workaround");
+    i_r_shift = field[0].size_x() - 2;
+  }
+
+  if (k_z_shift > field[0].size_y() - 2)
+  {
+    MSG_FIXME("fieldH::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
+      k_z_shift = field[0].size_y() - 2;
+  }
 
   r2 = (i_r+1) * dr;
   vol_1 = CELL_VOLUME_OVERLAY(i_r + 1, dr, dz);
