@@ -159,6 +159,20 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
 
+  // FIXME: it can be more, than current.size_x - 2
+  // for some unknown reason
+  if (i_r_shift > field[0].size_x() - 2)
+  {
+    MSG_FIXME("fieldE::get_field: i_r_shift is more, than field[0].size_x() - 2. Workaround applying");
+    i_r_shift = field[0].size_x() - 2;
+  }
+
+  if (k_z_shift > field[0].size_y() - 2)
+  {
+    MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].size_y() - 2 . Workaround applying");
+      k_z_shift = field[0].size_y() - 2;
+  }
+
   vol_1 = CELL_VOLUME(i_r+1, dr, dz);
   vol_2 = CELL_VOLUME(i_r+3, dr, dz);
   dz1 = (k_z+1) * dz - longitude;
