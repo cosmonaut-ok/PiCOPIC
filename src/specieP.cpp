@@ -400,6 +400,14 @@ void SpecieP::boris_pusher()
     P_VEL_R((**p)) = velocity[0];
     P_VEL_PHI((**p)) = velocity[1];
     P_VEL_Z((**p)) = velocity[2];
+
+    if (P_VEL_R((**p)) != P_VEL_R((**p)) ||
+        P_VEL_Z((**p)) != P_VEL_Z((**p)))
+    {
+      LOG_CRIT("(boris_pusher): vel[" <<  P_VEL_R((**p)) << ", "
+               <<  P_VEL_Z((**p)) << "] E: [" << e[0] << ", " << e[1] << ", " << e[2], 1);
+    }
+
   }
 }
 
@@ -427,6 +435,14 @@ void SpecieP::half_step_mover_cylindrical()
     //! we use "fake" rotation component to correct position from xy to rz pane
     P_POS_PHI((**p)) = pos_phi + P_VEL_PHI((**p)) * half_dt;
     P_POS_Z((**p)) = pos_z + P_VEL_Z((**p)) * half_dt;
+
+        if (isnan(P_POS_R((**p))) ||
+        isinf(P_POS_R((**p))) != 0 ||
+        isnan(P_POS_Z((**p))) ||
+        isinf(P_POS_Z((**p))) != 0)
+      LOG_CRIT("(half_step_mover_cylindrical): radius[" << pos_r
+               << "] or longitude[" << pos_z
+               << "] is not valid number", 1);
   }
 }
 
@@ -510,6 +526,13 @@ void SpecieP::back_velocity_to_rz()
     double v_2 = sin * v_r + cos * v_phi;
     P_VEL_R((**p)) = u_2;
     P_VEL_PHI((**p)) = v_2;
+
+    if (P_VEL_R((**p)) != P_VEL_R((**p)) ||
+        P_VEL_Z((**p)) != P_VEL_Z((**p)))
+    {
+      LOG_CRIT("(boris_pusher): vel[" <<  P_VEL_R((**p)) << ", "
+               <<  P_VEL_Z((**p)), 1);
+    }
   }
 }
 

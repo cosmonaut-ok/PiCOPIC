@@ -51,14 +51,9 @@ private:
 
 };
 
-//! *_OVERLAY is for shifting cell param from overlay to normal
-//! *_OVERLAY_REVERSE is for shifting cell param from normal to overlay
-
 // some geometry-related macros
 //! \f$ ( \pi \times (dr * (i+0.5))^2 - \pi \times (dr * (i-0.5))^2 ) * dz \f$
 #define CELL_VOLUME(i, dr, dz) PI * (dz) * (dr) * (dr) * 2.0 * (i)
-#define CELL_VOLUME_OVERLAY(i, dr, dz) PI * (dz) * (dr) * (dr) * (2.0 * i - 4)
-#define CELL_VOLUME_OVERLAY_REVERSE(i, dr, dz) PI * (dz) * (dr) * (dr) * (2.0 * i + 4)
 
 //! volume of the cylindrical ring (internal cylinder on r1 is cut out)
 #define CYL_RNG_VOL(z, r1, r2) PI * (z) * ((r2) * (r2) - (r1) * (r1))
@@ -70,5 +65,3 @@ private:
 
 //! get cell number by 'radius'
 #define CELL_NUMBER(position, dx) (int)ceil((position) / (dx)) - 1
-#define CELL_NUMBER_OVERLAY(position, dx) (int)ceil((position) / (dx)) + 1
-#define CELL_NUMBER_OVERLAY_REVERSE(position, dx) (int)ceil((position) / (dx)) - 3
