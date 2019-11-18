@@ -264,10 +264,10 @@ void DataWriter::merge_areas(string component, string specie)
       else
         LOG_ERR("Unknown DataWriter component ``" << component << "''");
 
-      for (unsigned int i = 0; i < value.size_x(); ++i) // shifting to avoid overlay areas
-        for (unsigned int j = 0; j < value.size_y(); ++j)
-          out_data.set (i + r * sim_area->geometry.r_grid_amount,
-                        j + z * sim_area->geometry.z_grid_amount,
+      for (unsigned int i = 2; i < value.size_x() - 2; ++i) // shifting to avoid overlay areas
+        for (unsigned int j = 2; j < value.size_y() - 2; ++j)
+          out_data.set (i + r * sim_area->geometry.r_grid_amount - 2,
+                        j + z * sim_area->geometry.z_grid_amount - 2,
                         value(i, j));
     }
 }

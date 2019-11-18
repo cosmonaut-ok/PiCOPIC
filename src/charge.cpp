@@ -2,11 +2,7 @@
 
 Charge::Charge(Geometry *geom, vector<SpecieP *> species): geometry(geom)
 {
-  // ! FIXME: that +1 is really temporary solution
-  // ! to avoid Segfaults while weighting
-  MSG_FIXME("That +1 is really temporary solution to avoid Segfaults while weighting");
-
-  density = Grid<double>(geometry->r_grid_amount, geometry->z_grid_amount);
+  density = Grid<double>(geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
   species_p = species;
 
   density = 0;

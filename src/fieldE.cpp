@@ -3,16 +3,11 @@
 FieldE::FieldE(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(geom, t)
 {
   species_p = species;
-  epsilon = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount);
-  sigma = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount);
+  epsilon = Grid<double> (geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
+  sigma = Grid<double> (geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
 
   epsilon = EPSILON0;
   sigma = 0;
-
-  // set epsilon of overlay area
-  for (int i = -2; i < geometry->r_grid_amount + 2; ++i)
-    for (int j = -2; j < geometry->z_grid_amount + 2; ++j)
-      epsilon.set(i, j, EPSILON0);
 
   set_pml();
 }
@@ -81,6 +76,7 @@ void FieldE::set_pml()
 void FieldE::calc_field_cylindrical()
 {
   field.overlay_reset();
+
   Grid3D<double> curr = current->current;
   Grid3D<double> magn_fld = field_h->field_at_et;
 
@@ -89,7 +85,7 @@ void FieldE::calc_field_cylindrical()
 
   // E at the center axis (r=0) case
   if (geometry->walls[0]) // calculate only at the center axis (r=0)
-    for(int k = z_begin; k < z_end; k++)
+    for(int k = z_begin; k < geometry->z_grid_amount; k++)
     {
       int i = r_begin;
       double epsilonx2 = 2 * epsilon(i, k);
@@ -107,25 +103,9 @@ void FieldE::calc_field_cylindrical()
       field[2].dec(i, k, (curr(2, i, k) - magn_fld(1, i, k) / dr) * koef_h);
     }
 
-  // E_z at the left wall (z = 0) case
-  // if (geometry->walls[1]) // calculate only at the left wall (z=0)
-  //   for(unsigned int i = 1; i < geometry->r_grid_amount; i++)
-  //   {
-  //     unsigned int k = 0;
-  //     double epsilonx2 = 2 * epsilon(i, k);
-  //     double sigma_t = sigma(i, k) * time->step;
-
-  //     double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
-  //     double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
-
-  //     field[2].m_a(i, k, koef_e);
-  //     field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
-  //                         - (magn_fld(1, i, k) + magn_fld(1, i - 1, k)) / (2. * dr * i) ) * koef_h);
-  //   }
-
 // regular case
-  for(int i = r_begin; i < r_end; i++)
-    for(int k = z_begin; k < z_end; k++)
+  for(int i = r_begin; i < r_end; i++) // TODO: it should be r_begin, instead of 1
+    for(int k = z_begin; k < z_end; k++) // TODO: it should be z_begin, instead of 1
     {
       double epsilonx2 = 2 * epsilon(i, k);
       double sigma_t = sigma(i, k) * time->step;
@@ -140,13 +120,9 @@ void FieldE::calc_field_cylindrical()
       field[1].dec(i, k, (curr(1, i, k) - (magn_fld(0, i, k) - magn_fld(0, i, k - 1))
                           / dz + (magn_fld(2, i, k) - magn_fld(2, i - 1, k)) / dr) * koef_h);
 
-      if (i > 0) // FIXME: this condition should be removed
-      {
-        field[2].m_a(i, k, koef_e);
-        field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
-                            - (magn_fld(1, i, k) + magn_fld(1, i-1, k))
-                            / (2. * dr * i)) * koef_h);
-      }
+      field[2].m_a(i, k, koef_e);
+      field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
+                          - (magn_fld(1, i, k) + magn_fld(1, i-1, k)) / (2. * dr * i)) * koef_h);
     }
 }
 
@@ -183,6 +159,20 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
 
+  // FIXME: it can be more, than current.size_x - 2
+  // for some unknown reason
+  if (i_r_shift > field[0].size_x() - 2)
+  {
+    MSG_FIXME("fieldE::get_field: i_r_shift is more, than field[0].size_x() - 2. Applying workaround");
+    i_r_shift = field[0].size_x() - 2;
+  }
+
+  if (k_z_shift > field[0].size_y() - 2)
+  {
+    MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
+      k_z_shift = field[0].size_y() - 2;
+  }
+
   vol_1 = CELL_VOLUME(i_r+1, dr, dz);
   vol_2 = CELL_VOLUME(i_r+3, dr, dz);
   dz1 = (k_z+1) * dz - longitude;
@@ -212,6 +202,20 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   if (k_z < 0) k_z = 0;
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
+
+  // FIXME: it can be more, than current.size_x - 2
+  // for some unknown reason
+  if (i_r_shift > field[0].size_x() - 2)
+  {
+    MSG_FIXME("fieldE::get_field: i_r_shift is more, than field[0].size_x() - 2. Applying workaround");
+    i_r_shift = field[0].size_x() - 2;
+  }
+
+  if (k_z_shift > field[0].size_y() - 2)
+  {
+    MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
+      k_z_shift = field[0].size_y() - 2;
+  }
 
   if (radius > dr)
     vol_1 = CELL_VOLUME(i_r, dr, dz);
@@ -248,6 +252,20 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   if (k_z < 0) k_z = 0;
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
+
+  // FIXME: it can be more, than current.size_x - 2
+  // for some unknown reason
+  if (i_r_shift > field[0].size_x() - 2)
+  {
+    MSG_FIXME("fieldE::get_field: i_r_shift is more, than field[0].size_x() - 2. Applying workaround");
+    i_r_shift = field[0].size_x() - 2;
+  }
+
+  if (k_z_shift > field[0].size_y() - 2)
+  {
+    MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
+      k_z_shift = field[0].size_y() - 2;
+  }
 
   if(radius>dr)
     vol_1 = CELL_VOLUME(i_r, dr, dz);

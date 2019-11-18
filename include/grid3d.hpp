@@ -66,7 +66,7 @@ public:
     LOG_CRIT("Grid3D: Out of index", 1);
   };
 
-  T& operator() (unsigned int x, int y, int z)
+  T& operator() (unsigned int x, unsigned int y, unsigned int z)
   {
     if (x == 0) return r_component(y, z);
     if (x == 1) return phi_component(y, z);

@@ -7,7 +7,7 @@ FieldH::FieldH(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(ge
   // ! (same timestamp, as for electrical field)
   // ! it useful to have single implementation of ``get_field'' method
   // ! for both classes - FieldE and FieldH
-  field_at_et = Grid3D<double> (geometry->r_grid_amount + 2, geometry->z_grid_amount + 2);
+  field_at_et = Grid3D<double> (geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
   species_p = species;
 
   field_at_et = 0;
@@ -23,18 +23,18 @@ void FieldH::calc_field_cylindrical()
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
-  // // H_r on outer wall (r=r)
-  // if (geometry->walls[2])
-  //   for(int k = z_begin; k < geometry->z_grid_amount; k++)
-  //   {
-  //     int i = r_end;
-  //     // alpha constant and delta_t production (to optimize calculations)
-  //     double alpha_t = time->step
-  //       * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
+  // H_r on outer wall (r=r)
+  if (geometry->walls[2])
+    for(int k = z_begin - 1; k < geometry->z_grid_amount; k++)
+    {
+      int i = r_end;
+      // alpha constant and delta_t production (to optimize calculations)
+      double alpha_t = time->step
+        * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
 
-  //     field[0].set(i, k, field_at_et(0, i, k) + alpha_t / 2);
-  //     field_at_et[0].inc(i, k, alpha_t);
-  //   }
+      field[0].set(i, k, field_at_et(0, i, k) + alpha_t / 2);
+      field_at_et[0].inc(i, k, alpha_t);
+    }
 
   // regular case
   for(int i = r_begin; i < r_end; i++)

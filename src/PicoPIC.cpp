@@ -123,11 +123,7 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
                              ++r_c;
                              LOG_WARN("Particle position is out of simulation area: ["
                                       << P_POS_R((*o)) << ", "
-                                      << P_POS_Z((*o)) << "]. Old: ["
-                                      << P_POS_OLD_R((*o)) << ", "
-                                      << P_POS_OLD_Z((*o)) << "] Vel: ["
-                                      << P_VEL_R((*o)) << ", "
-                                      << P_VEL_Z((*o)) << "]. Removing");
+                                      << P_POS_Z((*o)) << "]. Removing");
                              res = true;
                            }
 
