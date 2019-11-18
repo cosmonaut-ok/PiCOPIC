@@ -1,8 +1,8 @@
 {
   "debug": false,
   "hdf5": false,
-  "macro_amount": 1e6,
-  "beam_plasma_macro_size_ratio": 2,
+  "macro_amount": 2.1e5,
+  "beam_plasma_macro_size_ratio": 10,
   "geometry": {
     "radius": 0.075,
     "longitude": 0.3,
@@ -11,8 +11,8 @@
       "longitude": 512
     },
     "areas_amount": {
-      "radius": 2,
-      "longitude": 8
+      "radius": 4,
+      "longitude": 16
     }
   },
   "pml": {
