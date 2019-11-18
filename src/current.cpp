@@ -16,8 +16,6 @@ void Current::simple_current_distribution(double radius_new,
                                           int k_n,
                                           double p_charge)
 {
-  current.overlay_reset();
-
   int i_n_shift = i_n - geometry->bottom_r_grid_number;
   int k_n_shift = k_n - geometry->left_z_grid_number;
   if (i_n_shift < 0) i_n_shift = 0;
@@ -165,6 +163,8 @@ void Current::simple_current_distribution(double radius_new,
 
 void Current::current_distribution()
 {
+  current.overlay_reset();
+
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
