@@ -83,7 +83,7 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
   // ! area, corresponding to their actual position
   // ! also, erase particles, that run out of simulation area
   unsigned int r_areas = areas.size_x();
-  unsigned int z_areas = areas.size_x();
+  unsigned int z_areas = areas.size_y();
   int j_c = 0;
   int r_c = 0;
   for (unsigned int i=0; i < r_areas; i++)
