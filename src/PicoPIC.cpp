@@ -83,7 +83,7 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
   // ! area, corresponding to their actual position
   // ! also, erase particles, that run out of simulation area
   unsigned int r_areas = areas.size_x();
-  unsigned int z_areas = areas.size_x();
+  unsigned int z_areas = areas.size_y();
   int j_c = 0;
   int r_c = 0;
   for (unsigned int i=0; i < r_areas; i++)
@@ -165,7 +165,7 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
 void current_overlay (Grid<Area*> areas, Geometry *geometry_global)
 {
   unsigned int r_areas = areas.size_x();
-  unsigned int z_areas = areas.size_x();
+  unsigned int z_areas = areas.size_y();
 
   for (unsigned int i=0; i < r_areas; i++)
     for (unsigned int j = 0; j < z_areas; j++)
@@ -196,7 +196,7 @@ void current_overlay (Grid<Area*> areas, Geometry *geometry_global)
 void field_h_overlay (Grid<Area*> areas, Geometry *geometry_global)
 {
   unsigned int r_areas = areas.size_x();
-  unsigned int z_areas = areas.size_x();
+  unsigned int z_areas = areas.size_y();
 
   for (unsigned int i=0; i < r_areas; i++)
     for (unsigned int j = 0; j < z_areas; j++)
@@ -230,7 +230,7 @@ void field_h_overlay (Grid<Area*> areas, Geometry *geometry_global)
 void field_e_overlay (Grid<Area*> areas, Geometry *geometry_global)
 {
   unsigned int r_areas = areas.size_x();
-  unsigned int z_areas = areas.size_x();
+  unsigned int z_areas = areas.size_y();
 
   for (unsigned int i=0; i < r_areas; i++)
     for (unsigned int j = 0; j < z_areas; j++)
