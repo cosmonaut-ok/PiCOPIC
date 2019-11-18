@@ -86,10 +86,10 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
 
   //// weighting of H_z
   //finding number of cell. example dr=0.5, radius = 0.7, i_r =0;!!
-  i_r = CELL_NUMBER_OVERLAY(radius - 0.5 * dr, dr);
-  k_z = CELL_NUMBER_OVERLAY(longitude, dz);
-  i_r_shift = i_r - geometry->bottom_r_grid_number;
-  k_z_shift = k_z - geometry->left_z_grid_number;
+  i_r = CELL_NUMBER(radius - 0.5 * dr, dr);
+  k_z = CELL_NUMBER(longitude, dz);
+  i_r_shift = i_r - geometry->bottom_r_grid_number + 2;
+  k_z_shift = k_z - geometry->left_z_grid_number + 2;
   // TODO: workaround: sometimes it gives -1.
   // Just get 0 cell if it happence
   if (i_r < 0) i_r = 0;
@@ -97,7 +97,7 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
 
-  // FIXME: it can be more, than current.size_x - 2
+  // FIXME: it can be more, than field.size_x - 2
   // for some unknown reason
   if (i_r_shift > field[0].size_x() - 2)
   {
@@ -107,12 +107,12 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
 
   if (k_z_shift > field[0].size_y() - 2)
   {
-    MSG_FIXME("fieldH::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
+    MSG_FIXME("fieldH::get_field: k_z_shift is more, than field[0].size_y() - 2 . Applying workaround");
       k_z_shift = field[0].size_y() - 2;
   }
 
-  vol_1 = CELL_VOLUME_OVERLAY(i_r+1, dr, dz);
-  vol_2 = CELL_VOLUME_OVERLAY(i_r+3, dr, dz);
+  vol_1 = CELL_VOLUME(i_r+1, dr, dz);
+  vol_2 = CELL_VOLUME(i_r+3, dr, dz);
   dz1 = (k_z + 1) * dz - longitude;
   dz2 = longitude - k_z * dz;
   r2 = (i_r + 1) * dr;
@@ -131,10 +131,10 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
 
   //// weighting of Hr
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =0;!!
-  i_r = CELL_NUMBER_OVERLAY(radius, dr);
-  k_z = CELL_NUMBER_OVERLAY(longitude - 0.5 * dz, dz);
-  i_r_shift = i_r - geometry->bottom_r_grid_number;
-  k_z_shift = k_z - geometry->left_z_grid_number;
+  i_r = CELL_NUMBER(radius, dr);
+  k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
+  i_r_shift = i_r - geometry->bottom_r_grid_number + 2;
+  k_z_shift = k_z - geometry->left_z_grid_number + 2;
   // TODO: workaround: sometimes it gives -1.
   // Just get 0 cell if it happence
   if (i_r < 0) i_r = 0;
@@ -142,7 +142,7 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
 
-  // FIXME: it can be more, than current.size_x - 2
+  // FIXME: it can be more, than field.size_x - 2
   // for some unknown reason
   if (i_r_shift > field[0].size_x() - 2)
   {
@@ -152,18 +152,18 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
 
   if (k_z_shift > field[0].size_y() - 2)
   {
-    MSG_FIXME("fieldH::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
+    MSG_FIXME("fieldH::get_field: k_z_shift is more, than field[0].size_y() - 2 . Applying workaround");
       k_z_shift = field[0].size_y() - 2;
   }
 
   if(radius>dr)
-    vol_1 = CELL_VOLUME_OVERLAY(i_r, dr, dz);
+    vol_1 = CELL_VOLUME(i_r, dr, dz);
   else
     vol_1 = CYL_VOL(dz, dr); // volume of first cell
 
   r2 = (i_r + 0.5) * dr;
 
-  vol_2 = CELL_VOLUME_OVERLAY(i_r+2, dr, dz);
+  vol_2 = CELL_VOLUME(i_r+2, dr, dz);
   dz1 = (k_z + 1.5) * dz - longitude;
   dz2 = longitude - (k_z + 0.5) * dz;
 
@@ -181,10 +181,10 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
 
   //// weighting of H_fi
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =0;
-  i_r = CELL_NUMBER_OVERLAY(radius - 0.5 * dr, dr);
-  k_z = CELL_NUMBER_OVERLAY(longitude - 0.5 * dz, dz);
-  i_r_shift = i_r - geometry->bottom_r_grid_number;
-  k_z_shift = k_z - geometry->left_z_grid_number;
+  i_r = CELL_NUMBER(radius - 0.5 * dr, dr);
+  k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
+  i_r_shift = i_r - geometry->bottom_r_grid_number + 2;
+  k_z_shift = k_z - geometry->left_z_grid_number + 2;
   // TODO: workaround: sometimes it gives -1.
   // Just get 0 cell if it happence
   if (i_r < 0) i_r = 0;
@@ -192,7 +192,7 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (i_r_shift < 0) i_r_shift = 0;
   if (k_z_shift < 0) k_z_shift = 0;
 
-  // FIXME: it can be more, than current.size_x - 2
+  // FIXME: it can be more, than field.size_x - 2
   // for some unknown reason
   if (i_r_shift > field[0].size_x() - 2)
   {
@@ -202,13 +202,13 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
 
   if (k_z_shift > field[0].size_y() - 2)
   {
-    MSG_FIXME("fieldH::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
+    MSG_FIXME("fieldH::get_field: k_z_shift is more, than field[0].size_y() - 2 . Applying workaround");
       k_z_shift = field[0].size_y() - 2;
   }
 
   r2 = (i_r+1) * dr;
-  vol_1 = CELL_VOLUME_OVERLAY(i_r + 1, dr, dz);
-  vol_2 = CELL_VOLUME_OVERLAY(i_r + 3, dr, dz);
+  vol_1 = CELL_VOLUME(i_r + 1, dr, dz);
+  vol_2 = CELL_VOLUME(i_r + 3, dr, dz);
   dz1 = (k_z+1.5) * dz - longitude;
   dz2 = longitude - (k_z+0.5) * dz;
 

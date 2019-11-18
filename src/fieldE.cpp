@@ -148,10 +148,10 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
 
   // weighting of E_r
   // finding number of cell. example dr=0.5, radius = 0.7, i_r =0;!!
-  i_r = CELL_NUMBER_OVERLAY(radius - 0.5 * dr, dr);
-  k_z = CELL_NUMBER_OVERLAY(longitude, dz);
-  i_r_shift = i_r - geometry->bottom_r_grid_number;
-  k_z_shift = k_z - geometry->left_z_grid_number;
+  i_r = CELL_NUMBER(radius - 0.5 * dr, dr);
+  k_z = CELL_NUMBER(longitude, dz);
+  i_r_shift = i_r - geometry->bottom_r_grid_number + 2;
+  k_z_shift = k_z - geometry->left_z_grid_number + 2;
   // TODO: workaround: sometimes it gives -1.
   // Just get 0 cell if it happence
   if (i_r < 0) i_r = 0;
@@ -192,10 +192,10 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
 
   // weighting of E_z
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =0;!!
-  i_r = CELL_NUMBER_OVERLAY(radius, dr);
-  k_z = CELL_NUMBER_OVERLAY(longitude - 0.5 * dz, dz);
-  i_r_shift = i_r - geometry->bottom_r_grid_number;
-  k_z_shift = k_z - geometry->left_z_grid_number;
+  i_r = CELL_NUMBER(radius, dr);
+  k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
+  i_r_shift = i_r - geometry->bottom_r_grid_number + 2;
+  k_z_shift = k_z - geometry->left_z_grid_number + 2;
   // TODO: workaround: sometimes it gives -1.
   // Just get 0 cell if it happence
   if (i_r < 0) i_r = 0;
@@ -242,10 +242,10 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   // weighting of E_fi
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =1;
 
-  i_r = CELL_NUMBER_OVERLAY(radius, dr);
-  k_z = CELL_NUMBER_OVERLAY(longitude, dz);
-  i_r_shift = i_r - geometry->bottom_r_grid_number;
-  k_z_shift = k_z - geometry->left_z_grid_number;
+  i_r = CELL_NUMBER(radius, dr);
+  k_z = CELL_NUMBER(longitude, dz);
+  i_r_shift = i_r - geometry->bottom_r_grid_number + 2;
+  k_z_shift = k_z - geometry->left_z_grid_number + 2;
   // TODO: workaround: sometimes it gives -1.
   // Just get 0 cell if it happence
   if (i_r < 0) i_r = 0;
