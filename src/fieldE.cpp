@@ -3,11 +3,16 @@
 FieldE::FieldE(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(geom, t)
 {
   species_p = species;
-  epsilon = Grid<double> (geometry->r_grid_amount + 2, geometry->z_grid_amount + 2);
-  sigma = Grid<double> (geometry->r_grid_amount + 2, geometry->z_grid_amount + 2);
+  epsilon = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount);
+  sigma = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount);
 
   epsilon = EPSILON0;
   sigma = 0;
+
+  // set epsilon of overlay area
+  for (int i = -2; i < geometry->r_grid_amount + 2; ++i)
+    for (int j = -2; j < geometry->z_grid_amount + 2; ++j)
+      epsilon.set(i, j, EPSILON0);
 
   set_pml();
 }
@@ -119,8 +124,8 @@ void FieldE::calc_field_cylindrical()
   //   }
 
 // regular case
-  for(int i = r_begin; i < r_end; i++) // TODO: it should be r_begin, instead of 1
-    for(int k = z_begin; k < z_end; k++) // TODO: it should be z_begin, instead of 1
+  for(int i = r_begin; i < r_end; i++)
+    for(int k = z_begin; k < z_end; k++)
     {
       double epsilonx2 = 2 * epsilon(i, k);
       double sigma_t = sigma(i, k) * time->step;
@@ -135,9 +140,13 @@ void FieldE::calc_field_cylindrical()
       field[1].dec(i, k, (curr(1, i, k) - (magn_fld(0, i, k) - magn_fld(0, i, k - 1))
                           / dz + (magn_fld(2, i, k) - magn_fld(2, i - 1, k)) / dr) * koef_h);
 
-      field[2].m_a(i, k, koef_e);
-      field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
-                          - (magn_fld(1, i, k) + magn_fld(1, i-1, k)) / (2. * dr * i)) * koef_h);
+      if (i > 0) // FIXME: this condition should be removed
+      {
+        field[2].m_a(i, k, koef_e);
+        field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
+                            - (magn_fld(1, i, k) + magn_fld(1, i-1, k))
+                            / (2. * dr * i)) * koef_h);
+      }
     }
 }
 

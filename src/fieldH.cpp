@@ -23,18 +23,18 @@ void FieldH::calc_field_cylindrical()
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
-  // H_r on outer wall (r=r)
-  if (geometry->walls[2])
-    for(int k = z_begin; k < geometry->z_grid_amount; k++)
-    {
-      int i = r_end;
-      // alpha constant and delta_t production (to optimize calculations)
-      double alpha_t = time->step
-        * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
+  // // H_r on outer wall (r=r)
+  // if (geometry->walls[2])
+  //   for(int k = z_begin; k < geometry->z_grid_amount; k++)
+  //   {
+  //     int i = r_end;
+  //     // alpha constant and delta_t production (to optimize calculations)
+  //     double alpha_t = time->step
+  //       * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
 
-      field[0].set(i, k, field_at_et(0, i, k) + alpha_t / 2);
-      field_at_et[0].inc(i, k, alpha_t);
-    }
+  //     field[0].set(i, k, field_at_et(0, i, k) + alpha_t / 2);
+  //     field_at_et[0].inc(i, k, alpha_t);
+  //   }
 
   // regular case
   for(int i = r_begin; i < r_end; i++)

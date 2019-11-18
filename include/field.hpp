@@ -27,7 +27,7 @@ public:
     time = t;
     field = 0;
 
-    r_begin = 1; // FIXME: 0 gives segfault with -nan, -nan velocity
+    r_begin = 0; // FIXME: 0 gives segfault with -nan, -nan velocity
     z_begin = 0;
     r_end = geometry->r_grid_amount;
     z_end = geometry->z_grid_amount;
