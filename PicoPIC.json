@@ -11,8 +11,8 @@
       "longitude": 512
     },
     "areas_amount": {
-      "radius": 4,
-      "longitude": 16
+      "radius": 1,
+      "longitude": 8
     }
   },
   "pml": {
