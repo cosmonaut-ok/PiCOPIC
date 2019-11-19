@@ -515,8 +515,8 @@ int main(int argc, char **argv)
         sim_area->push_particles(); // +
         sim_area->dump_particle_positions_to_old(); // +
         sim_area->update_particles_coords_at_half(); // + +reflect
-        sim_area->particles_back_position_to_rz(); // +
-        // sim_area->reflect();
+	sim_area->reflect();
+	sim_area->particles_back_position_to_rz(); // +
       }
     particles_runaway_collector(areas, geometry_global);
 
@@ -529,8 +529,8 @@ int main(int argc, char **argv)
         // current distribution
         sim_area->weight_current_azimuthal();
         sim_area->update_particles_coords_at_half();
-        sim_area->particles_back_position_to_rz();
         sim_area->reflect(); // +
+	sim_area->particles_back_position_to_rz();
       }
     particles_runaway_collector(areas, geometry_global);
     current_overlay(areas, geometry_global);

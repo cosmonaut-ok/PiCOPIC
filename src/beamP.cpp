@@ -78,7 +78,10 @@ void BeamP::inject()
       // so average value, respecting
       // to flat random particles distrribution,
       // should be just $2 \pi \frac{radius}{2} dr dz$
-      double v_macro_avg = PI * radius * radius * bunch_length * bunches_amount / macro_amount;
+      // average macro volume is max_volume/2
+      // so radius to get such volume is r_max/sqrt(2)
+      // WARNING: used only for homogenous distribution
+      double v_macro_avg = 0.707107 * PI * radius * dr * dz;
       double N_total = PI * radius * radius * bunch_length * bunches_amount * density;
       double n_per_macro_avg = N_total / macro_amount;
 
