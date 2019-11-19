@@ -78,7 +78,7 @@ void BeamP::inject()
       // so average value, respecting
       // to flat random particles distrribution,
       // should be just $2 \pi \frac{radius}{2} dr dz$
-      double v_macro_avg = PI * area_radius * dr * dz;
+      double v_macro_avg = PI * radius * radius * bunch_length * bunches_amount / macro_amount;
       double N_total = PI * radius * radius * bunch_length * bunches_amount * density;
       double n_per_macro_avg = N_total / macro_amount;
 
