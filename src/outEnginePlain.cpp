@@ -43,13 +43,13 @@ void OutEnginePlain::write_vec(string a_name, Grid<double> data)
   // vector by Z-component with fixed r (r_begin)
   if (size[1] == -1 && size[2] == -1 && size[3] == -1)
   {
-    for (unsigned int i = 0; i < data.size_y(); i++)
+    for (unsigned int i = 0; i < data.y_size; i++)
       out_val << data(size[0], i) << " ";
   }
   // vector by R-component with fixed z (z_begin)
   else if (size[0] == -1 && size[2] == -1 && size[3] == -1)
   {
-    for (unsigned int i = 0; i < data.size_x(); i++)
+    for (unsigned int i = 0; i < data.x_size; i++)
       out_val << data(i, size[1]) << " ";
   }
   else

@@ -2,10 +2,11 @@
 
 Current::Current(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : geometry(geom), time(t)
 {
-  current = Grid3D<double> (geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
+  current = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
   species_p = species;
 
   current = 0;
+  current.overlay_set(0);
 }
 
 void Current::simple_current_distribution(double radius_new,
@@ -17,22 +18,22 @@ void Current::simple_current_distribution(double radius_new,
                                           double p_charge)
 {
   //! shift also to take overlaying into account
-  int i_n_shift = i_n - geometry->bottom_r_grid_number + 2;
-  int k_n_shift = k_n - geometry->left_z_grid_number + 2;
+  int i_n_shift = i_n - geometry->bottom_r_grid_number;
+  int k_n_shift = k_n - geometry->left_z_grid_number;
   if (i_n_shift < 0) i_n_shift = 0;
   if (k_n_shift < 0) k_n_shift = 0;
   // FIXME: it can be more, than current.size_x - 2
   // for some unknown reason
-  if (i_n_shift > current[0].size_x() - 2)
+  if (i_n_shift > current[0].x_size)
   {
-    MSG_FIXME("simple_current_distribution: i_n_shift is more, than current[0].size_x() - 2. Applying workaround");
-    i_n_shift = current[0].size_x() - 2;
+    MSG_FIXME("simple_current_distribution: i_n_shift is more, than current[0].x_size. Applying workaround");
+    i_n_shift = current[0].x_size;
   }
 
-  if (k_n_shift > current[0].size_y() - 2)
+  if (k_n_shift > current[0].y_size)
   {
-    MSG_FIXME("simple_current_distribution: k_n_shift is more, than current[0].size_y() - 2 . Applying workaround");
-      k_n_shift = current[0].size_y() - 2;
+    MSG_FIXME("simple_current_distribution: k_n_shift is more, than current[0].y_size . Applying workaround");
+      k_n_shift = current[0].y_size;
   }
 
   double dr = geometry->r_cell_size;
@@ -177,7 +178,7 @@ void Current::simple_current_distribution(double radius_new,
 
 void Current::current_distribution()
 {
-  current.overlay_reset();
+  current.overlay_set(0);
 
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
@@ -485,7 +486,7 @@ void Current::current_distribution()
 
 void Current::azimuthal_current_distribution()
 {
-  current.overlay_reset();
+  current.overlay_set(0);
 
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
@@ -519,21 +520,21 @@ void Current::azimuthal_current_distribution()
       if (r_i < 0) r_i = 0;
       if (z_k < 0) z_k = 0;
 
-      r_i_shift = r_i - geometry->bottom_r_grid_number + 2;
-      z_k_shift = z_k - geometry->left_z_grid_number + 2;
+      r_i_shift = r_i - geometry->bottom_r_grid_number;
+      z_k_shift = z_k - geometry->left_z_grid_number;
 
   // FIXME: it can be more, than current.size_x - 2
   // for some unknown reason
-  if (r_i_shift > current[0].size_x() - 2)
+  if (r_i_shift > current[0].x_size)
   {
-    MSG_FIXME("azimuthal_current_distribution: r_i_shift is more, than current[0].size_x() - 2. Applying workaround");
-    r_i_shift = current[0].size_x() - 2;
+    MSG_FIXME("azimuthal_current_distribution: r_i_shift is more, than current[0].x_size. Applying workaround");
+    r_i_shift = current[0].x_size;
   }
 
-  if (z_k_shift > current[0].size_y() - 2)
+  if (z_k_shift > current[0].y_size)
   {
-    MSG_FIXME("azimuthal_current_distribution: z_k_shift is more, than current[0].size_y() - 2 . Applying workaround");
-      z_k_shift = current[0].size_y() - 2;
+    MSG_FIXME("azimuthal_current_distribution: z_k_shift is more, than current[0].y_size . Applying workaround");
+      z_k_shift = current[0].y_size;
   }
 
       if (r_i_shift < 0) r_i_shift = 0;
@@ -627,23 +628,23 @@ void Current::strict_motion_distribution(double radius_new,
   if (i_o < 0) i_o = 0;
   if (k_o < 0) k_o = 0;
 
-  int i_n_shift = i_n - geometry->bottom_r_grid_number + 2;
-  int k_n_shift = k_n - geometry->left_z_grid_number + 2;
+  int i_n_shift = i_n - geometry->bottom_r_grid_number;
+  int k_n_shift = k_n - geometry->left_z_grid_number;
   if (i_n_shift < 0) i_n_shift = 0;
   if (k_n_shift < 0) k_n_shift = 0;
 
   // FIXME: it can be more, than current.size_x - 2
   // for some unknown reason
-  if (i_n_shift > current[0].size_x() - 2)
+  if (i_n_shift > current[0].x_size)
   {
-    MSG_FIXME("simple_current_distribution: i_n_shift is more, than current[0].size_x() - 2. Applying workaround");
-    i_n_shift = current[0].size_x() - 2;
+    MSG_FIXME("simple_current_distribution: i_n_shift is more, than current[0].x_size. Applying workaround");
+    i_n_shift = current[0].x_size;
   }
 
-  if (k_n_shift > current[0].size_y() - 2)
+  if (k_n_shift > current[0].y_size)
   {
     MSG_FIXME("simple_current_distribution: k_n_shift is more, than current[0].size_x - 2 . Applying workaround");
-      k_n_shift = current[0].size_y() - 2;
+      k_n_shift = current[0].y_size;
   }
 
 

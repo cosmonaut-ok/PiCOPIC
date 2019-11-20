@@ -2,7 +2,7 @@
 
 Charge::Charge(Geometry *geom, vector<SpecieP *> species): geometry(geom)
 {
-  density = Grid<double>(geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
+  density = Grid<double>(geometry->r_grid_amount, geometry->z_grid_amount, 1);
   species_p = species;
 
   density = 0;

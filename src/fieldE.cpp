@@ -3,11 +3,13 @@
 FieldE::FieldE(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(geom, t)
 {
   species_p = species;
-  epsilon = Grid<double> (geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
-  sigma = Grid<double> (geometry->r_grid_amount + 4, geometry->z_grid_amount + 4);
+  epsilon = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 1);
+  sigma = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 1);
 
   epsilon = EPSILON0;
+  epsilon.overlay_set(EPSILON0);
   sigma = 0;
+  sigma.overlay_set(0);
 
   set_pml();
 }
@@ -75,7 +77,7 @@ void FieldE::set_pml()
 // Electric field calculation
 void FieldE::calc_field_cylindrical()
 {
-  field.overlay_reset();
+  field.overlay_set(0);
 
   Grid3D<double> curr = current->current;
   Grid3D<double> magn_fld = field_h->field_at_et;
@@ -85,7 +87,7 @@ void FieldE::calc_field_cylindrical()
 
   // E at the center axis (r=0) case
   if (geometry->walls[0]) // calculate only at the center axis (r=0)
-    for(int k = z_begin; k < geometry->z_grid_amount; k++)
+    for(int k = z_begin; k < z_end; k++)
     {
       int i = r_begin;
       double epsilonx2 = 2 * epsilon(i, k);
@@ -150,8 +152,8 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   // finding number of cell. example dr=0.5, radius = 0.7, i_r =0;!!
   i_r = CELL_NUMBER(radius - 0.5 * dr, dr);
   k_z = CELL_NUMBER(longitude, dz);
-  i_r_shift = i_r - geometry->bottom_r_grid_number + 2;
-  k_z_shift = k_z - geometry->left_z_grid_number + 2;
+  i_r_shift = i_r - geometry->bottom_r_grid_number;
+  k_z_shift = k_z - geometry->left_z_grid_number;
   // TODO: workaround: sometimes it gives -1.
   // Just get 0 cell if it happence
   if (i_r < 0) i_r = 0;
@@ -161,16 +163,16 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
 
   // FIXME: it can be more, than current.size_x - 2
   // for some unknown reason
-  if (i_r_shift > field[0].size_x() - 2)
+  if (i_r_shift > field[0].x_size)
   {
-    MSG_FIXME("fieldE::get_field: i_r_shift is more, than field[0].size_x() - 2. Applying workaround");
-    i_r_shift = field[0].size_x() - 2;
+    MSG_FIXME("fieldE::get_field: i_r_shift is more, than field[0].x_size. Applying workaround");
+    i_r_shift = field[0].x_size;
   }
 
-  if (k_z_shift > field[0].size_y() - 2)
+  if (k_z_shift > field[0].y_size)
   {
-    MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
-      k_z_shift = field[0].size_y() - 2;
+    MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].y_size . Applying workaround");
+      k_z_shift = field[0].y_size;
   }
 
   vol_1 = CELL_VOLUME(i_r+1, dr, dz);
@@ -194,8 +196,8 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   // finding number of cell. example dz=0.5, longitude = 0.7, z_k =0;!!
   i_r = CELL_NUMBER(radius, dr);
   k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
-  i_r_shift = i_r - geometry->bottom_r_grid_number + 2;
-  k_z_shift = k_z - geometry->left_z_grid_number + 2;
+  i_r_shift = i_r - geometry->bottom_r_grid_number;
+  k_z_shift = k_z - geometry->left_z_grid_number;
   // TODO: workaround: sometimes it gives -1.
   // Just get 0 cell if it happence
   if (i_r < 0) i_r = 0;
@@ -205,16 +207,16 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
 
   // FIXME: it can be more, than current.size_x - 2
   // for some unknown reason
-  if (i_r_shift > field[0].size_x() - 2)
+  if (i_r_shift > field[0].x_size)
   {
-    MSG_FIXME("fieldE::get_field: i_r_shift is more, than field[0].size_x() - 2. Applying workaround");
-    i_r_shift = field[0].size_x() - 2;
+    MSG_FIXME("fieldE::get_field: i_r_shift is more, than field[0].x_size. Applying workaround");
+    i_r_shift = field[0].x_size;
   }
 
-  if (k_z_shift > field[0].size_y() - 2)
+  if (k_z_shift > field[0].y_size)
   {
-    MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
-      k_z_shift = field[0].size_y() - 2;
+    MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].y_size . Applying workaround");
+      k_z_shift = field[0].y_size;
   }
 
   if (radius > dr)
@@ -244,8 +246,8 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
 
   i_r = CELL_NUMBER(radius, dr);
   k_z = CELL_NUMBER(longitude, dz);
-  i_r_shift = i_r - geometry->bottom_r_grid_number + 2;
-  k_z_shift = k_z - geometry->left_z_grid_number + 2;
+  i_r_shift = i_r - geometry->bottom_r_grid_number;
+  k_z_shift = k_z - geometry->left_z_grid_number;
   // TODO: workaround: sometimes it gives -1.
   // Just get 0 cell if it happence
   if (i_r < 0) i_r = 0;
@@ -255,16 +257,16 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
 
   // FIXME: it can be more, than current.size_x - 2
   // for some unknown reason
-  if (i_r_shift > field[0].size_x() - 2)
+  if (i_r_shift > field[0].x_size)
   {
-    MSG_FIXME("fieldE::get_field: i_r_shift is more, than field[0].size_x() - 2. Applying workaround");
-    i_r_shift = field[0].size_x() - 2;
+    MSG_FIXME("fieldE::get_field: i_r_shift is more, than field[0].x_size. Applying workaround");
+    i_r_shift = field[0].x_size;
   }
 
-  if (k_z_shift > field[0].size_y() - 2)
+  if (k_z_shift > field[0].y_size)
   {
-    MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].size_y() - 2 . Applying workaround");
-      k_z_shift = field[0].size_y() - 2;
+    MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].y_size . Applying workaround");
+      k_z_shift = field[0].y_size;
   }
 
   if(radius>dr)
