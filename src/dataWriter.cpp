@@ -42,7 +42,7 @@ DataWriter::DataWriter(string a_path, string a_component,
   time = a_time;
   areas = a_areas;
 
-  out_data = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount);
+  out_data = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 0);
   out_data_plain = vector<double> (0);
   // string shape_name, size_name;
 
@@ -264,10 +264,10 @@ void DataWriter::merge_areas(string component, string specie)
       else
         LOG_ERR("Unknown DataWriter component ``" << component << "''");
 
-      for (unsigned int i = 2; i < value.size_x() - 2; ++i) // shifting to avoid overlay areas
-        for (unsigned int j = 2; j < value.size_y() - 2; ++j)
-          out_data.set (i + r * sim_area->geometry.r_grid_amount - 2,
-                        j + z * sim_area->geometry.z_grid_amount - 2,
+      for (unsigned int i = 0; i < value.x_size; ++i) // shifting to avoid overlay areas
+        for (unsigned int j = 0; j < value.y_size; ++j)
+          out_data.set (i + r * sim_area->geometry.r_grid_amount,
+                        j + z * sim_area->geometry.z_grid_amount,
                         value(i, j));
     }
 }

@@ -13,11 +13,11 @@ public:
 
 public:
   Grid3D() {};
-  Grid3D(unsigned int r_amount, unsigned int z_amount)
+  Grid3D(unsigned int r_amount, unsigned int z_amount, unsigned int overlay_shift)
   {
-    r_component = Grid<T> (r_amount, z_amount);
-    phi_component = Grid<T> (r_amount, z_amount);
-    z_component = Grid<T> (r_amount, z_amount);
+    r_component = Grid<T> (r_amount, z_amount, overlay_shift);
+    phi_component = Grid<T> (r_amount, z_amount, overlay_shift);
+    z_component = Grid<T> (r_amount, z_amount, overlay_shift);
   };
 
   void overlay_right(Grid3D<T> rgrid)
@@ -41,11 +41,11 @@ public:
     z_component.overlay_top(trgrid.z_component);
   };
 
-  void overlay_reset()
+  void overlay_set(T value)
   {
-    r_component.overlay_reset();
-    phi_component.overlay_reset();
-    z_component.overlay_reset();
+    r_component.overlay_set(value);
+    phi_component.overlay_set(value);
+    z_component.overlay_set(value);
   };
 
   Grid3D<T>& operator= (const T value)
