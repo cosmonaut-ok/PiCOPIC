@@ -1,6 +1,5 @@
 #pragma once
 
-#include "msg.hpp"
 #include "geometry.hpp"
 #include "grid.hpp"
 #include "specieP.hpp"
@@ -8,15 +7,14 @@
 class Density
 {
 public:
-  Density() {};
-  Density(Geometry *geom, vector<SpecieP *> species):geometry(geom)
-  {
-    species_p = species;
-  };
-  ~Density() {};
-
-// private:
-  Grid<double> density;
   Geometry *geometry;
+  Grid<double> density;
   vector<SpecieP *> species_p;
+  
+  Density(void) {};
+  Density(Geometry *geom, vector<SpecieP *> species);
+  ~Density() {};
+  
+  void calc_density_cylindrical(string specie);
+  void inc_count(unsigned int r, unsigned int z, double value);
 };

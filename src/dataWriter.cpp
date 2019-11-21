@@ -222,12 +222,34 @@ void DataWriter::merge_areas(string component, string specie)
 
       Area *sim_area = areas(r, z);
 
-      if (component.compare("charge") == 0)
+      if (component.compare("density") == 0)
+        sim_area->weight_density(specie);
+    }
+
+  // overlaying
+  for (unsigned int i=0; i < geometry->areas_by_r; i++)
+    for (unsigned int j = 0; j < geometry->areas_by_z; j++)
+    {
+      Area *sim_area = areas(i, j);
+
+      // update grid
+      if (i < geometry->areas_by_r - 1)
       {
-        // perform charge weighting before dumping density
-        sim_area->reset_charge();
-        sim_area->weight_charge();
+        Area *dst_area = areas(i+1, j);
+        if (component.compare("density") == 0) sim_area->density->density.overlay_top(dst_area->density->density);
       }
+
+      if (j < geometry->areas_by_z - 1)
+      {
+        Area *dst_area = areas(i, j + 1);
+        if (component.compare("density") == 0) sim_area->density->density.overlay_right(dst_area->density->density);
+      }
+
+      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      // {
+      //   Area *dst_area = areas(i + 1, j + 1);
+      //   sim_area->current->current.overlay_top_right(dst_area->current->current);
+      // }
     }
 
   // merge values
@@ -237,9 +259,7 @@ void DataWriter::merge_areas(string component, string specie)
       Grid<double> value;
       Area *sim_area = areas(r, z);
 
-      if (component.compare("charge") == 0)
-        value = sim_area->charge->density;
-      else if (component.compare("E_r") == 0)
+      if (component.compare("E_r") == 0)
         value = sim_area->field_e->field[0];
       else if (component.compare("E_phi") == 0)
         value = sim_area->field_e->field[1];

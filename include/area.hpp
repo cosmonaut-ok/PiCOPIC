@@ -12,7 +12,6 @@
 #include "msg.hpp"
 
 #include "specieP.hpp"
-#include "charge.hpp"
 #include "fieldE.hpp"
 #include "fieldH.hpp"
 #include "current.hpp"
@@ -25,7 +24,6 @@ class Area
 {
 public:
   vector<SpecieP *> species_p;
-  Charge *charge;
 
   FieldE *field_e;
   FieldH *field_h;
@@ -47,7 +45,7 @@ public:
 
   // wrapper methods
   void distribute();
-  void weight_charge();
+  void weight_density(string specie);
   void push_particles();
   void weight_current();
   void update_particles_coords_at_half();

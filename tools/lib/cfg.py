@@ -80,11 +80,11 @@ class Cfg:
         self.probes = []
         probe_size = [0, 0, -1, -1]
         
-        try:
-            probe_specie = i['specie']
-        except:
-            probe_specie = None
         for i in cfg['data']['probes']:
+            try:
+                probe_specie = i['specie']
+            except:
+                probe_specie = None
             if i['shape'] == 'rec':
                 probe_size = [i['start']['r'], i['start']['z'], i['end']['r'], i['end']['z']]
             elif i['shape'] == 'row':

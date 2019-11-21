@@ -15,11 +15,10 @@ Area::Area(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry(geo
   field_e = new FieldE(&geometry, time, species_p);
   field_h = new FieldH(&geometry, time, species_p);
 
+  current = new Current(&geometry, time, species_p);
+
   temperature = new Temperature(&geometry, species_p);
   density = new Density(&geometry, species_p);
-
-  charge = new Charge(&geometry, species_p);
-  current = new Current(&geometry, time, species_p);
 
   // ! Linking classes:
   // ! * insert pointer to field_e into field_h
@@ -45,9 +44,11 @@ void Area::distribute()
   }
 }
 
-void Area::weight_charge()
+void Area::weight_density(string specie)
 {
-  charge->weight_cylindrical();
+  density->density = 0;
+  density->density.overlay_set(0);
+  density->calc_density_cylindrical(specie);
 }
 
 void Area::weight_field_h()
@@ -65,10 +66,10 @@ void Area::reset_current()
   current->current = 0;
 }
 
-void Area::reset_charge()
-{
-  charge->density = 0;
-}
+// void Area::reset_charge()
+// {
+//   charge->density = 0;
+// }
 
 void Area::push_particles ()
 {

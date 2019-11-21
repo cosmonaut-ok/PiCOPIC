@@ -73,6 +73,14 @@
     },
     "probes": [
       {
+        "component": "density",
+        "specie": "electrons",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 128, "z": 512 }
+      },
+      {
         "component": "E_r",
         "schedule": 20,
         "shape": "rec",
