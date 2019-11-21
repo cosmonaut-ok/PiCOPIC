@@ -1,6 +1,7 @@
 #pragma once
 
 #include "geometry.hpp"
+#include "grid3d.hpp"
 #include "timeSim.hpp"
 #include "specieP.hpp"
 
