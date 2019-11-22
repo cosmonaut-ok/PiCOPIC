@@ -3,8 +3,8 @@
 FieldE::FieldE(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(geom, t)
 {
   species_p = species;
-  epsilon = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 1);
-  sigma = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 1);
+  epsilon = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  sigma = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
 
   epsilon = EPSILON0;
   epsilon.overlay_set(EPSILON0);
