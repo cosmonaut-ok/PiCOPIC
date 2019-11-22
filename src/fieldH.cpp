@@ -26,7 +26,7 @@ void FieldH::calc_field_cylindrical()
 
   // H_r on outer wall (r=r)
   if (geometry->walls[2])
-    for(int k = z_begin - 1; k < z_end; k++)
+    for(int k = z_begin - 1; k < z_end + 1; k++)
     {
       int i = r_end;
       // alpha constant and delta_t production (to optimize calculations)
@@ -38,8 +38,8 @@ void FieldH::calc_field_cylindrical()
     }
 
   // regular case
-  for(int i = r_begin; i < r_end; i++)
-    for(int k = z_begin; k < z_end; k++)
+  for(int i = r_begin - 1; i < r_end + 1; i++)
+    for(int k = z_begin - 1; k < z_end + 1; k++)
     {
       double alpha_t_r = time->step
         * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
@@ -109,7 +109,7 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (k_z_shift > field[0].y_size)
   {
     MSG_FIXME("fieldH::get_field: k_z_shift is more, than field[0].y_size . Applying workaround");
-      k_z_shift = field[0].y_size;
+    k_z_shift = field[0].y_size;
   }
 
   vol_1 = CELL_VOLUME(i_r+1, dr, dz);
@@ -154,7 +154,7 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (k_z_shift > field[0].y_size)
   {
     MSG_FIXME("fieldH::get_field: k_z_shift is more, than field[0].y_size . Applying workaround");
-      k_z_shift = field[0].y_size;
+    k_z_shift = field[0].y_size;
   }
 
   if(radius>dr)
@@ -204,7 +204,7 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   if (k_z_shift > field[0].y_size)
   {
     MSG_FIXME("fieldH::get_field: k_z_shift is more, than field[0].y_size . Applying workaround");
-      k_z_shift = field[0].y_size;
+    k_z_shift = field[0].y_size;
   }
 
   r2 = (i_r+1) * dr;

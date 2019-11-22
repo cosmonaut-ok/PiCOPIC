@@ -172,7 +172,7 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   if (k_z_shift > field[0].y_size)
   {
     MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].y_size . Applying workaround");
-      k_z_shift = field[0].y_size;
+    k_z_shift = field[0].y_size;
   }
 
   vol_1 = CELL_VOLUME(i_r+1, dr, dz);
@@ -216,7 +216,7 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   if (k_z_shift > field[0].y_size)
   {
     MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].y_size . Applying workaround");
-      k_z_shift = field[0].y_size;
+    k_z_shift = field[0].y_size;
   }
 
   if (radius > dr)
@@ -266,7 +266,7 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   if (k_z_shift > field[0].y_size)
   {
     MSG_FIXME("fieldE::get_field: k_z_shift is more, than current[0].y_size . Applying workaround");
-      k_z_shift = field[0].y_size;
+    k_z_shift = field[0].y_size;
   }
 
   if(radius>dr)
