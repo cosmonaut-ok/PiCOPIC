@@ -1,6 +1,4 @@
 #include "density.hpp"
-#include <iostream>       // std::cout
-#include <typeinfo>       // operator typeid
 
 Density::Density(Geometry *geom, vector<SpecieP *> species) : geometry(geom)
 {
@@ -50,19 +48,19 @@ void Density::calc_density_cylindrical(string specie)
 
           // weighting in ro[i][k] cell
           value = CYL_RNG_VOL(dz1, r1, r2) / v_1;
-          inc_count(r_i_shift, z_k_shift, ro_p * value);
+          density.inc(r_i_shift, z_k_shift, ro_p * value);
 
           // weighting in ro[i + 1][k] cell
           value = CYL_RNG_VOL(dz1, r2, r3) / v_2;
-          inc_count(r_i_shift + 1, z_k_shift, ro_p * value);
+          density.inc(r_i_shift + 1, z_k_shift, ro_p * value);
 
           // weighting in ro[i][k + 1] cell
           value = CYL_RNG_VOL(dz2, r1, r2) / v_1;
-          inc_count(r_i_shift, z_k_shift+1, ro_p * value);
+          density.inc(r_i_shift, z_k_shift+1, ro_p * value);
 
           // weighting in ro[i + 1][k + 1] cell
           value = CYL_RNG_VOL(dz2, r2, r3) / v_2;
-          inc_count(r_i_shift + 1, z_k_shift + 1, ro_p * value);
+          density.inc(r_i_shift + 1, z_k_shift + 1, ro_p * value);
         }
         else if (P_POS_R((**i)) <= dr / 2.)
         {
@@ -80,19 +78,19 @@ void Density::calc_density_cylindrical(string specie)
 
           // weighting in ro[i][k] cell
           value = PI * dz1 * (dr * dr / 2. - P_POS_R((**i)) * dr + P_POS_R((**i)) * P_POS_R((**i))) / v_1;
-          inc_count(r_i_shift, z_k_shift, ro_p * value);
+          density.inc(r_i_shift, z_k_shift, ro_p * value);
 
           // weighting in ro[i + 1][k] cell
           value = CYL_RNG_VOL(dz1, r2, r3) / v_2;
-          inc_count(r_i_shift + 1, z_k_shift, ro_p * value);
+          density.inc(r_i_shift + 1, z_k_shift, ro_p * value);
 
           // weighting in ro[i][k + 1] cell
           value = PI * dz2 * (dr * dr / 2. - P_POS_R((**i)) * dr + P_POS_R((**i)) * P_POS_R((**i))) / v_1;
-          inc_count(r_i_shift, z_k_shift + 1, ro_p* value);
+          density.inc(r_i_shift, z_k_shift + 1, ro_p* value);
 
           // weighting in ro[i + 1][k + 1] cell
           value = CYL_RNG_VOL(dz2, r2, r3) / v_2;
-          inc_count(r_i_shift + 1, z_k_shift + 1, ro_p * value);
+          density.inc(r_i_shift + 1, z_k_shift + 1, ro_p * value);
         }
         else
         {
@@ -109,24 +107,19 @@ void Density::calc_density_cylindrical(string specie)
 
           // weighting in ro[i][k] cell
           value = CYL_RNG_VOL(dz1, r1, r2) / v_1;
-          inc_count(r_i_shift, z_k_shift, ro_p * value);
+          density.inc(r_i_shift, z_k_shift, ro_p * value);
 
           // weighting in ro[i + 1][k] cell
           value = CYL_RNG_VOL(dz1, r2, r3) / v_2;
-          inc_count(r_i_shift + 1, z_k_shift, ro_p * value);
+          density.inc(r_i_shift + 1, z_k_shift, ro_p * value);
 
           // weighting in ro[i][k + 1] cell
           value = CYL_RNG_VOL(dz2, r1, r2) / v_1;
-          inc_count(r_i_shift, z_k_shift + 1, ro_p * value);
+          density.inc(r_i_shift, z_k_shift + 1, ro_p * value);
 
           // weighting in ro[i + 1][k + 1] cell
           value = CYL_RNG_VOL(dz2, r2, r3) / v_2;
-          inc_count(r_i_shift + 1, z_k_shift + 1, ro_p * value);
+          density.inc(r_i_shift + 1, z_k_shift + 1, ro_p * value);
         }
       }
-}
-
-void Density::inc_count(unsigned int r, unsigned int z, double value)
-{
-  density.inc(r, z, value);
 }

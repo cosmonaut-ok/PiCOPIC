@@ -46,6 +46,7 @@ public:
   // wrapper methods
   void distribute();
   void weight_density(string specie);
+  void weight_temperature(string specie);
   void push_particles();
   void weight_current();
   void update_particles_coords_at_half();

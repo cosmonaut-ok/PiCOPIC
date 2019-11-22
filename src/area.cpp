@@ -51,6 +51,13 @@ void Area::weight_density(string specie)
   density->calc_density_cylindrical(specie);
 }
 
+void Area::weight_temperature(string specie)
+{
+  temperature->temperature = 0;
+  temperature->temperature.overlay_set(0);
+  temperature->calc_temperature_cylindrical(specie);
+}
+
 void Area::weight_field_h()
 {
   field_h->calc_field_cylindrical();

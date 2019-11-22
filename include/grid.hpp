@@ -133,6 +133,17 @@ public:
     }
   };
 
+  void copy(Grid<T> rhs)
+  // fully copy rhs grid to current grid element-by-element
+  {
+    if (x_real_size == rhs.x_real_size && y_real_size == rhs.y_real_size)
+      for (unsigned int i = 0; i < x_real_size; ++i)
+        for (unsigned int j = 0; j < y_real_size; ++j)
+          grid[i][j] = rhs.grid[i][j];
+    else
+      LOG_CRIT("overlay_top_right: X or Y sizes of bottom-left and top-right grid are not equal. Can not overlay", 1);
+  };
+
   // operators overloading
   T& operator() (unsigned int x, unsigned int y)
   {
