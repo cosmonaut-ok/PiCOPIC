@@ -16,5 +16,4 @@ public:
   ~Density() {};
   
   void calc_density_cylindrical(string specie);
-  void inc_count(unsigned int r, unsigned int z, double value);
 };

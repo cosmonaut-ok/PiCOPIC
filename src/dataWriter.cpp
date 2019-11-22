@@ -219,14 +219,14 @@ void DataWriter::merge_areas(string component, string specie)
   for (unsigned int r = 0; r < geometry->areas_by_r; ++r)
     for (unsigned int z = 0; z < geometry->areas_by_z; ++z)
     {
-
       Area *sim_area = areas(r, z);
 
       if (component.compare("density") == 0)
         sim_area->weight_density(specie);
+      else if (component.compare("temperature") == 0)
+        sim_area->weight_temperature(specie);
     }
 
-  // overlaying
   for (unsigned int i=0; i < geometry->areas_by_r; i++)
     for (unsigned int j = 0; j < geometry->areas_by_z; j++)
     {
@@ -236,13 +236,19 @@ void DataWriter::merge_areas(string component, string specie)
       if (i < geometry->areas_by_r - 1)
       {
         Area *dst_area = areas(i+1, j);
-        if (component.compare("density") == 0) sim_area->density->density.overlay_top(dst_area->density->density);
+        if (component.compare("density") == 0)
+          sim_area->density->density.overlay_top(dst_area->density->density);
+        else if (component.compare("temperature") == 0)
+          sim_area->temperature->temperature.overlay_top(dst_area->temperature->temperature);
       }
 
       if (j < geometry->areas_by_z - 1)
       {
         Area *dst_area = areas(i, j + 1);
-        if (component.compare("density") == 0) sim_area->density->density.overlay_right(dst_area->density->density);
+        if (component.compare("density") == 0)
+          sim_area->density->density.overlay_right(dst_area->density->density);
+        else if (component.compare("temperature") == 0)
+          sim_area->temperature->temperature.overlay_right(dst_area->temperature->temperature);
       }
 
       // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)

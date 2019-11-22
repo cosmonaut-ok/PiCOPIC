@@ -2,7 +2,7 @@
   "debug": false,
   "hdf5": false,
   "macro_amount": 2.1e5,
-  "beam_plasma_macro_size_ratio": 10,
+  "beam_plasma_macro_size_ratio": 2,
   "geometry": {
     "radius": 0.075,
     "longitude": 0.3,
@@ -73,7 +73,7 @@
     },
     "probes": [
       {
-        "component": "density",
+        "component": "temperature",
         "specie": "electrons",
         "schedule": 20,
         "shape": "rec",

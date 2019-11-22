@@ -1,22 +1,29 @@
 #pragma once
 
-#include "msg.hpp"
+#include "constant.hpp"
 #include "geometry.hpp"
 #include "grid.hpp"
 #include "specieP.hpp"
+#include "density.hpp"
 
 class Temperature
 {
 public:
-  Temperature() {};
-  Temperature(Geometry *geom, vector<SpecieP *> species):geometry(geom)
-  {
-    species_p = species;
-  };
+  Geometry *geometry;
+  Grid<double> vel_full;
+  Grid<double> vel_r;
+  Grid<double> vel_phi;
+  Grid<double> vel_z;
+  Grid<double> temperature;
+  vector<SpecieP *> species_p;
+  Density density;
+
+  Temperature(void) {};
+  Temperature(Geometry *geom, vector<SpecieP *> species);
   ~Temperature() {};
 
-// private:
-  Grid<double> temperature;
-  Geometry *geometry;
-  vector<SpecieP *> species_p;
+  void calc_temperature_cylindrical(string specie);
+
+private:
+  void weight_temperature_cylindrical(string specie);
 };
