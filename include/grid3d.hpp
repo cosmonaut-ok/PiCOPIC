@@ -36,9 +36,9 @@ public:
 
   void overlay_xy(Grid3D<T> trgrid)
   {
-    r_component.overlay_y(trgrid.r_component);
-    phi_component.overlay_y(trgrid.phi_component);
-    z_component.overlay_y(trgrid.z_component);
+    r_component.overlay_xy(trgrid.r_component);
+    phi_component.overlay_xy(trgrid.phi_component);
+    z_component.overlay_xy(trgrid.z_component);
   };
 
   void overlay_set(T value)

@@ -79,17 +79,17 @@ public:
     }
   };
 
-  void overlay_x(Grid<T> rgrid)
+  void overlay_y(Grid<T> rhsgrid)
   {
-    if (x_real_size == rgrid.x_real_size)
+    if (x_real_size == rhsgrid.x_real_size)
       for (unsigned int d = 0; d < o_s; ++d)
         for (unsigned int i = o_s; i < x_real_size - o_s; ++i)
         {
-          rgrid.grid[i][2*o_s-d-1] += grid[i][y_real_size-1-d];
-          grid[i][y_real_size-2*o_s+d] += rgrid.grid[i][d];
+          rhsgrid.grid[i][2*o_s-d-1] += grid[i][y_real_size-1-d];
+          grid[i][y_real_size-2*o_s+d] += rhsgrid.grid[i][d];
 
-          rgrid.grid[i][d] = grid[i][y_real_size-2*o_s+d];
-          grid[i][y_real_size-1-d] = rgrid.grid[i][2*o_s-1-d];
+          rhsgrid.grid[i][d] = grid[i][y_real_size-2*o_s+d];
+          grid[i][y_real_size-1-d] = rhsgrid.grid[i][2*o_s-1-d];
         }
     else
     {
@@ -97,17 +97,17 @@ public:
     }
   };
 
-  void overlay_y(Grid<T> tgrid)
+  void overlay_x(Grid<T> rhsgrid)
   {
-    if (x_real_size == tgrid.x_real_size)
+    if (y_real_size == rhsgrid.y_real_size)
       for (unsigned int d = 0; d < o_s; ++d)
         for (unsigned int i = o_s; i < y_real_size - o_s; ++i)
         {
-          tgrid.grid[2*o_s-d-1][i] += grid[x_real_size-1-d][i];
-          grid[x_real_size-2*o_s+d][i] += tgrid.grid[d][i];
+          rhsgrid.grid[2*o_s-d-1][i] += grid[x_real_size-1-d][i];
+          grid[x_real_size-2*o_s+d][i] += rhsgrid.grid[d][i];
 
-          tgrid.grid[d][i] = grid[y_real_size-2*o_s+d][i];
-          grid[x_real_size-1-d][i] = tgrid.grid[2*o_s-1-d][i];
+          rhsgrid.grid[d][i] = grid[x_real_size-2*o_s+d][i];
+          grid[x_real_size-1-d][i] = rhsgrid.grid[2*o_s-1-d][i];
         }
     else
     {
@@ -115,17 +115,17 @@ public:
     }
   };
 
-  void overlay_xy(Grid<T> trgrid)
+  void overlay_xy(Grid<T> rhsgrid)
   {
-    if (x_real_size == trgrid.x_real_size && y_real_size == trgrid.y_real_size)
+    if (x_real_size == rhsgrid.x_real_size && y_real_size == rhsgrid.y_real_size)
       for (unsigned int d = 0; d < o_s; ++d)
         for (unsigned int e = 0; e < o_s; ++e)
         {
-          trgrid.grid[2*o_s-d-1][2*o_s-e-1] += grid[x_real_size-1-d][x_real_size-1-e];
-          grid[x_real_size-2*o_s+d][x_real_size-2*o_s+e] += trgrid.grid[d][e];
+          rhsgrid.grid[2*o_s-d-1][2*o_s-e-1] += grid[x_real_size-1-d][x_real_size-1-e];
+          grid[x_real_size-2*o_s+d][x_real_size-2*o_s+e] += rhsgrid.grid[d][e];
 
-          trgrid.grid[d][e] = grid[y_real_size-2*o_s+d][y_real_size-2*o_s+e];
-          grid[x_real_size-1-d][x_real_size-1-e] = trgrid.grid[2*o_s-1-d][2*o_s-1-e];
+          rhsgrid.grid[d][e] = grid[y_real_size-2*o_s+d][y_real_size-2*o_s+e];
+          grid[x_real_size-1-d][x_real_size-1-e] = rhsgrid.grid[2*o_s-1-d][2*o_s-1-e];
         }
     else
     {

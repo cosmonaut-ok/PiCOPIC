@@ -176,13 +176,13 @@ void current_overlay (Grid<Area*> areas, Geometry *geometry_global)
       if (i < geometry_global->areas_by_r - 1)
       {
         Area *dst_area = areas(i+1, j);
-        sim_area->current->current.overlay_y(dst_area->current->current);
+        sim_area->current->current.overlay_x(dst_area->current->current);
       }
 
       if (j < geometry_global->areas_by_z - 1)
       {
         Area *dst_area = areas(i, j + 1);
-        sim_area->current->current.overlay_x(dst_area->current->current);
+        sim_area->current->current.overlay_y(dst_area->current->current);
       }
 
       // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
@@ -207,15 +207,15 @@ void field_h_overlay (Grid<Area*> areas, Geometry *geometry_global)
       if (i < geometry_global->areas_by_r - 1)
       {
         Area *dst_area = areas(i+1, j);
-        sim_area->field_h->field.overlay_y(dst_area->field_h->field);
-        sim_area->field_h->field_at_et.overlay_y(dst_area->field_h->field_at_et);
+        sim_area->field_h->field.overlay_x(dst_area->field_h->field);
+        sim_area->field_h->field_at_et.overlay_x(dst_area->field_h->field_at_et);
       }
 
       if (j < geometry_global->areas_by_z - 1)
       {
         Area *dst_area = areas(i, j + 1);
-        sim_area->field_h->field.overlay_x(dst_area->field_h->field);
-        sim_area->field_h->field_at_et.overlay_x(dst_area->field_h->field_at_et);
+        sim_area->field_h->field.overlay_y(dst_area->field_h->field);
+        sim_area->field_h->field_at_et.overlay_y(dst_area->field_h->field_at_et);
       }
 
       // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
@@ -241,13 +241,13 @@ void field_e_overlay (Grid<Area*> areas, Geometry *geometry_global)
       if (i < geometry_global->areas_by_r - 1)
       {
         Area *dst_area = areas(i+1, j);
-        sim_area->field_e->field.overlay_y(dst_area->field_e->field);
+        sim_area->field_e->field.overlay_x(dst_area->field_e->field);
       }
 
       if (j < geometry_global->areas_by_z - 1)
       {
         Area *dst_area = areas(i, j + 1);
-        sim_area->field_e->field.overlay_x(dst_area->field_e->field);
+        sim_area->field_e->field.overlay_y(dst_area->field_e->field);
       }
 
       // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
