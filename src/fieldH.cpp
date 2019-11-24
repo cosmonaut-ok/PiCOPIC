@@ -38,8 +38,8 @@ void FieldH::calc_field_cylindrical()
     }
 
   // regular case
-  for(int i = r_begin - 1; i < r_end + 1; i++)
-    for(int k = z_begin - 1; k < z_end + 1; k++)
+  for(int i = r_begin; i < r_end; i++)
+    for(int k = z_begin; k < z_end; k++)
     {
       double alpha_t_r = time->step
         * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);

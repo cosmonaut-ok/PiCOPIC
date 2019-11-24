@@ -20,25 +20,25 @@ public:
     z_component = Grid<T> (r_amount, z_amount, overlay_shift);
   };
 
-  void overlay_right(Grid3D<T> rgrid)
+  void overlay_x(Grid3D<T> rgrid)
   {
-    r_component.overlay_right(rgrid.r_component);
-    phi_component.overlay_right(rgrid.phi_component);
-    z_component.overlay_right(rgrid.z_component);
+    r_component.overlay_x(rgrid.r_component);
+    phi_component.overlay_x(rgrid.phi_component);
+    z_component.overlay_x(rgrid.z_component);
   };
 
-  void overlay_top(Grid3D<T> rgrid)
+  void overlay_y(Grid3D<T> rgrid)
   {
-    r_component.overlay_top(rgrid.r_component);
-    phi_component.overlay_top(rgrid.phi_component);
-    z_component.overlay_top(rgrid.z_component);
+    r_component.overlay_y(rgrid.r_component);
+    phi_component.overlay_y(rgrid.phi_component);
+    z_component.overlay_y(rgrid.z_component);
   };
 
-  void overlay_top_right(Grid3D<T> trgrid)
+  void overlay_xy(Grid3D<T> trgrid)
   {
-    r_component.overlay_top(trgrid.r_component);
-    phi_component.overlay_top(trgrid.phi_component);
-    z_component.overlay_top(trgrid.z_component);
+    r_component.overlay_y(trgrid.r_component);
+    phi_component.overlay_y(trgrid.phi_component);
+    z_component.overlay_y(trgrid.z_component);
   };
 
   void overlay_set(T value)

@@ -79,7 +79,7 @@ public:
     }
   };
 
-  void overlay_right(Grid<T> rgrid)
+  void overlay_x(Grid<T> rgrid)
   {
     if (x_real_size == rgrid.x_real_size)
       for (unsigned int d = 0; d < o_s; ++d)
@@ -93,11 +93,11 @@ public:
         }
     else
     {
-      LOG_CRIT("overlay_right: X sizes of left and right grid are not equal. Can not overlay", 1);
+      LOG_CRIT("overlay_x: X sizes of left and right grid are not equal. Can not overlay", 1);
     }
   };
 
-  void overlay_top(Grid<T> tgrid)
+  void overlay_y(Grid<T> tgrid)
   {
     if (x_real_size == tgrid.x_real_size)
       for (unsigned int d = 0; d < o_s; ++d)
@@ -111,11 +111,11 @@ public:
         }
     else
     {
-      LOG_CRIT("overlay_top: Y sizes of bottom and top grid are not equal. Can not overlay", 1);
+      LOG_CRIT("overlay_y: Y sizes of bottom and top grid are not equal. Can not overlay", 1);
     }
   };
 
-  void overlay_top_right(Grid<T> trgrid)
+  void overlay_xy(Grid<T> trgrid)
   {
     if (x_real_size == trgrid.x_real_size && y_real_size == trgrid.y_real_size)
       for (unsigned int d = 0; d < o_s; ++d)
@@ -129,7 +129,7 @@ public:
         }
     else
     {
-      LOG_CRIT("overlay_top_right: X or Y sizes of bottom-left and top-right grid are not equal. Can not overlay", 1);
+      LOG_CRIT("overlay_xy: X or Y sizes of bottom-left and top-right grid are not equal. Can not overlay", 1);
     }
   };
 
@@ -141,7 +141,7 @@ public:
         for (unsigned int j = 0; j < y_real_size; ++j)
           grid[i][j] = rhs.grid[i][j];
     else
-      LOG_CRIT("overlay_top_right: X or Y sizes of bottom-left and top-right grid are not equal. Can not overlay", 1);
+      LOG_CRIT("overlay_xy: X or Y sizes of bottom-left and top-right grid are not equal. Can not overlay", 1);
   };
 
   // operators overloading
