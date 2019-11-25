@@ -46,6 +46,8 @@
 
 using namespace std;
 
+#define BEAM_ID_START 1000
+
 string parse_argv_get_config(int argc, char **argv)
 {
   string filename;
@@ -108,22 +110,42 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
 
                            if (r_cell < 0 || z_cell < 0)
                            {
-                             LOG_ERR("Particle position is less, than 0. Position is: ["
+                             LOG_ERR("Particle's position is less, than 0. Position is: ["
                                      << P_POS_R((*o)) << ", "
-                                     << P_POS_Z((*o)) << "]");
+                                     << P_POS_Z((*o)) << "]. Removing");
+                             ++r_c;
+                             res = true;
+                           }
+
+                           if (r_cell >= geometry_global->r_grid_amount)
+                           {
+                             LOG_ERR("Particle's r-position is more, than geometry r-size: "
+                                     << geometry_global->r_grid_amount
+                                     << ". Position is: ["
+                                     << P_POS_R((*o)) << ", "
+                                     << P_POS_Z((*o)) << "]. Removing");
+                             ++r_c;
+                             res = true;
                            }
 
                            // remove out-of-simulation particles
-                           if (r_cell >= geometry_global->r_grid_amount
-                               || r_cell < 0
-                               || z_cell >= geometry_global->z_grid_amount
-                               || z_cell < 0
-                             )
+                           if (z_cell >= geometry_global->z_grid_amount)
                            {
+                             if ((**ps).id >= BEAM_ID_START)
+                             {
+                               LOG_DBG("Beam particle is out of simulation area: ["
+                                       << P_POS_R((*o)) << ", "
+                                       << P_POS_Z((*o)) << "]. Removing");
+                             }
+                             else
+                             {
+                               LOG_ERR("Particle's z-position is more, than geometry z-size: "
+                                       << geometry_global->z_grid_amount
+                                       << ". Position is: ["
+                                       << P_POS_R((*o)) << ", "
+                                       << P_POS_Z((*o)) << "]. Removing");
+                             }
                              ++r_c;
-                             LOG_WARN("Particle position is out of simulation area: ["
-                                      << P_POS_R((*o)) << ", "
-                                      << P_POS_Z((*o)) << "]. Removing");
                              res = true;
                            }
 
@@ -185,11 +207,11 @@ void current_overlay (Grid<Area*> areas, Geometry *geometry_global)
         sim_area->current->current.overlay_y(dst_area->current->current);
       }
 
-      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-      // {
-      //   Area *dst_area = areas(i + 1, j + 1);
-      //   sim_area->current->current.overlay_xy(dst_area->current->current);
-      // }
+      if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      {
+        Area *dst_area = areas(i + 1, j + 1);
+        sim_area->current->current.overlay_xy(dst_area->current->current);
+      }
     }
 }
 
@@ -218,12 +240,12 @@ void field_h_overlay (Grid<Area*> areas, Geometry *geometry_global)
         sim_area->field_h->field_at_et.overlay_y(dst_area->field_h->field_at_et);
       }
 
-      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-      // {
-      //   Area *dst_area = areas(i + 1, j + 1);
-      //   sim_area->field_h->field.overlay_xy(dst_area->field_h->field);
-      //   sim_area->field_h->field_at_et.overlay_xy(dst_area->field_h->field_at_et);
-      // }
+      if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      {
+        Area *dst_area = areas(i + 1, j + 1);
+        sim_area->field_h->field.overlay_xy(dst_area->field_h->field);
+        sim_area->field_h->field_at_et.overlay_xy(dst_area->field_h->field_at_et);
+      }
     }
 }
 
@@ -250,11 +272,11 @@ void field_e_overlay (Grid<Area*> areas, Geometry *geometry_global)
         sim_area->field_e->field.overlay_y(dst_area->field_e->field);
       }
 
-      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-      // {
-      //   Area *dst_area = areas(i + 1, j + 1);
-      //   sim_area->field_e->field.overlay_xy(dst_area->field_e->field);
-      // }
+      if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      {
+        Area *dst_area = areas(i + 1, j + 1);
+        sim_area->field_e->field.overlay_xy(dst_area->field_e->field);
+      }
     }
 }
 
@@ -314,7 +336,7 @@ int main(int argc, char **argv)
   unsigned int z_areas = geometry_global->areas_by_z;
 
   unsigned int p_id_counter = 0;
-  unsigned int b_id_counter = 1000;
+  unsigned int b_id_counter = BEAM_ID_START;
 
   for (unsigned int i=0; i < r_areas; i++)
     for (unsigned int j = 0; j < z_areas; j++)
