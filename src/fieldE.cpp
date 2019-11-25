@@ -105,6 +105,24 @@ void FieldE::calc_field_cylindrical()
       field[2].dec(i, k, (curr(2, i, k) - magn_fld(1, i, k) / dr) * koef_h);
     }
 
+  // E_z at the center axis (r=0) case
+  if (geometry->walls[1]) // calculate only at the center axis (z=0)
+    for(int i = r_begin; i < r_end; ++i)
+    {
+      int k = 0;
+      double epsilonx2 = 2 * epsilon(i, k);
+      double sigma_t = sigma(i, k) * time->step;
+
+      double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
+      double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
+
+      field[2].m_a(i, k, koef_e);
+      field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
+                          - (magn_fld(1, i, k) + magn_fld(1, i-1, k))
+                          / (2. * dr * (i + geometry->bottom_r_grid_number)))
+                   * koef_h);
+    }
+
 // regular case
   for(int i = r_begin; i < r_end; i++) // TODO: it should be r_begin, instead of 1
     for(int k = z_begin; k < z_end; k++) // TODO: it should be z_begin, instead of 1

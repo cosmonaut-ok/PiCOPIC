@@ -29,7 +29,7 @@ def run(config_file, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
 
     # calculate/update color limit values
     el_charge = 1.6e-19
-    clim_rho_beam = [-1e14, 0] # [-(cfg.bunch_density * el_charge * rho_beam_scale), 0]
+    clim_rho_beam = [0, 1e16] # [-(cfg.bunch_density * el_charge * rho_beam_scale), 0]
     clim_estimation = cfg.get_clim_estimation()
 
     if not clim_e_r: clim_e_r = [-clim_estimation, clim_estimation]
