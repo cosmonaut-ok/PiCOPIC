@@ -19,5 +19,4 @@ namespace math::random
   double uniform1();
   double uniform2();
   double normal();
-  double random_reverse(double vel, int power);
 }

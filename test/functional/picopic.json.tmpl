@@ -1,0 +1,168 @@
+{
+  "debug": false,
+  "hdf5": false,
+  "macro_amount": {{ macro_amount }},
+  "beam_plasma_macro_size_ratio": 2,
+  "geometry": {
+    "radius": 0.0375,
+    "longitude": 0.15,
+    "grid_size": {
+      "radius": 64,
+      "longitude": 128
+    },
+    "areas_amount": {
+      "radius": 2,
+      "longitude": 16
+    }
+  },
+  "pml": {
+    "left_wall": 0,
+    "right_wall": 0.05,
+    "outer_wall": 0.2,
+    "sigma_1": 1e-5,
+    "sigma_2": 7e-2
+  },
+  "time": {
+    "start": 0,
+    "end": 1e-11,
+    "step": 1e-13
+  },
+  "particles": [
+    {
+      "name": "electrons",
+      "charge": -1,
+      "mass": 1,
+      "density": {
+        "left": 1e+17,
+        "right": 1.05e+17
+      },
+      "temperature": 1
+    },
+    {
+      "name": "ions",
+      "charge": 1,
+      "mass": 1836,
+      "density": {
+        "left": 1e+17,
+        "right": 1.05e+17
+      },
+      "temperature": 0.1
+    }
+  ],
+  "beams": [
+    {
+      "name": "electrons",
+      "charge": -1,
+      "mass": 1,
+      "velocity": 2.8e8,
+      "start_time": 0,
+      "bunch": {
+        "amount": 2,
+        "distance": 0.0914,
+        "length": 0.0056,
+        "radius": 0.005,
+        "density": 1e+16
+      }
+    }
+  ],
+  "data": {
+    "data_root": "{{ result_path }}",
+    "compression": {
+      "use": false,
+      "level": 1
+    },
+    "probes": [
+      {
+        "component": "E_r",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 32, "z": 128 }
+      },
+      {
+        "component": "E_phi",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 32, "z": 128 }
+      },
+      {
+        "component": "E_z",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 32, "z": 128 }
+      },
+      {
+        "component": "H_r",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 32, "z": 128 }
+      },
+      {
+        "component": "H_phi",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 32, "z": 128 }
+      },
+      {
+        "component": "H_z",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 32, "z": 128 }
+      },
+      {
+        "component": "J_r",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 32, "z": 128 }
+      },
+      {
+        "component": "J_phi",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 32, "z": 128 }
+      },
+      {
+        "component": "J_z",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 32, "z": 128 }
+      }
+    ],
+    "plot": {
+      "subplot": {
+        "cmap": "terrain",
+        "ticks": {
+          "x_amount": 20,
+          "y_amount": 8,
+          "z_amount": 20,
+          "cbar_amount": 3
+        }
+      },
+      "figure": {
+        "color": "None",
+        "width": 10.5,
+        "height": 7,
+        "dpi": 100,
+        "font": {
+          "family": "sans-serif",
+          "size": 10,
+          "name": "DejaVu Sans"
+        }
+      },
+      "video": {
+        "codec": "mjpeg",
+        "fps": 20,
+        "bitrate": 32000
+      }
+    }
+  }
+}
+
