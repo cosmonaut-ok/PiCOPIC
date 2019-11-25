@@ -6,7 +6,7 @@ variables:
 stages:
   - build
   - postbuild
-  # - test
+  - test
   - clean
 
 # Stage "build"
@@ -18,17 +18,17 @@ build:
     - plasma
   script:
     - ./autogen.sh
-    - ./configure --enable-debug --disable-fixme
+    - ./configure --enable-debug --enable-fixme
     - make
 
-# test:
-#   stage: test
-#   dependencies:
-#     - build
-#   tags:
-#     - plasma
-#   script:
-#     - make test
+test:
+  stage: test
+  dependencies:
+    - build
+  tags:
+    - plasma
+  script:
+    - make test
 
 doc:
   stage: postbuild

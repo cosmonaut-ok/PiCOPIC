@@ -77,16 +77,9 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
   double v_sum = 0;
   for (auto n = particles.begin(); n != particles.end(); ++n)
   {
-    // very flat distribution, instead of random rectangle distribution
-    // TODO: replace to better random, but still flat distribution
-
-#ifdef TESTMODE
-    double rand_r = math::random::random_reverse(geometry->left_z_grid_number + particles_count, 13);
-    double rand_z = math::random::random_reverse(macro_amount - 1 - particles_count + geometry->bottom_r_grid_number, 11);
-#else
     double rand_r = math::random::uniform();
     double rand_z = math::random::uniform();
-#endif
+
     P_POS_R((**n)) = r_size * rand_r;
     P_POS_R((**n)) += int_cell_number * dr;
 
@@ -147,24 +140,9 @@ void SpecieP::thermal_velocity_distribution ()
   {
     double therm_vel_el = lib::sq_rt(2 * EL_CHARGE * energies[particles_count] / mass);
 
-#ifdef TESTMODE
-    double rnd_0 = random_reverse(p, 3);
-    double rnd_1 = random_reverse(p, 5);
-    double rnd_2 = random_reverse(p, 7);
-
-    // emulate negative numbers
-    double k0 = random_reverse(p, 4);
-    double k1 = random_reverse(p, 6);
-    double k2 = random_reverse(p, 8);
-
-    if (k0 > 0.5) rnd_0 = -rnd_0;
-    if (k1 > 0.5) rnd_1 = -rnd_1;
-    if (k2 > 0.5) rnd_2 = -rnd_2;
-#else
     double rnd_0 = math::random::uniform2();
     double rnd_1 = math::random::uniform2();
     double rnd_2 = math::random::uniform2();
-#endif
 
     P_VEL_R((**p)) = rnd_0 * therm_vel_el;
     P_VEL_PHI((**p)) = rnd_1 * therm_vel_el;
@@ -189,24 +167,9 @@ void SpecieP::rectangular_velocity_distribution ()
   {
     double rnd_0, rnd_1, rnd_2;
 
-#ifdef TESTMODE
-    rnd_0 = random_reverse(p, 3);
-    rnd_1 = random_reverse(p, 5);
-    rnd_2 = random_reverse(p, 7);
-
-    // emulate negative numbers
-    double k0 = random_reverse(p, 4);
-    double k1 = random_reverse(p, 6);
-    double k2 = random_reverse(p, 8);
-
-    if (k0 > 0.5) rnd_0 = -rnd_0;
-    if (k1 > 0.5) rnd_1 = -rnd_1;
-    if (k2 > 0.5) rnd_2 = -rnd_2;
-#else
     rnd_0 = math::random::uniform2();
     rnd_1 = math::random::uniform2();
     rnd_2 = math::random::uniform2();
-#endif
 
     PP_VEL_R(particles, p) = rnd_0 * therm_vel_cmp;
     PP_VEL_PHI(particles, p) = rnd_1 * therm_vel_cmp;

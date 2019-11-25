@@ -18,3 +18,5 @@ PicoPIC
 simulation_result/
 .ipynb_checkpoints
 __pycache__
+testingdir
+test/functional/true_data/

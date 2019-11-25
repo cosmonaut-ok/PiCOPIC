@@ -88,15 +88,9 @@ void BeamP::inject()
       for (unsigned int i = 0; i < macro_per_step_to_inject; ++i)
       {
         vector<double> *v = new vector<double>(13, 0);
-        // vector<double> *v_old = new vector<double>(15, 0);
 
-#ifdef TESTMODE
-        double rand_r = random_reverse(i, 9);
-        double rand_z = math::random::random_reverse(i, 11); // TODO: why 11?
-#else
         double rand_r = math::random::uniform();
         double rand_z = math::random::uniform();
-#endif
 
         double pos_r = (area_radius - dr) * rand_r + dr / 2;
         // 1. set pos_r

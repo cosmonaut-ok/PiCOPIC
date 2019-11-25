@@ -147,8 +147,8 @@ distclean: clean
 
 # test-unit: $(TESTSUBDIRS:%=%/__test__)
 
-# test: clean
-# 	@python3 ./test/functional/test.py
+test: clean
+	@python3 ./test/functional/test.py
 
 # test-ext: clean
 # 	@python3 ./test/functional/test.py --type=ext
