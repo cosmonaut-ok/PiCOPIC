@@ -20,3 +20,5 @@ simulation_result/
 __pycache__
 testingdir
 test/functional/true_data/
+lib/python/picopic/dist/
+lib/python/picopic/picopic.egg-info/
