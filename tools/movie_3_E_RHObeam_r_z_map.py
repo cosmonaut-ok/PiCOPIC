@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import os
-import sys
+import os,sys
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lib/python"))
+
 import argparse
 import numpy as np
 

@@ -5,7 +5,7 @@ from os.path import normpath
 
 import numpy as np
 from os.path import join # to use "join" for namespaces
-from lib.tinycache import TinyCache
+from picopic.tinycache import TinyCache
 
 class PlainReader:
     '''

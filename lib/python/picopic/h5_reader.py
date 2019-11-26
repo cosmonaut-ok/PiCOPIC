@@ -2,7 +2,7 @@ import numpy as np
 import h5py
 import os
 from os.path import join # to use "join" for namespaces
-from lib.tinycache import TinyCache
+from picopic.tinycache import TinyCache
 
 class H5Reader:
     def __init__(self, h5_path, data_keyspace='/pdp3/result', dump_keyspace='/pdp3/dump', shape=[0, 0], use_cache=False):
