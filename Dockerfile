@@ -4,6 +4,7 @@ WORKDIR /tmp
 
 RUN apk add alpine-sdk imagemagick libtool wget autoconf automake doxygen python3 python3-dev py3-pip freetype-dev
 RUN ln -s /usr/bin/pip3 /usr/bin/pip
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 ## install pandoc
 WORKDIR /tmp/
@@ -28,4 +29,4 @@ RUN rm -rf /tmp/hdf5-1.10.5
 WORKDIR /tmp/
 RUN apk add py3-numpy py-numpy-dev py3-scipy py3-jinja2
 RUN pip install --upgrade pip
-RUN pip install colorama matplotlib h5py
+RUN pip install colorama matplotlib h5py pkgconfig
