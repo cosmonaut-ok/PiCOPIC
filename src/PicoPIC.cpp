@@ -485,7 +485,7 @@ int main(int argc, char **argv)
   // and we need mark it
   p_id_counter = 0;
 
-  while (sim_time_clock->current < sim_time_clock->end)
+  while (sim_time_clock->current <= sim_time_clock->end)
   {
     // Steps:
     // 1. init beam

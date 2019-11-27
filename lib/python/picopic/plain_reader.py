@@ -77,7 +77,6 @@ class PlainReader:
     def __get_file_path__(self, p_component, p_type, shape, filenumber):
         path = self.__get_path__(p_component, p_type, shape)
 
-        print(join(path, "{}.dat".format(filenumber)))
         return(join(path, "{}.dat".format(filenumber)))
 
 
