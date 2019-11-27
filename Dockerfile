@@ -1,28 +1,31 @@
-FROM debian:buster-slim
+FROM python:alpine
 
 WORKDIR /tmp
 
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+RUN apk add alpine-sdk imagemagick libtool wget autoconf automake doxygen python3 python3-dev py3-pip freetype-dev
+RUN ln -s /usr/bin/pip3 /usr/bin/pip
 
-RUN echo 'deb-src http://deb.debian.org/debian stretch main' >> /etc/apt/sources.list
-RUN apt-get update -y -qq
+## install pandoc
+WORKDIR /tmp/
+RUN wget -qO- https://github.com/jgm/pandoc/releases/download/2.8/pandoc-2.8-linux-amd64.tar.gz | tar xzf -
+WORKDIR /tmp/pandoc-2.8
+RUN for i in `find . -type f`; do D=`dirname $i`; echo mv $i /usr/${D}; done
+# WORKDIR /tmp/
+RUN rm -rf /tmp/pandoc-2.8
 
-RUN mkdir -p /usr/share/man/man1
-RUN apt-get -y -qq install apt-utils build-essential git imagemagick pandoc pandoc-citeproc libtool libtool-bin wget autoconf doxygen pandoc-citeproc python3-numpy python3-colorama python3-jinja2 python3-scipy python3-matplotlib || true
-
-# because mainstream openjdk does not want to be installed w/o some (pseudo)graphics
-# RUN apt-get -y -qq install default-jdk-headless || true
-RUN apt-get -qq -y build-dep hdf5 || true
-
-RUN wget -qO- "https://www.hdfgroup.org/package/source-bzip-2/?wpdmdl=13047&refresh=5c754b75041e11551190901" | tar xjf -
-
-
-WORKDIR /tmp/hdf5-1.10.4
-
+## build and install HDF5 library
+WORKDIR /tmp/
+RUN wget -qO- "https://www.hdfgroup.org/package/hdf5-1-10-5-tar-bz2/?wpdmdl=13570&refresh=5dde4872611c01574848626" | tar xjf -
+WORKDIR /tmp/hdf5-1.10.5
 RUN ./autogen.sh
 RUN ./configure --enable-cxx --enable-build-mode=production --prefix=/usr
 RUN make
 RUN make install
 
-## install H5py separately
-RUN apt-get -y -qq install python3-h5py || true
+RUN rm -rf /tmp/hdf5-1.10.5
+
+## install python libraries
+WORKDIR /tmp/
+RUN apk add py3-numpy py-numpy-dev py3-scipy py3-jinja2
+RUN pip install --upgrade pip
+RUN pip install colorama matplotlib h5py
