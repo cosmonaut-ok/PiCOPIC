@@ -118,8 +118,9 @@ clean: $(SUBDIRS:%=%/__clean__) $(EXTRASUBDIRS:%=%/__clean__) $(TESTSUBDIRS:%=%/
 	$(RM) -r $(ROOTDIR)/tools/__pycache__/
 	$(RM) -r $(DOXYGEN_DIRS)
 	$(RM) -r $(TARGETDIR)
-	# cd $(ROOTDIR)/lib/python/picopic; \
-	# python setup.py clean --all
+	$(RM) -r $(TESTDIR)
+	cd $(ROOTDIR)/lib/python/picopic; \
+	python setup.py clean --all
 
 $(SUBDIRS:%=%/__clean__): dummy
 	-cd `dirname $@` && $(MAKE) clean
