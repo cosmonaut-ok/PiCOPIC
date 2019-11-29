@@ -75,26 +75,26 @@ DataWriter::DataWriter(string a_path, string a_component,
   case 1:
     name += "col";
     name += "/";
-    name += to_string(size[1]);
+    name += to_string(size[3]);
     break;
   case 2:
     name += "row";
     name += "/";
-    name += to_string(size[0]);
+    name += to_string(size[2]);
     break;
   case 3:
     name += "dot";
     name += "/";
-    name += to_string(size[0]);
+    name += to_string(size[2]);
     name += "_";
-    name += to_string(size[1]);
+    name += to_string(size[3]);
     break;
   }
 
 #ifdef USE_HDF5
-  engine = OutEnginePlain (path + "/" + name, shape, size, true, compress, compress_level);
+  engine = OutEngineHDF5 (path, name, shape, size, true, compress, compress_level);
 #else
-  engine = OutEnginePlain (path + "/" + name, shape, size, true, compress, compress_level);
+  engine = OutEnginePlain (path, name, shape, size, true, compress, compress_level);
 #endif // USE_HDF5
 
 }
@@ -136,6 +136,7 @@ void DataWriter::go()
         string dump_step_name = dump_step + "_" + to_string(i);
         out_data_plain.resize(0);
         merge_particle_areas(component, i, specie);
+
         engine.write_1d_vector(dump_step_name, out_data_plain);
         shape_name = "rec";
         component_name = specie
@@ -176,19 +177,19 @@ void DataWriter::go()
         LOG_DBG("Launch column-shaped writer " << component << " at step " << dump_step);
         engine.write_vec(dump_step, out_data);
         shape_name = "col";
-        component_name = component + ":" + to_string(size[1]);
+        component_name = component + ":" + to_string(size[3]);
         break;
       case 2:
         LOG_DBG("Launch row-shaped writer " << component << " at step " << dump_step);
         engine.write_vec(dump_step, out_data);
         shape_name = "row";
-        component_name = component + ":" + to_string(size[0]);
+        component_name = component + ":" + to_string(size[2]);
         break;
       case 3:
         LOG_DBG("Launch dot-shaped writer " << component << " at step " << dump_step);
         engine.write_dot(dump_step, out_data);
         shape_name = "dot";
-        component_name = component + ":" + to_string(size[0]) + "x"  + to_string(size[1]);
+        component_name = component + ":" + to_string(size[2]) + "x"  + to_string(size[3]);
         break;
       }
     }

@@ -15,6 +15,7 @@ class OutEngine
 {
 public:
   string path;
+  string subpath;
   unsigned int shape;
   int size[4];
   bool append;
@@ -24,10 +25,11 @@ public:
 
 public:
   OutEngine () {};
-  OutEngine (string a_path, unsigned int a_shape, int *a_size,
+  OutEngine (string a_path, string a_subpath, unsigned int a_shape, int *a_size,
              bool a_append, bool a_compress, unsigned int a_compress_level)
   {
     path = a_path;
+    subpath = a_subpath;
     shape = a_shape;
     append = a_append;
     compress = a_compress;
