@@ -196,4 +196,9 @@ public:
 
     return *this;
   };
+
+  T** get_grid()
+  {
+    return grid;
+  }
 };

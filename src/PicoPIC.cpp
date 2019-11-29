@@ -9,9 +9,9 @@
 // #define omp_get_thread_num() 0
 #endif
 
-#ifdef USE_HDF5
-#include "ioHDF5.h"
-#endif
+// #ifdef USE_HDF5
+// #include "ioHDF5.h"
+// #endif
 
 #include "defines.hpp"
 #include "msg.hpp"

@@ -11,7 +11,7 @@
 #include "area.hpp"
 
 #ifdef USE_HDF5
-#include "outEnginePlain.hpp"
+#include "outEngineHDF5.hpp"
 #else
 #include "outEnginePlain.hpp"
 #endif // USE_HDF5
@@ -40,7 +40,7 @@ public:
   Grid<Area*> areas;
 
 #ifdef USE_HDF5
-  OutEnginePlain engine;
+  OutEngineHDF5 engine;
 #else
   OutEnginePlain engine;
 #endif // USE_HDF5

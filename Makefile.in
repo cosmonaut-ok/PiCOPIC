@@ -49,9 +49,10 @@ SUBDIRS += $(picojson_SUBDIR)
 ### link hdf5 library
 ifeq (@HDF5_OPTION@, true)
 PicoPIC_LIBRARIES += hdf5
+PicoPIC_LIBRARIES += hdf5_cpp
 else
 PicoPIC_CXX_SRCS_TMP := $(PicoPIC_CXX_SRCS)
-PicoPIC_CXX_SRCS = $(filter-out $(SRCDIR)/ioHDF5.cpp, $(PicoPIC_CXX_SRCS_TMP))
+PicoPIC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngineHDF5.cpp, $(PicoPIC_CXX_SRCS_TMP))
 endif
 
 PicoPIC_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PicoPIC_CXX_SRCS))

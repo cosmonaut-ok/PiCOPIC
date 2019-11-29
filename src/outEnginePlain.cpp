@@ -2,12 +2,12 @@
 
 #include "outEnginePlain.hpp"
 
-OutEnginePlain::OutEnginePlain (string a_path, unsigned int a_shape, int *a_size,
+OutEnginePlain::OutEnginePlain (string a_path, string a_subpath, unsigned int a_shape, int *a_size,
                                 bool a_append, bool a_compress, unsigned int a_compress_level)
-  : OutEngine (a_path, a_shape, a_size, a_append, a_compress, a_compress_level)
+  : OutEngine (a_path, a_subpath, a_shape, a_size, a_append, a_compress, a_compress_level)
 {
   // make root directory
-  lib::make_directory(path);
+  lib::make_directory(path + "/" + subpath);
 
   if (compress)
     LOG_WARN("compression is not supported by plaintext output engine");
@@ -21,7 +21,7 @@ void OutEnginePlain::write_rec(string a_name, Grid<double> data)
   else
     omode = ios::trunc;
 
-  ofstream out_val(path + "/" + a_name + ".dat", omode);
+  ofstream out_val(path + "/" + subpath + "/" + a_name + ".dat", omode);
 
   for (int i = size[0]; i < size[2]; i++)
     for (int j = size[1]; j < size[3]; j++)
@@ -38,7 +38,7 @@ void OutEnginePlain::write_vec(string a_name, Grid<double> data)
   else
     omode = ios::trunc;
 
-  ofstream out_val(path + "/" + a_name + ".dat", omode);
+  ofstream out_val(path + "/" + subpath + "/" + a_name + ".dat", omode);
 
   // vector by Z-component with fixed r (r_begin)
   if (size[1] == -1 && size[2] == -1 && size[3] == -1)
@@ -66,7 +66,7 @@ void OutEnginePlain::write_dot(string a_name, Grid<double> data)
   else
     omode = ios::trunc;
 
-  ofstream out_val(path + "/" + a_name + ".dat", omode);
+  ofstream out_val(path + "/" + subpath + "/" + a_name + ".dat", omode);
 
   out_val << data(size[0], size[1]) << endl;
 
@@ -81,7 +81,7 @@ void OutEnginePlain::write_1d_vector(string a_name, vector<double> data)
   else
     omode = ios::trunc;
 
-  ofstream out_val(path + "/" + a_name + ".dat", omode);
+  ofstream out_val(path + "/" + subpath + "/" + a_name + ".dat", omode);
 
   for (auto i = data.begin(); i != data.end(); ++i)
     out_val << *i << " ";

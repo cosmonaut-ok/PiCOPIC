@@ -29,9 +29,6 @@ Cfg::Cfg(const char *json_file_name)
   //! set debug option
   debug = json_data.get<object>()["debug"].get<bool>();
 
-  //! check if use hdf5 backend
-  use_hdf5 = json_data.get<object>()["hdf5"].get<bool>();
-
   //! set amount of macroparticles
   macro_amount = json_data.get<object>()["macro_amount"].get<double>();
 
@@ -127,24 +124,24 @@ void Cfg::init_probes ()
       p_p.shape = 1;
       p_p.r_start = -1;
       p_p.r_end = -1;
-      p_p.z_start = (int)o["z"].get<double>();
-      p_p.z_end = -1;
+      p_p.z_end = (int)o["z"].get<double>();
+      p_p.z_start = -1;
     }
     else if ( p_shape.compare("row") == 0 )
     {
       p_p.shape = 2;
-      p_p.r_start = (int)o["r"].get<double>();
-      p_p.r_end = -1;
+      p_p.r_end = (int)o["r"].get<double>();
+      p_p.r_start = -1;
       p_p.z_start = -1;
       p_p.z_end = -1;
     }
     else if ( p_shape.compare("dot") == 0 )
     {
       p_p.shape = 3;
-      p_p.r_start = (int)o["r"].get<double>();
-      p_p.r_end = -1;
-      p_p.z_start = (int)o["z"].get<double>();
-      p_p.z_end = -1;
+      p_p.r_end = (int)o["r"].get<double>();
+      p_p.r_start = -1;
+      p_p.z_end = (int)o["z"].get<double>();
+      p_p.z_start = -1;
     }
     else
       LOG_CRIT("Unknown probe shape ``" << p_shape << "''", 1);

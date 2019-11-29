@@ -43,5 +43,7 @@ namespace lib
   double sq_rt(double x);
   char *get_cmd_option(char **begin, char **end, const std::string &option);
   bool cmd_option_exists(char **begin, char **end, const std::string &option);
-std::vector<double> read_file_to_double(const char *filename);
+  std::vector<double> read_file_to_double(const char *filename);
+  void splitstr(std::string const &str, const char delim,
+                std::vector<std::string> &out);
 }

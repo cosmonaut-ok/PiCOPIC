@@ -1,13 +1,14 @@
 #include "lib.hpp"
 #include "outEngine.hpp"
+#include "H5Cpp.h"
 
 using namespace std;
 
-class OutEnginePlain : public OutEngine
+class OutEngineHDF5 : public OutEngine
 {
 public:
-  OutEnginePlain () {};
-  OutEnginePlain (string a_path, string a_name, unsigned int a_shape, int *a_size,
+  OutEngineHDF5 () {};
+  OutEngineHDF5 (string a_path, string a_subpath, unsigned int a_shape, int *a_size,
                   bool a_append, bool a_compress, unsigned int a_compress_level);
 
   void write_rec(string a_name, Grid<double> data);

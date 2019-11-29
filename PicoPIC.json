@@ -76,9 +76,9 @@
         "component": "temperature",
         "specie": "electrons",
         "schedule": 20,
-        "shape": "rec",
-        "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+          "shape": "dot",
+	  "r": 20,
+	  "z": 40
       },
       {
         "component": "E_r",
