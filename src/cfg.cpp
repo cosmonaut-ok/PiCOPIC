@@ -240,8 +240,14 @@ void Cfg::init_geometry ()
                           true, true, true, true); // init all walls
 
   //
+#ifdef SINGLETHREAD
+  LOG_INFO("Singlethread mode. Reducing areas amount to 1");
+  geometry->areas_by_r = 1;
+  geometry->areas_by_z = 1;
+#else
   geometry->areas_by_r = (int)json_root["areas_amount"].get<object>()["radius"].get<double>();
   geometry->areas_by_z = (int)json_root["areas_amount"].get<object>()["longitude"].get<double>();
+#endif
 }
 
 void Cfg::init_time ()
