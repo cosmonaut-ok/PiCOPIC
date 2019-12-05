@@ -102,7 +102,7 @@ void FieldE::calc_field_cylindrical()
 
       // E_z at the center on axis
       field[2].m_a(i, k, koef_e);
-      field[2].dec(i, k, (curr(2, i, k) - magn_fld(1, i, k) / dr) * koef_h);
+      field[2].dec(i, k, (curr(2, i, k) - magn_fld(1, i, k) * 4. / dr) * koef_h);
     }
 
   // E_z at the center axis (r=0) case
