@@ -4,20 +4,33 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
+  - prebuild
   - build
   - postbuild
   - test
   - clean
 
-# Stage "build"
-build:
-  stage: build
+# Staghe "prebuild"
+prebuild:
+  stage: prebuild
   artifacts:
     untracked: true
   tags:
     - plasma
   script:
+    - pip install jinja2
     - ./autogen.sh
+
+# Stage "build"
+build:
+  stage: build
+  dependencies:
+    - prebuild
+  artifacts:
+    untracked: true
+  tags:
+    - plasma
+  script:
     - ./configure --enable-debug --enable-fixme
     - make build
 

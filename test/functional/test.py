@@ -8,8 +8,8 @@ import shutil
 import subprocess
 import gzip
 import argparse
-from scipy.fftpack import fft
-from scipy import stats
+# from scipy.fftpack import fft
+# from scipy import stats
 
 import jinja2 as j2
 
