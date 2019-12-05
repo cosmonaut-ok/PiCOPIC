@@ -21,12 +21,12 @@ me = os.path.realpath(os.path.dirname(__file__))
 
 regression_dir = os.path.join(os.sep, 'home', 'cosmonaut', 'regression')
 
-sys.path.append(me + '/../../tools/')
+sys.path.append(me + '/../../lib/python/')
 
-from lib.cfg import Cfg
-from lib.plot_builder import PlotBuilder
-from lib.h5_reader import H5Reader
-from lib.plain_reader import PlainReader
+from picopic.cfg import Cfg
+from picopic.plot_builder import PlotBuilder
+from picopic.h5_reader import H5Reader
+from picopic.plain_reader import PlainReader
 
 ## end import path
 
