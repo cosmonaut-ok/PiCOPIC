@@ -100,7 +100,7 @@ class bootstrap ():
             utils.cliexec('./configure --enable-ieee --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
         else:
             utils.cliexec('./configure --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
-        utils.cliexec('make', cwd=self.rootdir, view=self.verbose, wait=True)
+        utils.cliexec('make build', cwd=self.rootdir, view=self.verbose, wait=True)
 
         picopic_file = os.path.join(self.rootdir, 'PicoPIC')
         tools_dir = os.path.join(self.rootdir, 'tools')
