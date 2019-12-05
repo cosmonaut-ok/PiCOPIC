@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 #include "defines.hpp"
 #include "picojson.h"
