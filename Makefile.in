@@ -77,7 +77,9 @@ CFLAGS += @CFLAGS_ADDITIONAL@
 CXXFLAGS = ${CFLAGS}
 
 ### Generic targets
-all: prepare python $(SUBDIRS) $(LIBS) $(EXES)
+all: build python
+
+build: prepare $(SUBDIRS) $(LIBS) $(EXES)
 
 ### Build rules
 .PHONY: all clean dummy check-syntax prepare doxygen test test-unit test-h5 test-ext
