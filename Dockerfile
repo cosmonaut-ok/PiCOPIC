@@ -5,6 +5,7 @@ WORKDIR /tmp
 RUN apk add alpine-sdk imagemagick libtool wget autoconf automake doxygen python3 python3-dev py3-pip freetype-dev
 RUN ln -s /usr/bin/pip3 /usr/bin/pip
 RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN ln -sf /usr/bin/python3 /usr/local/bin/python
 
 ## install pandoc
 WORKDIR /tmp/
