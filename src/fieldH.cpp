@@ -57,7 +57,7 @@ void FieldH::calc_field_cylindrical()
 
       double alpha_t_z = time->step
         * (
-          (el_field(1, i+1, k) + el_field(1, i, k)) / (2. * dr * (i + 0.5))
+          (el_field(1, i+1, k) + el_field(1, i, k)) / (2. * dr * (i + 0.5 + geometry->bottom_r_grid_number))
           + (el_field(1, i+1, k) - el_field(1, i, k)) / dr)
         / MAGN_CONST;
 
