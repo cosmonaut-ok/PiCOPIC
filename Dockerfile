@@ -7,6 +7,7 @@ RUN ln -s /usr/bin/pip3 /usr/bin/pip
 RUN ln -sf /usr/bin/pip3 /usr/local/bin/pip
 RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN ln -sf /usr/bin/python3 /usr/local/bin/python
+RUN ln -sf /usr/bin/python3 /usr/local/bin/python3
 
 ## install pandoc
 WORKDIR /tmp/
