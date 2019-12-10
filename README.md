@@ -33,55 +33,48 @@ $ make test
 
 PicoPIC follows the same principles for data output, as PDP3 data array output and python library and tools collection (python scripts and jupyter notebooks) for analysis of such data. Python library can be found in lib/python/picopic subdir and tools collection - in `tools` directory.
 
-
-==================================================
-
-# PDP3
-
 ### System And Software Requirements
 
-- C++ compiler: gcc 6.X (or later, but not tested with 7.X and 8.X)
+- C++ compiler: gcc 6.X or later (8.X recommended)
+- autotools (autoconf, autoheader)
 - git (to get sources)
-- hdf5 library (1.10.1+ recommmended. 1.10.0 is buggy)
+- hdf5 library (1.10.5+ is recommmended)
 - 'autoconf' and 'make' utils
 - libgomp (OpenMP spec. version 3.0+).
-- python+jupyter+matplotlib+numpy for visualization (anaconda - python scientific environment is highly recommended)
+- python3 + jupyter + matplotlib + numpy for visualization (anaconda - python scientific environment is recommended)
 - doxygen, latex (texlive-full), imagemagick, pandoc, pandoc-citeproc _**(optional, for documentation only)**_
 
 ### HOWTO (linux, debian/ubuntu example)
 
 #### 0. INSTALL PREREQUIRED SOFTWARE
 
-**Install prerequired software with standars package management system**:
+**Install prerequired software with standard package management system**:
 
 ``` shell
-root@host# apt-get install build-essential autotools git
+root@host# apt-get install build-essential autoconf
 ```
 
 **HDF5 library installation (optional)**:
 
 If you going to use HDF5 format, you should build HDF5 library as prerequirement. As libhdf5 v.1.10.0 ships with debian, we need to download and compile fresh version (1.10.3) manually
 
-* 0.a. install HDF5 manually (perform 0.a, 0.b or install in some other way, at your option):
+* 0.a. install HDF5 with package management system (perform 0.a, 0.b or install in some other way, at your option):
 ``` shell
-user@host$ cd /tmp
-user@host$ wget -qO- "https://www.hdfgroup.org/package/source-bzip/?wpdmdl=12594&refresh=5bbc7778635b21539078008" | tar xjf -
-user@host$ cd /tmp/hdf5-1.10.3
-user@host$ ./autogen.sh
-user@host$ ./configure --enable-cxx --enable-build-mode=production --prefix=/usr/local
-user@host$ sudo make install
-user@host$ cd /tmp
-user@host$ sudo rm -rf /tmp/hdf5-1.10.3
+user@host$ sudo apt-get install libhdf5-cpp-100 libhdf5-dev
 ```
 
-* 0.b. install HDF5 globally with make helper and include:\
-You can install it with PDP3 build system's helper after application configuration, but before project compilation (see **COMPILE PROJECT** step)
+* 0.b. install HDF5 globally with "make" helper (perform project configuration first. See **CONFIGURE AND BUILD PROJECT** section):
+
+``` shell
+user@host$ sudo apt-get install wget
+user@host$ sudo make hdf5-install
+```
 
 #### 1. **GIT CLONE PROJECT**
 
 ``` shell
-user@host$ git clone https://github.com/cosmonaut-ok/pdp3.git
-user@host$ cd pdp3
+user@host$ git clone https://gitlab.com/my-funny-plasma/PIC/picopic.git
+user@host$ cd picopic
 user@host$ git submodule update --init # require to enable external libraries
 ```
 
@@ -89,11 +82,10 @@ user@host$ git submodule update --init # require to enable external libraries
 
 ``` shell
 # change your current directory to project's root directory
-user@host$ cd /path/to/pdp3/
+user@host$ cd /path/to/picopic/
 user@host$ ./autogen.sh
-user@host$ ./configure [--help|show help] [--some-options] # use ./configure --help to view full options list
+user@host$ ./configure [OPTIONS] # use ./configure --help to view full options list
 # 0.b.: optional step to install HDF5 library with built-in helper
-user@host$ make hdf5
 user@host$ sudo make hdf5-install
 # end of 0.b.
 user@host$ make [COMPILE FLAGS] # see below about COMPILE FLAGS
@@ -103,40 +95,28 @@ user@host$ make [COMPILE FLAGS] # see below about COMPILE FLAGS
 
 * Functional (end-to-end) testing:
 ```shell
-user@host$ make test # or test-ext for extended testing (require more time)
+user@host$ make test
 ```
 
-* Unit testing:
+* Unit testing (not implemented yet):
 ```shell
 user@host$ make test-unit
 ```
 
-#### 4. **INSTALLATION (optional)**
+#### 4. **RUN**
 
-You can install already compiled pdp3 with it's configfile (aka properties.xml) and required subdirs to separate directory. Just run:
+After compilation finished, you just need binary file `PicoPIC` and `parameters.xml`. You can copy this files to somewhere (if you skipped installation), edit `parameters.xml` and run `./PicoPIC`.
 
-``` shell
-user@host$ make dist [RELEASE=/path/to/some/target/directory]
-```
-
-Than, you can go to this directory and run pdp3
-
-#### 5. **RUN**
-
-After compilation finished, you just need binary file `pdp3` and `parameters.xml`. You can copy this files to somewhere (if you skipped installation), edit `parameters.xml` and run `./pdp3`.
-
-_**WARNING! pdp3 does not create data directory automatically. You need to create it before run (see `result_path` in parameters.xml)**_
+_**WARNING! PicoPIC does not create data directory automatically. You need to create it before run (see `result_path` in parameters.xml)**_
 
 ``` shell
-user@host$ mkdir pdp_result # or where you defined in parameters.xml. PDP3 does not use smth. like BOOST::filesystem to operate with directories
-# NOTE: if you performed `make dist`, you just need `cd /path/to/target/dir`, edit `parameters.xml` (optional) and run `./pdp3`
-user@host$ /path/to/pdp3 [ -h ] | [ -f /path/to/parameters.xml ] # used parameters.xml from current directory, if calling without any options
+user@host$ /path/to/picopic [ -h ] | [ -f /path/to/PicoPIC.json ] # used parameters.xml from current directory, if calling without any options
 # or (much better), launch it as high-priority process
-user@host$ nice -20 /path/to/pdp3 [ -h ] | [ -f /path/to/parameters.xml ] # give some power to pdp3!
+user@host$ nice -20 /path/to/PicoPIC [ -h ] | [ -f /path/to/parameters.xml ] # give some power to PicoPIC!
 ```
 > NOTE: it can take several days or weeks, and several hundred gigabytes of diskspace (yep, it is science, my deer friend).
 
-#### 6. **VISUALIZATION (generate plots or animation)**
+#### 5. **VISUALIZATION (generate plots or animation)**
 
 After your application finished modeling, you can build some visual model from generated data. Use python with matplotlib and numpy. [Anaconda](https://www.anaconda.com/download/#linux) as python distribution is recommended.
 
@@ -155,30 +135,28 @@ root@host# apt-get install ffmpeg
 **Animation generation:**
 
 ``` shell
-user@host$ /path/to/repository/with/pdp3/tools/movie_3_component.py /path/to/parameters.xml
-# USE: /path/to/repository/with/pdp3/tools/movie_3_component.py -h to see list of all available options
+user@host$ /path/to/repository/with/picopic/tools/movie_3_E_RHObeam_r_z_map.py /path/to/PicoPIC.json [OPTIONS] # --help to get list of available options
+
 ```
-> NOTE: you may use smth. like `python3 /path/to/repository/with/pdp3/tools/movie_3_component.py /path/to/parameters.xml`, if you don't use anaconda.
 
 **Interactive data analysis:**
 
 Data analysis tools made as jupyter (ipython) notebooks. You can find them in `tools` subdir. Please, run jupyter from `tools` dir also
 
 ``` shell
-user@host$ cd /path/to/pdp3/tools
-user@host$ jupyter <notebook|lab>
+user@host$ cd /path/to/PicoPIC
+user@host$ jupyter <notebook|lab> [tools/<notebook name>.ipynb]
 ```
 
-than you can choose jupyter notebook, corresponding to your needs and work with it.
 
 **Non-interactive notebook launch:**
 
 To run python notebook in non-interactive mode, please, use script `tools/nbrun.sh` from project root directory
 ``` shell
-user@host$ /path/to/pdp3/tools/nbrun.sh /path/to/pdp3/tools/some.ipynb [config_path=\'/path/to/parameters.xml\'] [other_notebook_variable=other_notebook_value]
+user@host$ /path/to/PicoPIC/tools/nbrun.sh /path/to/PicoPIC/tools/<notebook name`>.ipynb [config_path=\'/path/to/PicoPIC.json\'] [other_notebook_variable=other_notebook_value]
 ```
 
-#### 7. **DOCUMENTATION GENERATION** (optional)
+#### 6. **DOCUMENTATION GENERATION** (optional)
 
 **Pre-required software:**
 
@@ -227,7 +205,7 @@ Find documentation in:
 ``` shell
 user@host$ git status
 ```
-> NOTE: If you have such files, you commit, remove or move out of your working directory (with pdp3), than reset repository
+> NOTE: If you have such files, you commit, remove or move out of your working directory (with PicoPIC), than reset repository
 > Also, you can just reset repository, or remove your local changes in other way
 ``` shell
 user@host$ git reset --hard
@@ -261,9 +239,9 @@ user@host$ git push origin <your-branch-name>
 
 When you finish some logical step of your work, you should merge your changes to master branch (as stable code). You can do it, using "Pull request" in github
 
-1. Go to https://github.com/cosmonaut-ok/pdp3/pulls
+1. Go to https://gitlab.com/my-funny-plasma/PIC/picopic/merge_requests
 
-2. Press "New pull request" and choose "master" as base branch and "your-branch-name" as compare. Scroll to view changes against master branch
+2. Press "New merge request" and choose "master" as base branch and "your-branch-name" as compare. Scroll to view changes against master branch
 
 3. When all is ok, press "Create pull request" and confirm.
 
@@ -291,7 +269,7 @@ in `parameters.xml` file before project run.
 4. run with gdb
 
 ``` shell
-user@host$ gdb ./pdp3
+user@host$ gdb ./PicoPIC
 (gdb) run ## or perform some modifications first than run, e.g. set breakpoints
 ```
 5. use experimental features
@@ -314,4 +292,4 @@ You can edit jupyter notebooks with jupyter browser editor (opens with `jupyter 
 
 #### Bugs/Workarounds
 
-> NOTE: It's recommended to disable HDF data file locking to avoid unreadable files, during incorrect application exit or other emergency stuff. Use `export HDF5_USE_FILE_LOCKING=FALSE` before launching pdp3, jupyter or other tools to disable locking.
+> NOTE: It's recommended to disable HDF data file locking to avoid unreadable files, during incorrect application exit or other emergency stuff. Use `export HDF5_USE_FILE_LOCKING=FALSE` before launching PicoPIC, jupyter or other tools to disable locking.
