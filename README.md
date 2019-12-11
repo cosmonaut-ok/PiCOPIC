@@ -3,6 +3,7 @@
 *PicoPIC* - PicoPIC Is Code (Computer/Calculator) Of Particle In Cell
 
 [![Gitlab Pipeline Status](https://gitlab.com/my-funny-plasma/PIC/picopic/badges/master/pipeline.svg)](https://gitlab.com/my-funny-plasma/PIC/picopic/commits/master)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## Motivation
 
