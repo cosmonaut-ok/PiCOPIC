@@ -256,28 +256,18 @@ When you finish some logical step of your work, you should merge your changes to
 user@host$ ./autogen.sh && ./configure --enable-debug && make
 ```
 
-2. Set `debug` option to `true`,
-
-3. Check out options
-   - `particles->particles_kind->debug_number` (at least `1e4` is recommended)
-   - `particles_bunch->debug_number` (at least `1e4` is recommended)
-   - `geometry->debug_n_grid_r`
-   - `geometry->debug_n_grid_z`
-   - `file_save_parameters->debug_data_dump_interval`
-in `parameters.xml` file before project run.
-
-4. run with gdb
+2. run with gdb
 
 ``` shell
 user@host$ gdb ./PicoPIC
 (gdb) run ## or perform some modifications first than run, e.g. set breakpoints
 ```
-5. use experimental features
+3. use experimental features
 
-If you want to experiment and use unsafe features, disabled by default, use "-DEXPERIMENTAL" key in CFLAGS. For example:
+If you want to experiment and use unsafe features, disabled by default, use "--enable-experimental" key during configuration:
 
 ``` shell
-user@host$ ./confugure --enable-experimental && make
+user@host$ ./confugure --enable-experimental [other options] && make
 ```
 
 #### Tools
