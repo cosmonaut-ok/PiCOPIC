@@ -34,7 +34,7 @@
       "mass": 1,
       "density": {
         "left": 1e+17,
-        "right": 1.05e+17
+        "right": 1e+17
       },
       "temperature": 1
     },
@@ -44,7 +44,7 @@
       "mass": 1836,
       "density": {
         "left": 1e+17,
-        "right": 1.05e+17
+        "right": 1e+17
       },
       "temperature": 0.1
     }
