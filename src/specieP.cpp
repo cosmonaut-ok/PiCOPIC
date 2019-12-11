@@ -85,10 +85,11 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
 
     P_POS_PHI((**n)) = 0;
 
-    P_POS_Z((**n)) = z_size
-      / dn * (lib::sq_rt(pow(dl, 2) + rand_z
-                         * (2 * dl * dn + pow(dn, 2)))
-              - dl);
+    if (density[0] == density[1])
+      P_POS_Z((**n)) = z_size * rand_z;
+    else
+      P_POS_Z((**n)) = z_size / dn
+        * (lib::sq_rt(pow(dl, 2) + rand_z * (2 * dl * dn + pow(dn, 2))) - dl);
     P_POS_Z((**n)) += left_cell_number * dz; // shift by z to respect geometry with areas
 
     v_sum += 2 * PI * P_POS_R((**n)) * dr * dz;
