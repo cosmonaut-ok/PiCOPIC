@@ -1,4 +1,4 @@
-image: cosmonaut/hdf5-builder:latest
+image: cosmonaut/picopic-builder:latest
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
