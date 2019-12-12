@@ -8,9 +8,9 @@ import numpy as np
 
 import matplotlib.animation as ani
 
-from lib.cfg import Cfg
-from lib.plot_builder import PlotBuilder
-from lib.plain_reader import PlainReader
+from picopic.cfg import Cfg
+from picopic.plot_builder import PlotBuilder
+from picopic.plain_reader import PlainReader
 
 def run(config_file, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
         time_range=None, cmap=None, frame_step=1, dry_run=False, view=False, use_grid=False):
