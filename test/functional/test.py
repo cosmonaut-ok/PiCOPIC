@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import gzip
 import argparse
+import time
 # from scipy.fftpack import fft
 # from scipy import stats
 
@@ -125,9 +126,13 @@ class bootstrap ():
         print("Launching application to prepare data for testing")
 
         if self.verbose: print("\nApplication Output:\n===================\n")
+        start_time = time.time()
         utils.cliexec(os.path.join(self.testdir, 'PicoPIC'), cwd=self.testdir, view=self.verbose, wait=True)
+        end_time = time.time()
         if self.verbose: print("\nEnd of application Output.\n==========================\n")
-
+        ## print time report
+        print(Fore.CYAN + "Execution time is", round(end_time - start_time, 2),  "s." + Style.RESET_ALL)
+        
 
     def __del__(self):
         utils = Util()
@@ -226,15 +231,7 @@ def test_example(template_name, number, accept_ieee=True,
     for i in components:
         s = t.compare(i, '{}.dat'.format(number))
         if status: status = s
-
-    # for i in ['Electrons', 'Ions']:
-    #     for j in ['vel', 'pos']:
-    #         for k in ['r', 'z']:
-    #             s = t.compare(i, "{}_{}_{}.dat".format(number, j, k))
-    #             if status: status = s
-    #     s = t.compare(i, "{}_vel_phi.dat".format(number))
-    #     if status: status = s
-
+    
     return status
 
 
