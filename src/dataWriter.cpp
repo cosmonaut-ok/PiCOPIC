@@ -238,18 +238,18 @@ void DataWriter::merge_areas(string component, string specie)
       {
         Area *dst_area = areas(i+1, j);
         if (component.compare("density") == 0)
-          sim_area->density->density.overlay_y(dst_area->density->density);
+          sim_area->density->density.overlay_x(dst_area->density->density);
         else if (component.compare("temperature") == 0)
-          sim_area->temperature->temperature.overlay_y(dst_area->temperature->temperature);
+          sim_area->temperature->temperature.overlay_x(dst_area->temperature->temperature);
       }
 
       if (j < geometry->areas_by_z - 1)
       {
         Area *dst_area = areas(i, j + 1);
         if (component.compare("density") == 0)
-          sim_area->density->density.overlay_x(dst_area->density->density);
+          sim_area->density->density.overlay_y(dst_area->density->density);
         else if (component.compare("temperature") == 0)
-          sim_area->temperature->temperature.overlay_x(dst_area->temperature->temperature);
+          sim_area->temperature->temperature.overlay_y(dst_area->temperature->temperature);
       }
 
       // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
