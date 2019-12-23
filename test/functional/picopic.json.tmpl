@@ -4,23 +4,25 @@
   "macro_amount": {{ macro_amount }},
   "beam_plasma_macro_size_ratio": 2,
   "geometry": {
-    "radius": 0.0375,
-    "longitude": 0.15,
-    "grid_size": {
+    "size": {
+      "radius": 0.0375,
+      "longitude": 0.15
+    },
+    "grid": {
       "radius": 128,
       "longitude": 256
     },
     "areas_amount": {
       "radius": 2,
       "longitude": 4
+    },
+    "pml": {
+      "left_wall": 0,
+      "right_wall": 0.05,
+      "outer_wall": 0.2,
+      "sigma_1": 1e-5,
+      "sigma_2": 7e-2
     }
-  },
-  "pml": {
-    "left_wall": 0,
-    "right_wall": 0.05,
-    "outer_wall": 0.2,
-    "sigma_1": 1e-5,
-    "sigma_2": 7e-2
   },
   "time": {
     "start": 0,

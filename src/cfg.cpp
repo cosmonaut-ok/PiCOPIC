@@ -222,13 +222,15 @@ void Cfg::init_geometry ()
 {
   //! initialize geometry
   object& json_root = json_data.get<object>()["geometry"].get<object>();
-  object& json_root_pml = json_data.get<object>()["pml"].get<object>();
+  object& json_root_pml = json_root["pml"].get<object>();
+  object& json_root_size = json_root["size"].get<object>();
+  object& json_root_grid = json_root["grid"].get<object>();
 
-  double radius = json_root["radius"].get<double>();
-  double longitude = json_root["longitude"].get<double>();
+  double radius = json_root_size["radius"].get<double>();
+  double longitude = json_root_size["longitude"].get<double>();
 
-  int n_grid_r = (int)json_root["grid_size"].get<object>()["radius"].get<double>();
-  int n_grid_z = (int)json_root["grid_size"].get<object>()["longitude"].get<double>();
+  int n_grid_r = (int)json_root_grid["radius"].get<double>();
+  int n_grid_z = (int)json_root_grid["longitude"].get<double>();
 
   // init PML
   double left_wall = json_root_pml["left_wall"].get<double>();

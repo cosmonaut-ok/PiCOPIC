@@ -46,10 +46,10 @@ class Cfg:
             cfg = json.load(f)        
         self.debug = cfg['debug']
         self.use_hdf5 = cfg['hdf5']
-        self.geometry_size = [cfg['geometry']['radius'], cfg['geometry']['longitude']]
-        self.geometry_grid = [cfg['geometry']['grid_size']['radius'], cfg['geometry']['grid_size']['longitude']]
+        self.geometry_size = [cfg['geometry']['size']['radius'], cfg['geometry']['size']['longitude']]
+        self.geometry_grid = [cfg['geometry']['grid']['radius'], cfg['geometry']['grid']['longitude']]
         self.geometry_areas = [cfg['geometry']['areas_amount']['radius'], cfg['geometry']['areas_amount']['longitude']]
-        self.geometry_pml = [cfg['pml']['left_wall'], cfg['pml']['right_wall'], cfg['pml']['outer_wall'], cfg['pml']['sigma_1'], cfg['pml']['sigma_2']]
+        self.geometry_pml = [cfg['geometry']['pml']['left_wall'], cfg['geometry']['pml']['right_wall'], cfg['geometry']['pml']['outer_wall'], cfg['geometry']['pml']['sigma_1'], cfg['geometry']['pml']['sigma_2']]
         self.time = [cfg['time']['start'], cfg['time']['end'], cfg['time']['step']]
         
         self.species = []
