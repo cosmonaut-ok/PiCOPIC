@@ -28,6 +28,9 @@ Cfg::Cfg(const char *json_file_name)
 
   json_data = v;
 
+  // set package version to config metadata
+  json_data.get<object>()["package_version"] = value((string)PACKAGE_VERSION);
+
   //! set debug option
   debug = json_data.get<object>()["debug"].get<bool>();
 
@@ -329,7 +332,7 @@ bool Cfg::method_limitations_check ()
     {
       LOG_CRIT("Amount of areas should be multiple of 2", 1);
     }
-  
+
   if (geometry->r_grid_amount / geometry->areas_by_r < MIN_AREA_GRID_AMOUNT)
     {
       LOG_CRIT("Too small area size by r. Must be ``" << MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
@@ -344,7 +347,7 @@ bool Cfg::method_limitations_check ()
     {
       LOG_CRIT("Too small area size. Must be ``" << MIN_AREA_GRID_AMOUNT * MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
     }
-  
+
 // try to figure out, where is electrons
   for (auto i = particle_species.begin(); i != particle_species.end(); ++i)
   {
@@ -437,4 +440,18 @@ bool Cfg::method_limitations_check ()
   }
 
   return true;
+}
+
+string Cfg::cfg2str()
+{
+  // make some generic preparations
+  value json_data_for_dump = json_data;
+  json_data_for_dump.get<object>()["data"].get<object>()["data_root"].set<string>(".");
+
+#ifdef DEBUG
+  string str = json_data_for_dump.serialize(true);
+#else
+  string str = json_data_for_dump.serialize();
+#endif // DEBUG
+  return str;
 }

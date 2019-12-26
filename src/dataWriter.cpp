@@ -4,7 +4,8 @@ DataWriter::DataWriter(string a_path, string a_component,
                        string a_specie, unsigned int a_shape,
                        int *a_size, unsigned int a_schedule,
                        bool a_compress,  unsigned int a_compress_level,
-                       Geometry *a_geom, TimeSim *a_time, Grid<Area *> a_areas)
+                       Geometry *a_geom, TimeSim *a_time,
+                       Grid<Area *> a_areas, string a_metadata)
 {
   // ! path - path to save the results
   // ! component - some parameter, that should be dumped:
@@ -97,6 +98,7 @@ DataWriter::DataWriter(string a_path, string a_component,
   engine = OutEnginePlain (path, name, shape, size, true, compress, compress_level);
 #endif // USE_HDF5
 
+  engine.write_metadata(a_metadata);
 }
 
 void DataWriter::go()

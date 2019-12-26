@@ -9,6 +9,8 @@ OutEnginePlain::OutEnginePlain (string a_path, string a_subpath, unsigned int a_
   // make root directory
   lib::make_directory(path + "/" + subpath);
 
+  metadata_file = "metadata.json";
+
   if (compress)
     LOG_WARN("compression is not supported by plaintext output engine");
 }
@@ -86,5 +88,12 @@ void OutEnginePlain::write_1d_vector(string a_name, vector<double> data)
   for (auto i = data.begin(); i != data.end(); ++i)
     out_val << *i << " ";
 
+  out_val.close();
+}
+
+void OutEnginePlain::write_metadata(string metadata)
+{
+  ofstream out_val(path + "/" + metadata_file, ios::out);
+  out_val << metadata;
   out_val.close();
 }
