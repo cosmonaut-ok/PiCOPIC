@@ -79,8 +79,9 @@ public:
   Cfg(const char *xml_file_name);
   ~Cfg(void);
 
-public:
+  string cfg2str();
 
+public:
   bool debug = false;
   bool use_hdf5 = false;
 

@@ -10,6 +10,7 @@ OutEngineHDF5::OutEngineHDF5 (string a_path, string a_subpath, unsigned int a_sh
                                 bool a_append, bool a_compress, unsigned int a_compress_level)
   : OutEngine (a_path, a_subpath, a_shape, a_size, a_append, a_compress, a_compress_level)
 {
+  datafile_name = "data.h5";
   // make root directory
   lib::make_directory(path);
 
@@ -17,7 +18,7 @@ OutEngineHDF5::OutEngineHDF5 (string a_path, string a_subpath, unsigned int a_sh
 
   // Exception::dontPrint();
   H5File file;
-  string fname = path + "/data.h5";
+  string fname = path + "/" + datafile_name;
 
   try
   {
@@ -63,7 +64,7 @@ void OutEngineHDF5::write_rec(string a_name, Grid<double> data)
   {
     Exception::dontPrint();
 
-    H5File file(path + "/data.h5", H5F_ACC_RDWR );
+    H5File file(path + "/" + datafile_name, H5F_ACC_RDWR );
 
     Group group(file.openGroup('/' + subpath));
 
@@ -116,7 +117,7 @@ try
   {
     Exception::dontPrint();
 
-    H5File file(path + "/data.h5", H5F_ACC_RDWR );
+    H5File file(path + "/" + datafile_name, H5F_ACC_RDWR );
 
     Group group(file.openGroup('/' + subpath));
 
@@ -214,7 +215,7 @@ void OutEngineHDF5::write_dot(string a_name, Grid<double> data)
   {
     Exception::dontPrint();
 
-    H5File file(path + "/data.h5", H5F_ACC_RDWR );
+    H5File file(path + "/" + datafile_name, H5F_ACC_RDWR );
 
     Group group(file.openGroup('/' + subpath));
 
@@ -259,7 +260,7 @@ void OutEngineHDF5::write_1d_vector(string a_name, vector<double> data)
   {
     // Exception::dontPrint();
 
-    H5File file(path + "/data.h5", H5F_ACC_RDWR );
+    H5File file(path + "/" + datafile_name, H5F_ACC_RDWR );
 
     Group group(file.openGroup('/' + subpath));
 
@@ -277,6 +278,39 @@ void OutEngineHDF5::write_1d_vector(string a_name, vector<double> data)
                                      PredType::NATIVE_DOUBLE, fspace, plist));
 
     dataset->write(arr, PredType::NATIVE_DOUBLE);
+
+    file.close();
+  }
+  catch(FileIException error)
+  {
+    error.printErrorStack();
+  }
+
+  // catch failure caused by the DataSet operations
+  catch(DataSetIException error)
+  {
+    error.printErrorStack();
+  }
+}
+
+void OutEngineHDF5::write_metadata(string metadata)
+{
+  try
+  {
+    Exception::dontPrint();
+
+    H5File file(path + "/" + datafile_name, H5F_ACC_RDWR );
+
+    Group dataset = file.createGroup("/metadata");
+
+    DataSpace attr_dataspace = DataSpace(H5S_SCALAR);
+    StrType datatype(PredType::C_S1, metadata.size());
+
+    Attribute attribute = dataset.createAttribute( "metadata", datatype,
+                                                   attr_dataspace);
+
+    // Write the attribute data.
+    attribute.write(datatype, metadata);
 
     file.close();
   }

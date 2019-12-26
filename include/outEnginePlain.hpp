@@ -14,4 +14,8 @@ public:
   void write_vec(string a_name, Grid<double> data);
   void write_dot(string a_name, Grid<double> data);
   void write_1d_vector(string a_name, vector<double> data);
+  void write_metadata(string metadata);
+
+private:
+  string metadata_file;
 };

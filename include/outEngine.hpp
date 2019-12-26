@@ -45,4 +45,5 @@ public:
   virtual void write_vec(string a_name, Grid<double> data) = 0;
   virtual void write_dot(string a_name, Grid<double> data) = 0;
   virtual void write_1d_vector(string a_name, vector<double> data) = 0;
+  virtual void write_metadata(string metadata) = 0;
 };

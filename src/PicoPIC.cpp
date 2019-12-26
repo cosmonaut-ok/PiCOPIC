@@ -327,7 +327,7 @@ int main(int argc, char **argv)
     DataWriter writer (cfg.output_data->data_root, i->component,
                        i->specie, i->shape, probe_size, i->schedule,
                        cfg.output_data->compress, cfg.output_data->compress_level,
-                       geometry_global, sim_time_clock, areas);
+                       geometry_global, sim_time_clock, areas, cfg.cfg2str());
 
     data_writers.push_back(writer);
   }
