@@ -328,9 +328,9 @@ bool Cfg::method_limitations_check ()
   double electron_temperature = 0;
 
   // grid limitations
-  if (fmod(geometry->areas_by_r, 2) != 0 || fmod(geometry->areas_by_z, 2) != 0)
+  if ((fmod(geometry->areas_by_r, 2) != 0 && geometry->areas_by_r != 1) || (fmod(geometry->areas_by_z, 2) != 0 && geometry->areas_by_z != 1))
     {
-      LOG_CRIT("Amount of areas should be multiple of 2", 1);
+      LOG_CRIT("Amount of areas should be multiple of 2, or 1", 1);
     }
 
   if (geometry->r_grid_amount / geometry->areas_by_r < MIN_AREA_GRID_AMOUNT)
