@@ -98,9 +98,9 @@ class bootstrap ():
         utils.cliexec('make distclean', cwd=self.rootdir, view=self.verbose, wait=True)
         utils.cliexec('./autogen.sh', cwd=self.rootdir, view=self.verbose, wait=True)
         if self.accept_ieee:
-            utils.cliexec('./configure --enable-ieee --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
+            utils.cliexec('./configure --disable-hdf5 --enable-ieee --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
         else:
-            utils.cliexec('./configure --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
+            utils.cliexec('./configure --disable-hdf5 --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
         utils.cliexec('make build', cwd=self.rootdir, view=self.verbose, wait=True)
 
         picopic_file = os.path.join(self.rootdir, 'PicoPIC')
