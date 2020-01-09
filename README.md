@@ -59,6 +59,8 @@ root@host# apt-get install build-essential autoconf
 
 If you going to use HDF5 format, you should build HDF5 library as prerequirement. As libhdf5 v.1.10.0 ships with debian, we need to download and compile fresh version (1.10.3) manually
 
+__**WARNING!** HDF5 is default picopic output format. You must take care about HDF5 library presence (see below) or switch to plaintext format with `./configure` script (see "CONFIGURE AND BUILD PROJECT").__
+
 * 0.a. install HDF5 with package management system (perform 0.a, 0.b or install in some other way, at your option):
 ``` shell
 user@host$ sudo apt-get install libhdf5-cpp-100 libhdf5-dev
@@ -89,6 +91,7 @@ user@host$ ./configure [OPTIONS] # use ./configure --help to view full options l
 # 0.b.: optional step to install HDF5 library with built-in helper
 user@host$ sudo make hdf5-install
 # end of 0.b.
+**WARNING!** if you don't want to use HDF5 output format, you must disable it manually with `--disable-hdf5` option for `./configure` script
 user@host$ make [COMPILE FLAGS] # see below about COMPILE FLAGS
 ```
 
