@@ -1,0 +1,2 @@
+- Q: How to switch between hdf5 and plaintext output?
+- A: You can do it before compilation with configure script: `./configure ... --enable-hdf5 ...`. Data analysis library recognizes output data format automatically.
