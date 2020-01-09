@@ -1,6 +1,5 @@
 {
   "debug": false,
-  "hdf5": false,
   "macro_amount": 2.1e5,
   "beam_plasma_macro_size_ratio": 2,
   "geometry": {
@@ -140,6 +139,14 @@
       },
       {
         "component": "J_z",
+        "schedule": 20,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 128, "z": 512 }
+      },
+      {
+        "component": "density",
+        "specie": "beam_electrons",
         "schedule": 20,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },

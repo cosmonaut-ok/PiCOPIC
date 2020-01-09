@@ -24,7 +24,7 @@ regression_dir = os.path.join(os.sep, 'home', 'cosmonaut', 'regression')
 
 sys.path.append(me + '/../../lib/python/')
 
-from picopic.cfg import Cfg
+from picopic.meta_reader import MetaReader
 from picopic.plot_builder import PlotBuilder
 from picopic.h5_reader import H5Reader
 from picopic.plain_reader import PlainReader
@@ -144,7 +144,7 @@ class bootstrap ():
 
 class picopicTest ():
     def __init__(self, config_file, rel_tolerance=10000, abs_tolerance=0):
-        self.cfg = Cfg(config_file)
+        self.meta = MetaReader(config_file)
         self.components = {}
         self.rootdir = os.path.realpath(os.path.dirname(os.path.dirname(me)))
         self.testdir = os.path.join(self.rootdir, os.path.dirname(config_file))
@@ -158,7 +158,7 @@ class picopicTest ():
     def compare(self, component_name, filename):
         frame_name = self.components[component_name]
         true_path = os.path.join(me, 'true_data', component_name, frame_name, filename)
-        test_path = os.path.join(self.testdir, self.cfg.data_path, self.cfg.data_path,
+        test_path = os.path.join(self.testdir, self.meta.data_path, self.meta.data_path,
                                  component_name, frame_name, filename)
 
         # with gzip.open(true_path + '.gz', 'r') as myfile:
@@ -188,8 +188,8 @@ class picopicTest ():
                   Fore.RED + "FAILED" + Style.RESET_ALL)
 
         if not isc and self.verbose:
-            print(Fore.YELLOW + "Standard Deviation " + str(test_value_std) + "; Ralative Differenge: " + str(abs((test_value_std - true_value_std) / true_value_std)) + Style.RESET_ALL)
-            print(Fore.YELLOW + "Variance " + str(test_value_var) + "; Ralative Differenge: " + str(abs((test_value_var - true_value_var) / true_value_var)) + Style.RESET_ALL)
+            print(Fore.YELLOW + "Standard Deviation " + str(test_value_std) + "; Ralative Difference: " + str(abs((test_value_std - true_value_std) / true_value_std)) + Style.RESET_ALL)
+            print(Fore.YELLOW + "Variance " + str(test_value_var) + "; Ralative Difference: " + str(abs((test_value_var - true_value_var) / true_value_var)) + Style.RESET_ALL)
 
         return isc
 
@@ -250,16 +250,16 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
 
     utils = Util()
 
-    cfg = Cfg(os.path.join(b.testdir, 'PicoPIC.json'))
+    meta = MetaReader(os.path.join(b.testdir, 'PicoPIC.json'))
 
     el_charge = 1.6e-19
     rho_beam_scale = 1
-    clim_estimation = cfg.get_clim_estimation()
+    clim_estimation = meta.get_clim_estimation()
     shape=[0,0,100,500]
     temperature_shape=[90,1000,130,1200] # 90,130,1000,1200]
 
     timestamp=1e-8
-    time_range=[cfg.start_time, cfg.end_time]
+    time_range=[meta.start_time, meta.end_time]
 
     use_cache=False
     use_grid=True
@@ -268,7 +268,7 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
 
     clim_e_r = [-clim_estimation, clim_estimation]
     clim_e_z = [-clim_estimation, clim_estimation]
-    clim_rho_beam = [-(cfg.bunch_density * el_charge * rho_beam_scale), 0]
+    clim_rho_beam = [-(meta.bunch_density * el_charge * rho_beam_scale), 0]
     autoselect = True
     x_axis_label = r'$\mathit{Z (m)}$'
     y_axis_label = r'$\mathit{R (m)}$'
@@ -289,27 +289,27 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
 
     e_shape = [34, 341]
 
-    r_scale = (shape[2] - shape[0]) / cfg.number_r_grid
-    z_scale = (shape[3] - shape[1]) / cfg.number_z_grid
+    r_scale = (shape[2] - shape[0]) / meta.number_r_grid
+    z_scale = (shape[3] - shape[1]) / meta.number_z_grid
 
-    reader = PlainReader(path = cfg.data_path,
-                         data_root=cfg.data_path,
-                         fullframe_size=[cfg.number_r_grid , cfg.number_z_grid],
-                         fpds=cfg.frames_per_file,
-                         use_cache=use_cache,
-                         verbose=verbose)
+    if os.path.isfile(os.path.join(self.config_path, "metadata.json")):
+        reader = PlainReader(path = self.config_path, use_cache=use_cache, verbose=verbose)
+    elif os.path.isfile(os.path.join(self.config_path, "data.h5")):
+        reader = H5Reader(path = self.config_path, use_cache=use_cache, verbose=verbose)
+    else:
+        raise EnvironmentError("There is no corresponding data/metadata files in the path " + config_path + ". Can not continue.")
 
     ############################################################################
 
     plot = PlotBuilder(shape[3] - shape[1], shape[2] - shape[0],
-                       fig_color=cfg.figure_color,
-                       fig_width=cfg.figure_width,
-                       fig_height=cfg.figure_height,
-                       fig_dpi=cfg.figure_dpi,
-                       font_family=cfg.figure_font_family,
-                       font_name=cfg.figure_font_name,
-                       font_size=cfg.figure_font_size,
-                       x_ticklabel_end=cfg.z_size * z_scale, y_ticklabel_end=cfg.r_size * r_scale,
+                       fig_color=meta.figure_color,
+                       fig_width=meta.figure_width,
+                       fig_height=meta.figure_height,
+                       fig_dpi=meta.figure_dpi,
+                       font_family=meta.figure_font_family,
+                       font_name=meta.figure_font_name,
+                       font_size=meta.figure_font_size,
+                       x_ticklabel_end=meta.z_size * z_scale, y_ticklabel_end=meta.r_size * r_scale,
                        tickbox=True, grid=use_grid, is_invert_y_axe=False,
                        aspect='equal', image_interpolation='nearest', guess_number_ticks=20)
 
@@ -335,8 +335,8 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
 
     data_r = data_z = data_beam = []
 
-    for probe in cfg.probes:
-        frame = cfg.get_frame_number_by_timestamp(timestamp, probe.schedule)
+    for probe in meta.probes:
+        frame = meta.get_frame_number_by_timestamp(timestamp, probe.schedule)
         if (probe.type == 'frame') and (probe.r_start == shape[0]) and (probe.z_start == shape[1]) and(probe.r_end == shape[2]) and(probe.z_end == shape[3]):
             if probe.component == 'E_r': data_r = reader.get_frame('E_r', shape, frame)
             if probe.component == 'E_z': data_z = reader.get_frame('E_z', shape, frame)
@@ -363,19 +363,19 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
     temperature_phi=[]
     temperature_z=[]
 
-    for probe in cfg.probes:
+    for probe in meta.probes:
         if (probe.type == 'mpframe') and (probe.component == temperature_component) and (probe.r_start == temperature_shape[0]) and (probe.z_start == temperature_shape[1]) and (probe.r_end == temperature_shape[2]) and (probe.z_end == temperature_shape[3]):
             dump_interval = probe.schedule
-            start_frame = cfg.get_frame_number_by_timestamp(time_range[0], dump_interval)
-            end_frame = cfg.get_frame_number_by_timestamp(time_range[1], dump_interval) - 1
+            start_frame = meta.get_frame_number_by_timestamp(time_range[0], dump_interval)
+            end_frame = meta.get_frame_number_by_timestamp(time_range[1], dump_interval) - 1
             for i in range(start_frame, end_frame):
                 el_sum_r=0
                 el_sum_phi=0
                 el_sum_z=0
                 # calculating element
-                r = np.fromfile("{}/{}/{}/mpframe_{}:{}_{}:{}/{}_vel_r.dat".format(cfg.config_path, cfg.data_root, probe.component, temperature_shape[0], temperature_shape[1], temperature_shape[2], temperature_shape[3], i), dtype='float', sep=' ')
-                phi = np.fromfile("{}/{}/{}/mpframe_{}:{}_{}:{}/{}_vel_phi.dat".format(cfg.config_path, cfg.data_root, probe.component, temperature_shape[0], temperature_shape[1], temperature_shape[2], temperature_shape[3], i), dtype='float', sep=' ')
-                z = np.fromfile("{}/{}/{}/mpframe_{}:{}_{}:{}/{}_vel_z.dat".format(cfg.config_path, cfg.data_root, probe.component, temperature_shape[0], temperature_shape[1], temperature_shape[2], temperature_shape[3], i), dtype='float', sep=' ')
+                r = np.fromfile("{}/{}/{}/mpframe_{}:{}_{}:{}/{}_vel_r.dat".format(meta.config_path, meta.data_root, probe.component, temperature_shape[0], temperature_shape[1], temperature_shape[2], temperature_shape[3], i), dtype='float', sep=' ')
+                phi = np.fromfile("{}/{}/{}/mpframe_{}:{}_{}:{}/{}_vel_phi.dat".format(meta.config_path, meta.data_root, probe.component, temperature_shape[0], temperature_shape[1], temperature_shape[2], temperature_shape[3], i), dtype='float', sep=' ')
+                z = np.fromfile("{}/{}/{}/mpframe_{}:{}_{}:{}/{}_vel_z.dat".format(meta.config_path, meta.data_root, probe.component, temperature_shape[0], temperature_shape[1], temperature_shape[2], temperature_shape[3], i), dtype='float', sep=' ')
                 print("processing frame", i)
                 for i in range(0, len(r)-1):
                     # el_sum_sq += r[i]*r[i]+phi[i]*phi[i]+z[i]*z[i]
@@ -392,13 +392,13 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
 
     # define plot builder
     plot = PlotBuilder(0, 0, # let the system detects sizes automatically
-                       fig_color=cfg.figure_color,
-                       fig_width=cfg.figure_width,
-                       fig_height=cfg.figure_height,
-                       fig_dpi=cfg.figure_dpi,
-                       font_family=cfg.figure_font_family,
-                       font_name=cfg.figure_font_name,
-                       font_size=cfg.figure_font_size,
+                       fig_color=meta.figure_color,
+                       fig_width=meta.figure_width,
+                       fig_height=meta.figure_height,
+                       fig_dpi=meta.figure_dpi,
+                       font_family=meta.figure_font_family,
+                       font_name=meta.figure_font_name,
+                       font_size=meta.figure_font_size,
                        tickbox=True, grid=use_grid, is_invert_y_axe=False,
                        aspect='auto', guess_number_ticks=20,
                        x_ticklabel_start=time_range[0],
@@ -420,15 +420,15 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
     ############################################################################
 
     # get data
-    start_frame = None # cfg.get_frame_number_by_timestamp(time_range[0])
-    end_frame = None # 460 # cfg.get_frame_number_by_timestamp(time_range[1])
+    start_frame = None # meta.get_frame_number_by_timestamp(time_range[0])
+    end_frame = None # 460 # meta.get_frame_number_by_timestamp(time_range[1])
 
     data_r = data_z = []
 
-    for probe in cfg.probes:
+    for probe in meta.probes:
         if (probe.type == 'dot') and (probe.r_start == e_shape[0]) and (probe.z_start == e_shape[1]):
-            start_frame = cfg.get_frame_number_by_timestamp(time_range[0], probe.schedule)
-            end_frame = cfg.get_frame_number_by_timestamp(time_range[1], probe.schedule) - 1
+            start_frame = meta.get_frame_number_by_timestamp(time_range[0], probe.schedule)
+            end_frame = meta.get_frame_number_by_timestamp(time_range[1], probe.schedule) - 1
             if probe.component == 'E_r': data_r = reader.get_frame_range_dot('E_r', e_shape[0], e_shape[1], start_frame, end_frame)
             if probe.component == 'E_z': data_z = reader.get_frame_range_dot('E_z', e_shape[0], e_shape[1], start_frame, end_frame)
 
@@ -436,13 +436,13 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
 
     # define plot builder
     plot = PlotBuilder(0, 0, # let the system detects sizes automatically
-                       fig_color=cfg.figure_color,
-                       fig_width=cfg.figure_width,
-                       fig_height=cfg.figure_height,
-                       fig_dpi=cfg.figure_dpi,
-                       font_family=cfg.figure_font_family,
-                       font_name=cfg.figure_font_name,
-                       font_size=cfg.figure_font_size,
+                       fig_color=meta.figure_color,
+                       fig_width=meta.figure_width,
+                       fig_height=meta.figure_height,
+                       fig_dpi=meta.figure_dpi,
+                       font_family=meta.figure_font_family,
+                       font_name=meta.figure_font_name,
+                       font_size=meta.figure_font_size,
                        tickbox=True, grid=use_grid, is_invert_y_axe=False,
                        aspect='auto', guess_number_ticks=20,
                        # number_x_ticks=10, number_y_ticks=10

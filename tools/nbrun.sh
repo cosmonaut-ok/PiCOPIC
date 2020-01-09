@@ -40,6 +40,9 @@ if [ "$BATCH" == "no" ]; then
     echo 'input("Please press RETURN to exit ")' >> ${TMPFILE}.py
 fi
 
+## use H5 file non-locking mode to view plots
+export HDF5_USE_FILE_LOCKING=FALSE
+
 python ${TMPFILE}.py
 
 rm -f $TMPFILE ${TMPFILE}.py

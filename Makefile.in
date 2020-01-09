@@ -82,7 +82,7 @@ all: build python
 build: prepare $(SUBDIRS) $(LIBS) $(EXES)
 
 ### Build rules
-.PHONY: all clean dummy check-syntax prepare doxygen test test-unit test-h5 test-ext
+.PHONY: all clean dummy check-syntax prepare doxygen test test-perf test-h5 test-ext
 
 $(SUBDIRS): dummy
 	cd $@ && $(MAKE)
@@ -145,16 +145,16 @@ $(PicoPIC_MODULE): $(PicoPIC_OBJS)
 distclean: clean
 	$(RM) -r *.avi *.png $(BUILD_DIRS) $(RELEASE) $(RELEASE).zip autom4te.cache config.log config.status configure Makefile scripts/*.sh simulation_result/
 
-# run: bootstrap
-# 	./PicoPIC
+$(TESTSUBDIRS:%=%/__test__): dummy
+	cd `dirname $@` && $(MAKE) test
 
-# $(TESTSUBDIRS:%=%/__test__): dummy
-# 	cd `dirname $@` && $(MAKE) test
+test-unit: $(TESTSUBDIRS:%=%/__test__)
 
-# test-unit: $(TESTSUBDIRS:%=%/__test__)
-
-test: clean
+test: clean test-unit
 	@python3 ./test/functional/test.py
+
+test-perf:
+	@/bin/sh ./test/performance/performance.sh
 
 # test-ext: clean
 # 	@python3 ./test/functional/test.py --type=ext
@@ -165,10 +165,10 @@ test: clean
 # test-tools: test
 # 	TESTDIR=$(TESTDIR) /bin/bash ./test/functional/tools.sh
 
-# test-full: test-unit test-ext test-tools
+test-full: test-unit test-perf test
 
-# check-syntax:
-# 	$(CXX) $(LIBRARY_PATH) $(INCLUDE_PATH) $(CXXFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(PicoPIC_CXX_SRCS)
+check-syntax:
+	$(CXX) $(LIBRARY_PATH) $(INCLUDE_PATH) $(CXXFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(PicoPIC_CXX_SRCS)
 
 prepare:
 	$(MKDIR) -p $(BUILD_DIRS)

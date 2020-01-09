@@ -28,7 +28,7 @@ class SpecieP:
 
 
 class BeamP(SpecieP):
-    def __init__(self, name, macro_amount, velocity, charge, mass, 
+    def __init__(self, name, macro_amount, velocity, charge, mass,
                  start_time, bunch_density, bunch_amount, bunch_length, bunch_radius, bunches_distance):
         super(BeamP, self).__init__(name, macro_amount, 0, 0, 0, charge, mass)
         self.velocity = velocity
@@ -40,33 +40,39 @@ class BeamP(SpecieP):
         self.bunches_distance = bunches_distance
 
 
-class Cfg:
-    def __init__(self, configfile):
-        with open(configfile) as f:
-            cfg = json.load(f)        
+class MetaReader:
+    def __init__(self, config):
+        if isinstance(config, str):
+            with open(config) as f:
+                cfg = json.load(f)
+        elif isinstance(config, dict):
+            cfg = config
+
         self.debug = cfg['debug']
-        self.use_hdf5 = cfg['hdf5']
         self.geometry_size = [cfg['geometry']['size']['radius'], cfg['geometry']['size']['longitude']]
         self.geometry_grid = [cfg['geometry']['grid']['radius'], cfg['geometry']['grid']['longitude']]
         self.geometry_areas = [cfg['geometry']['areas_amount']['radius'], cfg['geometry']['areas_amount']['longitude']]
         self.geometry_pml = [cfg['geometry']['pml']['left_wall'], cfg['geometry']['pml']['right_wall'], cfg['geometry']['pml']['outer_wall'], cfg['geometry']['pml']['sigma_1'], cfg['geometry']['pml']['sigma_2']]
         self.time = [cfg['time']['start'], cfg['time']['end'], cfg['time']['step']]
-        
+
         self.species = []
         for i in cfg['particles']:
-            pp = SpecieP(i['name'], 1e6, i['density']['left'], 
-                         i['density']['right'], i['temperature'], 
+            pp = SpecieP(i['name'], 1e6, i['density']['left'],
+                         i['density']['right'], i['temperature'],
                          i['charge'], i['mass'])
             self.species.append(pp)
-            
+
         self.beams = []
         for i in cfg['beams']:
             bm = BeamP(i['name'], 1e6, i['velocity'], i['charge'], i['mass'],
-                       i['start_time'], i['bunch']['density'], i['bunch']['amount'], i['bunch']['length'], 
+                       i['start_time'], i['bunch']['density'], i['bunch']['amount'], i['bunch']['length'],
                        i['bunch']['radius'], i['bunch']['distance'])
             self.beams.append(bm)
 
-        self.config_path = os.path.normpath(os.path.dirname(configfile))
+        if isinstance(config, str):
+            self.config_path = os.path.normpath(os.path.dirname(config))
+        else:
+            self.config_path = cfg['base_path']
 
         # calculate data path
         if str.startswith(cfg['data']['data_root'], '/'):
@@ -76,10 +82,10 @@ class Cfg:
 
         self.use_compression = cfg['data']['compression']['use']
         self.compression_level = cfg['data']['compression']['level']
-        
+
         self.probes = []
         probe_size = [0, 0, -1, -1]
-        
+
         for i in cfg['data']['probes']:
             try:
                 probe_specie = i['specie']
@@ -93,12 +99,12 @@ class Cfg:
                 probe_size = [0, i['z'], -1, -1]
             elif i['shape'] == 'dot':
                 probe_size = [i['r'], i['z'], -1, -1]
-                
-            pb = Probe(i['shape'], i['component'], i['schedule'], 
+
+            pb = Probe(i['shape'], i['component'], i['schedule'],
                        probe_size[0], probe_size[1], probe_size[2], probe_size[3],
                        probe_specie)
             self.probes.append(pb)
-            
+
         self.plot_cmap = cfg['data']['plot']['subplot']['cmap']
         self.plot_ticks_x = cfg['data']['plot']['subplot']['ticks']['x_amount']
         self.plot_ticks_y = cfg['data']['plot']['subplot']['ticks']['y_amount']

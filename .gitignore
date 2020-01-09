@@ -22,3 +22,6 @@ testingdir
 test/functional/true_data/
 lib/python/picopic/dist/
 lib/python/picopic/picopic.egg-info/
+*.o
+*.a
+*main
