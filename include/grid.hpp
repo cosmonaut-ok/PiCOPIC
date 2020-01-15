@@ -62,21 +62,14 @@ public:
 
   void overlay_set(T value)
   {
+    // unsigned int j = 0;
     for (unsigned int i = 0; i < x_real_size; ++i)
-    {
-      grid[i][0] = value;
-      grid[i][1] = value;
-      grid[i][y_real_size-1] = value;
-      grid[i][y_real_size-2] = value;
-    }
-
-    for (unsigned int j = 0; j < y_real_size; ++j)
-    {
-      grid[0][j] = value;
-      grid[1][j] = value;
-      grid[x_real_size-1][j] = value;
-      grid[x_real_size-2][j] = value;
-    }
+      for (unsigned int j = 0; j < y_real_size; ++j)
+        if (i < o_s || j < o_s
+            ||
+            i >= x_real_size - o_s || j >= y_real_size - o_s
+          )
+          grid[i][j] = value;
   };
 
   void overlay_y(Grid<T> rhsgrid)

@@ -43,6 +43,21 @@ public:
             && vec3d[2] == rhs);
   };
 
+  // != operator
+  bool operator!= (vector3d const& rhs)
+  {
+    return (vec3d[0] != rhs.vec3d[0]
+            || vec3d[1] != rhs.vec3d[1]
+            || vec3d[2] != rhs.vec3d[2]);
+  };
+
+  bool operator!= (T const& rhs)
+  {
+    return (vec3d[0] != rhs
+            || vec3d[1] != rhs
+            || vec3d[2] != rhs);
+  };
+
   // = for number and another vector3d
   vector3d& operator= (T const& rhs)&
   {
@@ -143,13 +158,6 @@ public:
   {
     vector3d<T> ret = vector3d<T>((*this)[0], (*this)[1], (*this)[2]);
     return ret;
-  };
-
-  void copy_components(vector3d<T> other)
-  {
-    vec3d[0] = other.vec3d[0];
-    vec3d[1] = other.vec3d[1];
-    vec3d[2] = other.vec3d[2];
   };
 
   T dot(vector3d const& rhs)

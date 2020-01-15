@@ -49,7 +49,7 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
 
-all: main
+all: main test
 
 clean:
 	$(RM) $(OBJ_FILES) gtest.a gtest_main.a gtest.o gtest_main.o gtest-all.o main
@@ -81,5 +81,5 @@ $(OBJ_DIR)/%.o: $(SRC_FILES)/%.cpp
 main: $(OBJ_FILES) $(USER_OBJ_FILES) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 
-test: all
+test: main
 	./main
