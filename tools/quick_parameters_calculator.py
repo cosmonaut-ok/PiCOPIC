@@ -1,22 +1,12 @@
 #!/usr/bin/env python3
 
 import os,sys
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lib/python"))
-
 import math
-
-# import sys
-# import os
-
 import argparse
 
-# from numpy import *
-# from pylab import *
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lib/python"))
 
-# import matplotlib.pyplot as plt
-# import matplotlib.animation as ani
-
-from picopic.cfg import Cfg
+from picopic.meta_reader import MetaReader
 
 def langmur_freq(density):
     # pi = 3.1415
@@ -53,7 +43,7 @@ def main():
 
     args = parser.parse_args()
 
-    config = Cfg(args.properties_path)
+    config = MetaReader(args.properties_path)
 
     for i in config.species:
         if i.name.lower() == 'electrons':

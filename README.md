@@ -110,14 +110,12 @@ user@host$ make test-unit
 
 #### 4. **RUN**
 
-After compilation finished, you just need binary file `PicoPIC` and `parameters.xml`. You can copy this files to somewhere (if you skipped installation), edit `parameters.xml` and run `./PicoPIC`.
-
-_**WARNING! PicoPIC does not create data directory automatically. You need to create it before run (see `result_path` in parameters.xml)**_
+After compilation finished, you just need binary file `PicoPIC` and `PicoPIC.json`. You can copy this files to somewhere (if you skipped installation), edit `PicoPIC.json` and run `./PicoPIC`.
 
 ``` shell
-user@host$ /path/to/picopic [ -h ] | [ -f /path/to/PicoPIC.json ] # used parameters.xml from current directory, if calling without any options
+user@host$ /path/to/PicoPIC [ -h ] | [ -f /path/to/PicoPIC.json ] # used PicoPIC.json from current directory, if calling without any options
 # or (much better), launch it as high-priority process
-user@host$ nice -20 /path/to/PicoPIC [ -h ] | [ -f /path/to/parameters.xml ] # give some power to PicoPIC!
+user@host$ nice -20 /path/to/PicoPIC [ -h ] | [ -f /path/to/PicoPIC.json ] # give some power to PicoPIC!
 ```
 > NOTE: it can take several days or weeks, and several hundred gigabytes of diskspace (yep, it is science, my deer friend).
 
@@ -140,7 +138,7 @@ root@host# apt-get install ffmpeg
 **Animation generation:**
 
 ``` shell
-user@host$ /path/to/repository/with/picopic/tools/movie_3_E_RHObeam_r_z_map.py /path/to/PicoPIC.json [OPTIONS] # --help to get list of available options
+user@host$ /path/to/repository/with/picopic/tools/movie_3_E_RHObeam_r_z_map.py /path/to/data/directory [OPTIONS] # --help to get list of available options
 
 ```
 
@@ -158,7 +156,7 @@ user@host$ jupyter <notebook|lab> [tools/<notebook name>.ipynb]
 
 To run python notebook in non-interactive mode, please, use script `tools/nbrun.sh` from project root directory
 ``` shell
-user@host$ /path/to/PicoPIC/tools/nbrun.sh /path/to/PicoPIC/tools/<notebook name`>.ipynb [config_path=\'/path/to/PicoPIC.json\'] [other_notebook_variable=other_notebook_value]
+user@host$ /path/to/PicoPIC/tools/nbrun.sh /path/to/PicoPIC/tools/<notebook name`>.ipynb [data_path=\'/path/to/data/directory\'] [other_notebook_variable=other_notebook_value]
 ```
 
 #### 6. **DOCUMENTATION GENERATION** (optional)
@@ -277,9 +275,9 @@ user@host$ ./confugure --enable-experimental [other options] && make
 
 #### Tools
 
-Quick analytic calculator of plasma (aka Langmur) frequency, wake wavelength, Debye length etc. from parameters.xml file
+Quick analytic calculator of plasma (aka Langmur) frequency, wake wavelength, Debye length etc. from PicoPIC.json file
 ``` shell
-user@host$ ./tools/quick_parameters_calculator.py <path/to/parameters.xml>
+user@host$ ./tools/quick_parameters_calculator.py <path/to/PicoPIC.json>
 ```
 See **VISUALIZATION** section also
 
@@ -288,3 +286,7 @@ You can edit jupyter notebooks with jupyter browser editor (opens with `jupyter 
 #### Bugs/Workarounds
 
 > NOTE: It's recommended to disable HDF data file locking to avoid unreadable files, during incorrect application exit or other emergency stuff. Use `export HDF5_USE_FILE_LOCKING=FALSE` before launching PicoPIC, jupyter or other tools to disable locking.
+
+#### Known Issues
+
+- some plasma instabilities with unknown nature found. Required to investigate root cause.
