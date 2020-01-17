@@ -43,19 +43,6 @@ public:
     z_begin = 0;
     r_end = geometry->r_grid_amount;
     z_end = geometry->z_grid_amount;
-
-    // emulate dielectric walls
-    if (geometry->walls[0]) // r=0
-      r_begin = 1;
-
-    if (geometry->walls[1]) // z=0
-      z_begin = 1;
-
-    if (geometry->walls[2]) // r=r
-      r_end = geometry->r_grid_amount - 1;
-
-    if (geometry->walls[3]) // z=z
-      z_end = geometry->z_grid_amount - 1;
   };
 
   ~Field(void) {};

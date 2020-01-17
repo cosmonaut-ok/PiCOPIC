@@ -6,8 +6,8 @@ Geometry::Geometry (double rs, double zs,
                     double pml_l_z0, double pml_l_zwall,
                     double pml_l_rwall, double pml_sigma1,
                     double pml_sigma2,
-                    bool wall_r0, bool wall_rr,
-                    bool wall_z0, bool wall_zz)
+                    bool wall_r0, bool wall_z0,
+                    bool wall_rr,bool wall_zz)
 {
   r_size = rs;
   z_size = zs;
