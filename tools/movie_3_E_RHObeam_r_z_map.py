@@ -16,14 +16,6 @@ from picopic.plain_reader import PlainReader
 def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
         time_range=None, cmap=None, frame_step=1, dry_run=False, view=False, use_grid=False):
 
-    # set reader
-    if os.path.isfile(os.path.join(config_path, "metadata.json")):
-        reader = PlainReader(path = config_path, use_cache=use_cache, verbose=False)
-    elif os.path.isfile(os.path.join(config_path, "data.h5")):
-        reader = H5Reader(path = config_path, use_cache=use_cache, verbose=False)
-    else:
-        raise EnvironmentError("There is no corresponding data/metadata files in the path " + config_path + ". Can not continue.")
-
     ##  configuration options
     x_axis_label = r'$\mathit{Z (m)}$'
     y_axis_label = r'$\mathit{R (m)}$'
@@ -40,6 +32,14 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
     # define reader (plain reader used)
     autoselect = True
     use_cache = False
+
+    # set reader
+    if os.path.isfile(os.path.join(config_path, "metadata.json")):
+        reader = PlainReader(path = config_path, use_cache=use_cache, verbose=False)
+    elif os.path.isfile(os.path.join(config_path, "data.h5")):
+        reader = H5Reader(path = config_path, use_cache=use_cache, verbose=False)
+    else:
+        raise EnvironmentError("There is no corresponding data/metadata files in the path " + config_path + ". Can not continue.")
 
     clim_rho_beam = [0, 1e16] # [-(cfg.bunch_density * el_charge * rho_beam_scale), 0]
     clim_estimation = reader.meta.get_clim_estimation()
@@ -112,7 +112,7 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
 
     with writer.saving(fig, video_file, reader.meta.figure_dpi):
         for i in range(start_frame, end_frame):
-            sys.stdout.write('Loading dataset ' + str(i) + ' ... ')
+            sys.stdout.write('Loading dataset ' + str(i) + '... ')
             sys.stdout.flush()
             shape = [0, 0, reader.meta.geometry_grid[0], reader.meta.geometry_grid[1]]
             data_r = reader.get_frame('E_r', shape, i)
@@ -129,9 +129,9 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
 
                 if view: plot.redraw()
                 if not dry_run: writer.grab_frame()
-                print('done')
+                print('DONE')
             else:
-                print('skip')
+                print('SKIP')
 
 
 def main():
@@ -140,7 +140,7 @@ def main():
 
     ####
     parser = argparse.ArgumentParser(description='Tool for creating movie file from PDP3 modelled data.')
-    parser.add_argument('properties_path', metavar='properties_path', type=str,
+    parser.add_argument('data_path', metavar='data_path', type=str,
                         help='Full path to properties.xml')
 
     parser.add_argument('--video-file', type=str,
@@ -186,7 +186,7 @@ def main():
 
     clim_e_r = list(map(float, args.clim_e_r.split(':'))) if args.clim_e_r else None
     clim_e_z = list(map(float, args.clim_e_z.split(':'))) if args.clim_e_r else None
-    run(args.properties_path,
+    run(args.data_path,
         clim_e_r=clim_e_r,
         clim_e_z=clim_e_z,
         rho_beam_scale=args.beam_scale_factor,
@@ -204,7 +204,3 @@ def main():
 ## call main function
 if __name__ == "__main__":
     main()
-
-# run(config_file, clim_e_r, clim_e_z, clim_rho_beam, video_file='field_movie.avi',
-#     time_range=None, cmap=None, dry-run=False, view=False, use_grid=False):
-# input("Press 'Return' to exit ")
