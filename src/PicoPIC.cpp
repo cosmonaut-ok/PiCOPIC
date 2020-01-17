@@ -387,8 +387,8 @@ int main(int argc, char **argv)
         geometry_global->pml_sigma[0],
         geometry_global->pml_sigma[1],
         wall_r0,
-        wall_rr,
         wall_z0,
+        wall_rr,
         wall_zz
         );
 

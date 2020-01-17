@@ -6,6 +6,19 @@ FieldE::FieldE(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(ge
   epsilon = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
   sigma = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
 
+  // emulate dielectric walls
+  if (geometry->walls[0]) // r=0
+    r_begin = 1;
+
+  if (geometry->walls[1]) // z=0
+    z_begin = 1;
+
+  if (geometry->walls[2]) // r=r
+    r_end = geometry->r_grid_amount - 1;
+
+  if (geometry->walls[3]) // z=z
+    z_end = geometry->z_grid_amount - 1;
+
   epsilon = EPSILON0;
   epsilon.overlay_set(EPSILON0);
   sigma = 0;
@@ -87,7 +100,7 @@ void FieldE::calc_field_cylindrical()
 
   // E at the center axis (r=0) case
   if (geometry->walls[0]) // calculate only at the center axis (r=0)
-    for(int k = z_begin; k < z_end; k++)
+    for(int k = z_begin; k < z_end; ++k)
     {
       int i = 0;
       double epsilonx2 = 2 * epsilon(i, k);
@@ -96,17 +109,15 @@ void FieldE::calc_field_cylindrical()
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
 
-      // E_r at the center axis (r=0)
       field[0].m_a(i, k, koef_e);
       field[0].dec(i, k, (curr(0, i, k) + (magn_fld(1, i, k) - magn_fld(1, i, k-1)) / dz) * koef_h);
 
-      // E_z at the center on axis
       field[2].m_a(i, k, koef_e);
       field[2].dec(i, k, (curr(2, i, k) - magn_fld(1, i, k) * 4. / dr) * koef_h);
     }
 
-  // E_z at the center axis (r=0) case
-  if (geometry->walls[1]) // calculate only at the center axis (z=0)
+  // E_z at the left wall (z=0) case
+  if (geometry->walls[1]) // calculate only at the left wall (z=0)
     for(int i = r_begin; i < r_end; ++i)
     {
       int k = 0;
@@ -124,8 +135,8 @@ void FieldE::calc_field_cylindrical()
     }
 
 // regular case
-  for(int i = r_begin; i < r_end; i++) // TODO: it should be r_begin, instead of 1
-    for(int k = z_begin; k < z_end; k++) // TODO: it should be z_begin, instead of 1
+  for (int i = r_begin; i < r_end; i++) // TODO: it should be r_begin, instead of 1
+    for (int k = z_begin; k < z_end; k++) // TODO: it should be z_begin, instead of 1
     {
       double epsilonx2 = 2 * epsilon(i, k);
       double sigma_t = sigma(i, k) * time->step;
@@ -287,7 +298,7 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
     k_z_shift = field[0].y_size;
   }
 
-  if(radius>dr)
+  if(radius > dr)
     vol_1 = CELL_VOLUME(i_r, dr, dz);
   else
     vol_1 = CYL_VOL(dz, dr); // volume of first cell

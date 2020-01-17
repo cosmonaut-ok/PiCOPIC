@@ -39,7 +39,7 @@ public:
            double pml_l_z0,
            double pml_l_zwall, double pml_l_rwall, double pml_sigma1,
            double pml_sigma2,
-           bool wall_r0, bool wall_rr, bool wall_z0, bool wall_zz);
+           bool wall_r0, bool wall_z0, bool wall_rr, bool wall_zz);
   Geometry() {};
 
   ~Geometry(void);
@@ -64,7 +64,8 @@ private:
 #define CYL_RNG_VOL(z, r1, r2) PI * (z) * ((r2) * (r2) - (r1) * (r1))
 
 //! volume of the cylinder
-#define CYL_VOL(z, r) PI * (z) * (r) * (r) / 4.
+// #define CYL_VOL(z, r) PI * (z) * (r) * (r) / 4.
+#define CYL_VOL(z, r) PI * (z) * (r) * (r)
 
 // #define PARTICLE_VOLUME(x,y) (PI * dz * dr * dr * 2.0 * i)
 

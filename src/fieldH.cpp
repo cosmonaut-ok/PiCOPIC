@@ -26,9 +26,9 @@ void FieldH::calc_field_cylindrical()
 
   // H_r on outer wall (r=r)
   if (geometry->walls[2])
-    for(int k = z_begin - 1; k < z_end + 1; k++)
+    for(int k = 0; k < geometry->z_grid_amount; k++)
     {
-      int i = r_end;
+      int i = geometry->r_grid_amount - 1;
       // alpha constant and delta_t production (to optimize calculations)
       double alpha_t = time->step
         * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
@@ -38,8 +38,8 @@ void FieldH::calc_field_cylindrical()
     }
 
   // regular case
-  for(int i = r_begin; i < r_end; i++)
-    for(int k = z_begin; k < z_end; k++)
+  for (int i = 0; i < geometry->r_grid_amount; i++)
+    for (int k = 0; k < geometry->z_grid_amount; k++)
     {
       double alpha_t_r = time->step
         * (el_field(1, i, k + 1) - el_field(1, i, k)) / (dz * MAGN_CONST);
@@ -157,7 +157,7 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
     k_z_shift = field[0].y_size;
   }
 
-  if(radius>dr)
+  if(radius > dr)
     vol_1 = CELL_VOLUME(i_r, dr, dz);
   else
     vol_1 = CYL_VOL(dz, dr); // volume of first cell

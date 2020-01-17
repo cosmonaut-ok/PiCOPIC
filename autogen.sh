@@ -2,5 +2,5 @@
 
 # generate the configure script
 
-autoheader
-autoreconf
+autoheader -f
+autoreconf -f
