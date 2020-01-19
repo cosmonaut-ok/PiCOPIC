@@ -136,6 +136,9 @@ void SpecieP::thermal_velocity_distribution ()
 
   unsigned int particles_count = 0;
 
+  // normalize to $\frac{1}{\sqrt{2}}$
+  double norm = 0.707;
+
   for (auto p = particles.begin(); p != particles.end(); ++p)
     // for (unsigned int p = 0; p < macro_amount; p++)
   {
@@ -145,9 +148,9 @@ void SpecieP::thermal_velocity_distribution ()
     double rnd_1 = math::random::uniform2();
     double rnd_2 = math::random::uniform2();
 
-    P_VEL_R((**p)) = rnd_0 * therm_vel_el;
-    P_VEL_PHI((**p)) = rnd_1 * therm_vel_el;
-    P_VEL_Z((**p)) = rnd_2 * therm_vel_el;
+    P_VEL_R((**p)) = rnd_0 * therm_vel_el * norm;
+    P_VEL_PHI((**p)) = rnd_1 * therm_vel_el * norm;
+    P_VEL_Z((**p)) = rnd_2 * therm_vel_el * norm;
 
     // take into account relativistic factor
     // maxwellJuttner procedure returns relativistic momentums
