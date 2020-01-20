@@ -25,4 +25,4 @@ lib/python/picopic/picopic.egg-info/
 *.o
 *.a
 *main
-.nbrun[a-z,A-Z]*ipynb*
+.nbrun[0-9,a-z,A-Z]*ipynb*

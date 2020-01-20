@@ -112,8 +112,6 @@ void FieldE::calc_field_cylindrical()
       field[0].m_a(i, k, koef_e);
       field[0].dec(i, k, (curr(0, i, k) + (magn_fld(1, i, k) - magn_fld(1, i, k-1)) / dz) * koef_h);
 
-      field[1].set(i, k, 0);
-
       field[2].m_a(i, k, koef_e);
       field[2].dec(i, k, (curr(2, i, k) - magn_fld(1, i, k) * 4. / dr) * koef_h);
     }
@@ -128,9 +126,6 @@ void FieldE::calc_field_cylindrical()
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
-
-      field[0].set(i, k ,0);
-      field[1].set(i, k, 0);
 
       field[2].m_a(i, k, koef_e);
       field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
@@ -158,9 +153,7 @@ void FieldE::calc_field_cylindrical()
 
       field[2].m_a(i, k, koef_e);
       field[2].dec(i, k, (curr(2, i, k) - (magn_fld(1, i, k) - magn_fld(1, i - 1, k)) / dr
-                          - (magn_fld(1, i, k) + magn_fld(1, i-1, k))
-                          / (2. * dr * (i + geometry->bottom_r_grid_number)))
-                   * koef_h);
+                          - (magn_fld(1, i, k) + magn_fld(1, i-1, k)) / (2. * dr * (i + geometry->bottom_r_grid_number))) * koef_h);
     }
 }
 
@@ -190,6 +183,10 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   k_z = CELL_NUMBER(longitude, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
+  // TODO: workaround: sometimes it gives -1.
+  // Just get 0 cell if it happence
+  if (i_r < 0) i_r = 0;
+  if (k_z < 0) k_z = 0;
 
   vol_1 = CELL_VOLUME(i_r+1, dr, dz);
   vol_2 = CELL_VOLUME(i_r+3, dr, dz);
@@ -214,6 +211,10 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
+  // TODO: workaround: sometimes it gives -1.
+  // Just get 0 cell if it happence
+  if (i_r < 0) i_r = 0;
+  if (k_z < 0) k_z = 0;
 
   if (radius > dr)
     vol_1 = CELL_VOLUME(i_r, dr, dz);
@@ -234,7 +235,7 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   // weighting Ez[i][k+1]
   cmp[2] += field(2, i_r_shift, k_z_shift+1) * CYL_RNG_VOL(dz2, r1, r2) / vol_1;
 
-  //weighting Ez[i+1][k+1]//
+  // weighting Ez[i+1][k+1]
   cmp[2] += field(2, i_r_shift+1, k_z_shift+1) * CYL_RNG_VOL(dz2, r2, r3) / vol_2;
 
   // weighting of E_fi
@@ -243,6 +244,10 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   k_z = CELL_NUMBER(longitude, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
+  // TODO: workaround: sometimes it gives -1.
+  // Just get 0 cell if it happence
+  if (i_r < 0) i_r = 0;
+  if (k_z < 0) k_z = 0;
 
   if(radius > dr)
     vol_1 = CELL_VOLUME(i_r, dr, dz);
