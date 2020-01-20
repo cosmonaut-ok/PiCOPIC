@@ -20,21 +20,6 @@ void Current::simple_current_distribution(double radius_new,
   //! shift also to take overlaying into account
   int i_n_shift = i_n - geometry->bottom_r_grid_number;
   int k_n_shift = k_n - geometry->left_z_grid_number;
-  if (i_n_shift < 0) i_n_shift = 0;
-  if (k_n_shift < 0) k_n_shift = 0;
-  // FIXME: it can be more, than current.size_x - 2
-  // for some unknown reason
-  if (i_n_shift > current[0].x_size)
-  {
-    MSG_FIXME("simple_current_distribution: i_n_shift is more, than current[0].x_size. Applying workaround");
-    i_n_shift = current[0].x_size;
-  }
-
-  if (k_n_shift > current[0].y_size)
-  {
-    MSG_FIXME("simple_current_distribution: k_n_shift is more, than current[0].y_size . Applying workaround");
-      k_n_shift = current[0].y_size;
-  }
 
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
@@ -49,12 +34,6 @@ void Current::simple_current_distribution(double radius_new,
 
   if ((abs(delta_r) < MNZL) || (abs(delta_z) < MNZL)) // MNZL see constant.h
     return;
-
-  if (i_n < 0 || k_n < 0)
-  {
-    MSG_FIXME("(simple_current_distribution) grid number is less, than zero (i, k): " << i_n << ", " << k_n << " Skipping");
-    return;
-  }
 
   if (i_n == 0)
     // if i cell is equal 0
@@ -191,12 +170,6 @@ void Current::current_distribution()
       int k_n = CELL_NUMBER(P_POS_Z((**i)), dz);
       int i_o = CELL_NUMBER(P_POS_OLD_R((**i)), dr);
       int k_o = CELL_NUMBER(P_POS_OLD_Z((**i)), dz);
-      // TODO: workaround: sometimes it gives -1.
-      // Just get 0 cell if it happence
-      if (i_n < 0) i_n = 0;
-      if (k_n < 0) k_n = 0;
-      if (i_o < 0) i_o = 0;
-      if (k_o < 0) k_o = 0;
 
       if (P_POS_OLD_R((**i)) == (i_o + 1) * dr) i_o = i_n;
       if (P_POS_OLD_Z((**i)) == (k_o + 1) * dz) k_o = k_n;
@@ -515,27 +488,9 @@ void Current::azimuthal_current_distribution()
       // finding number of i and k cell. example: dr = 0.5; r = 0.4; i =0
       r_i = CELL_NUMBER(P_POS_R((**i)), dr);
       z_k = CELL_NUMBER(P_POS_Z((**i)), dz);
-      // TODO: workaround: sometimes it gives -1.
-      // Just get 0 cell if it happence
-      if (r_i < 0) r_i = 0;
-      if (z_k < 0) z_k = 0;
 
       r_i_shift = r_i - geometry->bottom_r_grid_number;
       z_k_shift = z_k - geometry->left_z_grid_number;
-
-  // FIXME: it can be more, than current.size_x - 2
-  // for some unknown reason
-  if (r_i_shift > current[0].x_size)
-  {
-    MSG_FIXME("azimuthal_current_distribution: r_i_shift is more, than current[0].x_size. Applying workaround");
-    r_i_shift = current[0].x_size;
-  }
-
-  if (z_k_shift > current[0].y_size)
-  {
-    MSG_FIXME("azimuthal_current_distribution: z_k_shift is more, than current[0].y_size . Applying workaround");
-      z_k_shift = current[0].y_size;
-  }
 
       if (r_i_shift < 0) r_i_shift = 0;
       if (z_k_shift < 0) z_k_shift = 0;
@@ -621,32 +576,9 @@ void Current::strict_motion_distribution(double radius_new,
   int k_n = CELL_NUMBER(longitude_new, dz);
   int i_o = CELL_NUMBER(radius_old, dr);;
   int k_o = CELL_NUMBER(longitude_old, dz);;
-  // TODO: workaround: sometimes it gives -1.
-  // Just get 0 cell if it happence
-  if (i_n < 0) i_n = 0;
-  if (k_n < 0) k_n = 0;
-  if (i_o < 0) i_o = 0;
-  if (k_o < 0) k_o = 0;
 
   int i_n_shift = i_n - geometry->bottom_r_grid_number;
   int k_n_shift = k_n - geometry->left_z_grid_number;
-  if (i_n_shift < 0) i_n_shift = 0;
-  if (k_n_shift < 0) k_n_shift = 0;
-
-  // FIXME: it can be more, than current.size_x - 2
-  // for some unknown reason
-  if (i_n_shift > current[0].x_size)
-  {
-    MSG_FIXME("simple_current_distribution: i_n_shift is more, than current[0].x_size. Applying workaround");
-    i_n_shift = current[0].x_size;
-  }
-
-  if (k_n_shift > current[0].y_size)
-  {
-    MSG_FIXME("simple_current_distribution: k_n_shift is more, than current[0].size_x - 2 . Applying workaround");
-      k_n_shift = current[0].y_size;
-  }
-
 
   if ((abs(radius_new - radius_old) < MNZL)
       && (abs(longitude_new - longitude_old) < MNZL))

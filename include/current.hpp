@@ -9,11 +9,11 @@
   (q) / (PI * 4. * (r) * (dz) * (dz) * (dr) * (delta_t));
 
 #define SOME_SHIT_DENSITY_R(q, r, dr, dz, delta_t) \
-  (q) / (2 * PI * (r) * (dr) * (dz)                \
-         * (delta_t) * 2 * (dr));
+  (q) / (2. * PI * (r) * (dr) * (dz)                \
+         * (delta_t) * 2. * (dr));
 
 #define SOME_SHIT_DENSITY_Z(q, r, dr, dz, delta_t) \
-  (q) / (2 * PI * (r) * (dr) * (dz)                \
+  (q) / (2. * PI * (r) * (dr) * (dz)                \
          * (delta_t) * (dz));
 
 class SpecieP;
