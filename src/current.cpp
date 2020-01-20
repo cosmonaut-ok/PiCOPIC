@@ -109,6 +109,7 @@ void Current::simple_current_distribution(double radius_new,
     wj = some_shit_density
       * (dr * delta_z - k * delta_z * delta_z / 2. - delta_z * b + dr * dr / k
          * ((i_n + 0.5) * (i_n + 0.5) - 0.25) * log((k * delta_z + b) / b));
+
     // set new weighting current value
     current[2].inc(i_n_shift, k_n_shift, wj);
 
@@ -153,6 +154,15 @@ void Current::simple_current_distribution(double radius_new,
          * log((radius_old + delta_r) / radius_old));
     current[0].inc(i_n_shift, k_n_shift + 1, wj);
   }
+
+  //// CHANGE: try to decrease current
+  // FIXME:seems, incorrect current calculation
+  // if particles reflections observed
+  // if (k_n == 0)
+  // {
+  //   current[2].d_a(i_n_shift, k_n_shift, 1.1);
+  //   current[2].d_a(i_n_shift + 1, k_n_shift, 1.1);
+  // }
 }
 
 void Current::current_distribution()
@@ -607,8 +617,8 @@ void Current::strict_motion_distribution(double radius_new,
       / (delta_t * 2 * PI * (i_n + 1) * dr * dr)
       * PI * (r3 * r3 - r2 * r2) / value_part;
 
-    current[0].inc(i_n_shift, k_n_shift, 0.);
-    current[0].inc(i_n_shift, k_n_shift + 1, 0.);
+    current[0].set(i_n_shift, k_n_shift, 0.);
+    current[0].set(i_n_shift, k_n_shift + 1, 0.);
     int res_k = k_n - k_o;
     switch(res_k)
     {
