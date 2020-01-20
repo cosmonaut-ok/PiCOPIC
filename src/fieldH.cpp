@@ -86,11 +86,15 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   r3 = radius + 0.5 * dr;
 
   //// weighting of H_z
-  //finding number of cell. example dr=0.5, radius = 0.7, i_r =0;!!
+  // finding number of cell. example dr=0.5, radius = 0.7, i_r =0;!!
   i_r = CELL_NUMBER(radius - 0.5 * dr, dr);
   k_z = CELL_NUMBER(longitude, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
+  // TODO: workaround: sometimes it gives -1.
+  // Just get 0 cell if it happence
+  if (i_r < 0) i_r = 0;
+  if (k_z < 0) k_z = 0;
 
   vol_1 = CELL_VOLUME(i_r+1, dr, dz);
   vol_2 = CELL_VOLUME(i_r+3, dr, dz);
@@ -116,6 +120,10 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
+  // TODO: workaround: sometimes it gives -1.
+  // Just get 0 cell if it happence
+  if (i_r < 0) i_r = 0;
+  if (k_z < 0) k_z = 0;
 
   if(radius > dr)
     vol_1 = CELL_VOLUME(i_r, dr, dz);
@@ -146,6 +154,10 @@ vector3d<double> FieldH::get_field(double radius, double longitude)
   k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
+  // TODO: workaround: sometimes it gives -1.
+  // Just get 0 cell if it happence
+  if (i_r < 0) i_r = 0;
+  if (k_z < 0) k_z = 0;
 
   r2 = (i_r+1) * dr;
   vol_1 = CELL_VOLUME(i_r + 1, dr, dz);
