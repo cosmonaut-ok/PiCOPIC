@@ -154,14 +154,6 @@ void Current::simple_current_distribution(double radius_new,
          * log((radius_old + delta_r) / radius_old));
     current[0].inc(i_n_shift, k_n_shift + 1, wj);
   }
-
-  // FIXME: seems, incorrect current calculation
-  // on z-axis for unknown reason
-  if (k_n == 0)
-  {
-    current[2].set(i_n_shift, k_n_shift, 0.);
-    current[2].set(i_n_shift + 1, k_n_shift, 0.);
-  }
 }
 
 void Current::current_distribution()
@@ -500,9 +492,6 @@ void Current::azimuthal_current_distribution()
 
       r_i_shift = r_i - geometry->bottom_r_grid_number;
       z_k_shift = z_k - geometry->left_z_grid_number;
-
-      if (r_i_shift < 0) r_i_shift = 0;
-      if (z_k_shift < 0) z_k_shift = 0;
 
       // in first cell other alg. of ro_v calc
       if(P_POS_R((**i)) > dr)

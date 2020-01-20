@@ -71,6 +71,11 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
   double r_size = (ext_cell_number - int_cell_number) * dr;
   double z_size = (right_cell_number - left_cell_number) * dz;
 
+  // decrease size at r=r and z=z walls
+  // this caused by particles formfactor
+  if (geometry->walls[2]) r_size -= dr;
+  if (geometry->walls[3]) z_size -= dz;
+
   unsigned int particles_count = 0;
 
   // summary volume of all macroparticles
@@ -82,6 +87,7 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
 
     P_POS_R((**n)) = r_size * rand_r;
     P_POS_R((**n)) += int_cell_number * dr;
+    P_POS_R((**n)) += dr / 2.;
 
     P_POS_PHI((**n)) = 0;
 
@@ -91,7 +97,8 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
       P_POS_Z((**n)) = z_size / dn
         * (lib::sq_rt(pow(dl, 2) + rand_z * (2 * dl * dn + pow(dn, 2))) - dl);
     P_POS_Z((**n)) += left_cell_number * dz; // shift by z to respect geometry with areas
-
+    P_POS_Z((**n)) += dz / 2.;
+    
     v_sum += 2 * PI * P_POS_R((**n)) * dr * dz;
 
     ++particles_count;
