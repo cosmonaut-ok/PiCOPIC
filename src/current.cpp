@@ -49,7 +49,7 @@ void Current::simple_current_distribution(double radius_new,
          * dr);
 
     wj = some_shit_density
-      * (dr * delta_z - k * delta_z * delta_z / 2. - delta_z * b );
+      * delta_z * (dr - k * delta_z / 2. - b);
     // set new weighting current value
     current[2].inc(i_n_shift, k_n_shift, wj);
 
@@ -57,7 +57,7 @@ void Current::simple_current_distribution(double radius_new,
     some_shit_density = SOME_SHIT_DENSITY_R(p_charge, dr, dr, dz, delta_t);
 
     wj = some_shit_density
-      * (k * delta_z * delta_z / 2. + delta_z * dr + delta_z * b);
+      * delta_z * (k * delta_z / 2. + dr + b);
     // set new weighting current value
     current[2].inc(i_n_shift + 1, k_n_shift, wj);
 
@@ -82,7 +82,7 @@ void Current::simple_current_distribution(double radius_new,
          * log((radius_old + delta_r) / radius_old));
     current[0].inc(i_n_shift, k_n_shift, wj);
 
-    b = longitude_old- k_n * dz;;
+    b = longitude_old- k_n * dz;
     // weighting jr in [i][k + 1] cell
     // some_shit_density = SOME_SHIT_DENSITY_Z(p_charge, r0, dr, dz, delta_t);
 
@@ -155,14 +155,13 @@ void Current::simple_current_distribution(double radius_new,
     current[0].inc(i_n_shift, k_n_shift + 1, wj);
   }
 
-  //// CHANGE: try to decrease current
-  // FIXME:seems, incorrect current calculation
-  // if particles reflections observed
-  // if (k_n == 0)
-  // {
-  //   current[2].d_a(i_n_shift, k_n_shift, 1.1);
-  //   current[2].d_a(i_n_shift + 1, k_n_shift, 1.1);
-  // }
+  // FIXME: seems, incorrect current calculation
+  // on z-axis for unknown reason
+  if (k_n == 0)
+  {
+    current[2].set(i_n_shift, k_n_shift, 0.);
+    current[2].set(i_n_shift + 1, k_n_shift, 0.);
+  }
 }
 
 void Current::current_distribution()

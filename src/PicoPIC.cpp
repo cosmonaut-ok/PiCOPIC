@@ -487,27 +487,27 @@ int main(int argc, char **argv)
 
   while (sim_time_clock->current <= sim_time_clock->end)
   {
-    // Steps:
-    // 1. init beam
-    // 2. hfield->calc_field
-    // == hfield overlay ==
-    // 3. c_current->reset_j
-    // 6. boris_pusher
-    // 7. dump_position_to_old
-    // 8. half_step_pos
-    // 9. back_position_to_rz
-    // == runaway ==
-    // 10. azimuthal_current_distribution
-    // 11. half_step_pos
-    // 13. back_position_to_rz
-    // 12. reflection
-    // == runaway ==
-    // == current overlay ==
-    // 14. current_distribution
-    // 15. back_velocity_to_rz
-    // == current overlay ==
-    // efield->calc_field
-    // == efield overlay ==
+    //! Steps:
+    //! 1. init beam
+    //! 2. hfield->calc_field
+    //! == hfield overlay ==
+    //! 3. c_current->reset_j
+    //! 6. boris_pusher
+    //! 7. dump_position_to_old
+    //! 8. half_step_pos
+    //! 9. back_position_to_rz
+    //! == runaway ==
+    //! 10. azimuthal_current_distribution
+    //! 11. half_step_pos
+    //! 13. back_position_to_rz
+    //! 12. reflection
+    //! == runaway ==
+    //! == current overlay ==
+    //! 14. current_distribution
+    //! 15. back_velocity_to_rz
+    //! == current overlay ==
+    //! efield->calc_field
+    //! == efield overlay ==
 
     LOG_DBG("Run calculation loop for timestamp: " << sim_time_clock->current);
 
