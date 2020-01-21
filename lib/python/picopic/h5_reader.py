@@ -18,10 +18,18 @@ class H5Reader (Reader):
     dot: dot in frame, column, or row with coords
     '''
     def __init__(self, path, use_cache=False, verbose=False):
+        real_path = ""
+        if os.path.isfile(path):
+            self.file = h5py.File(path, 'r')
+            real_path = os.path.dirname(path)
+        elif os.path.isdir(path):
+            self.file = h5py.File(os.path.join(path, 'data.h5'), 'r')
+            real_path = path
+        else:
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
-        self.file = h5py.File(os.path.join(path, 'data.h5'), 'r')
         config_json = json.loads(self.file['/metadata'].attrs.get('metadata'))
-        super(H5Reader, self).__init__(path, config_json, use_cache, verbose)
+        super(H5Reader, self).__init__(real_path, config_json, use_cache, verbose)
 
     def __del__(self):
         self.file.close()
