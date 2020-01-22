@@ -19,6 +19,7 @@ Area::Area(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry(geo
 
   temperature = new Temperature(&geometry, species_p);
   density = new Density(&geometry, species_p);
+  charge = new DensityCharge(&geometry, species_p);
 
   // ! Linking classes:
   // ! * insert pointer to field_e into field_h
@@ -56,6 +57,13 @@ void Area::weight_temperature(string specie)
   temperature->temperature = 0;
   temperature->temperature.overlay_set(0);
   temperature->calc_temperature_cylindrical(specie);
+}
+
+void Area::weight_charge(string specie)
+{
+  charge->density = 0;
+  charge->density.overlay_set(0);
+  charge->calc_density_cylindrical(specie);
 }
 
 void Area::weight_field_h()

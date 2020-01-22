@@ -54,7 +54,8 @@ DataWriter::DataWriter(string a_path, string a_component,
       || component.compare("position") == 0  // TODO: implement specie-dependent
       || component.compare("velocity") == 0
       || component.compare("p_charge") == 0  // TODO: implement specie-dependent
-      || component.compare("p_mass") == 0) //        behavior for positions and velocities
+      || component.compare("p_mass") == 0 //        behavior for positions and velocities
+      || component.compare("charge") == 0) //        behavior for positions and velocities
   {
     name += specie;
     name += "/";
@@ -228,6 +229,8 @@ void DataWriter::merge_areas(string component, string specie)
         sim_area->weight_density(specie);
       else if (component.compare("temperature") == 0)
         sim_area->weight_temperature(specie);
+      else if (component.compare("charge") == 0)
+        sim_area->weight_charge(specie);
     }
 
   for (unsigned int i=0; i < geometry->areas_by_r; i++)
@@ -243,6 +246,8 @@ void DataWriter::merge_areas(string component, string specie)
           sim_area->density->density.overlay_x(dst_area->density->density);
         else if (component.compare("temperature") == 0)
           sim_area->temperature->temperature.overlay_x(dst_area->temperature->temperature);
+	else if (component.compare("charge") == 0)
+          sim_area->charge->density.overlay_x(dst_area->charge->density);
       }
 
       if (j < geometry->areas_by_z - 1)
@@ -252,6 +257,8 @@ void DataWriter::merge_areas(string component, string specie)
           sim_area->density->density.overlay_y(dst_area->density->density);
         else if (component.compare("temperature") == 0)
           sim_area->temperature->temperature.overlay_y(dst_area->temperature->temperature);
+	else if (component.compare("charge") == 0)
+          sim_area->charge->density.overlay_y(dst_area->temperature->temperature);
       }
 
       // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
@@ -290,6 +297,8 @@ void DataWriter::merge_areas(string component, string specie)
         value = sim_area->temperature->temperature;
       else if (component.compare("density") == 0)
         value = sim_area->density->density;
+      else if (component.compare("charge") == 0)
+        value = sim_area->charge->density;
       else
         LOG_ERR("Unknown DataWriter component ``" << component << "''");
 

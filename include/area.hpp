@@ -16,7 +16,9 @@
 #include "fieldH.hpp"
 #include "current.hpp"
 #include "temperature.hpp"
+#include "densityCharge.hpp"
 #include "density.hpp"
+#include "densityCharge.hpp"
 
 using namespace std;
 
@@ -30,6 +32,7 @@ public:
   Current *current;
   Temperature *temperature;
   Density *density;
+  DensityCharge *charge;
 
   // Temperature temperature;
   // DensityP density_particles;
@@ -47,6 +50,7 @@ public:
   void distribute();
   void weight_density(string specie);
   void weight_temperature(string specie);
+  void weight_charge(string specie);
   void push_particles();
   void weight_current();
   void update_particles_coords_at_half();
