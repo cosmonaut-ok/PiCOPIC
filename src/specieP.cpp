@@ -122,8 +122,7 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
     if (P_POS_R((**n)) > dr / 2)
       norm = 2 * PI * P_POS_R((**n)) * dr * dz / v_avg;
     else
-      norm = PI * (P_POS_R((**n)) * P_POS_R((**n))
-                   + P_POS_R((**n)) * dr + dr * dr / 4) * dz / v_avg;
+      norm = PI * P_POS_R((**n)) * P_POS_R((**n)) * dz / v_avg;
 
     // number of real particles per macroparticle
     double n_per_macro = n_per_macro_avg * norm;
