@@ -57,6 +57,11 @@ AC_ARG_ENABLE([hdf5], [AC_HELP_STRING([--disable-hdf5], [Build application with 
 dnl AC_ARG_WITH([doc-formats], [AC_HELP_STRING([--with-doc-formats], [Set list of documentation formats to be generated])], [DOXYGEN_FORMATS="$withval"], [DOXYGEN_FORMATS="latex html rtf"])
 AC_ARG_WITH([pusher], [AC_HELP_STRING([--with-pusher], [Set particles pusher (supported: boris (default), vay, hc (n/a), rrll (n/a))])], [PUSHER="$withval"], [PUSHER="boris-adaptive"])
 
+AC_ARG_WITH([plasma-spatial-distribution], [AC_HELP_STRING([--with-plasma-spatial-distribution], [Set plasma particles spatial distribution type (supported: random (default), regular, centered, flat)])], [PLASMA_SPATIAL="$withval"], [PLASMA_SPATIAL="random"])
+
+AC_ARG_WITH([plasma-velocity-distribution], [AC_HELP_STRING([--with-plasma-velocity-distribution], [Set plasma particles velocity distribution (supported: thermal (default), rectangular, eigen (singular velocities))])], [PLASMA_VELOCITY="$withval"], [PLASMA_VELOCITY="thermal"])
+
+
 AC_PROG_CXXCPP
 AC_LANG(C++)
 
@@ -125,5 +130,28 @@ else
    AC_MSG_ERROR([Pusher is not supported.])
 fi
 
-dnl AC_CONFIG_FILES([Makefile])
+# define plasma spatial distribution type
+if test x$PLASMA_SPATIAL == xrandom; then
+   AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_RANDOM], [true], [Set plasma spatial distribution type to random])
+elif test x$PLASMA_SPATIAL == xregular; then
+   AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_REGULAR], [true], [Set plasma spatial distribution type to regular])
+elif test x$PLASMA_SPATIAL == xcentered; then
+   AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_CENTERED], [true], [Set plasma spatial distribution type to cell-centered])
+elif test x$PLASMA_SPATIAL == xflat; then
+   AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_FLAT], [true], [Set plasma spatial distribution type to "flat"])
+else
+   AC_MSG_ERROR([Plasma spatial distribution type is not supported.])
+fi
+
+# define plasma spatial distribution type
+if test x$PLASMA_VELOCITY == xthermal; then
+   AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_THERMAL], [true], [Set plasma spatial distribution type to random])
+elif x$PLASMA_VELOCITY == xrectangular; then
+   AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_RECTANGULAR], [true], [Set plasma spatial distribution type to regular ("flat" distribution)])
+elif x$PLASMA_VELOCITY == xeigen; then
+   AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_EIGEN], [true], [Set plasma spatial distribution type to cell-centered])
+else
+   AC_MSG_ERROR([Plasma velocity distribution type is not supported.])
+fi
+
 AC_OUTPUT(Makefile)

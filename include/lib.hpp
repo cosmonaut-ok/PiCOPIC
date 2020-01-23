@@ -46,4 +46,5 @@ namespace lib
   std::vector<double> read_file_to_double(const char *filename);
   void splitstr(std::string const &str, const char delim,
                 std::vector<std::string> &out);
+  unsigned int nearest_divide (unsigned int number, double what);
 }

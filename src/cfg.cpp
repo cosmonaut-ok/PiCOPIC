@@ -303,6 +303,10 @@ void Cfg::weight_macro_amount()
 
   // align macroparticles amount to particle species
   // with respect to normalization
+#if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)
+  LOG_INFO("Using amount-dependent plama macroparticles spatial distribution");
+  LOG_INFO("Amount of plasma macroparticles could be changed to satisfy spatial distribution requirement");
+#endif
   for (auto p_s = particle_species.begin(); p_s != particle_species.end(); ++p_s)
   {
     (*p_s).macro_amount = (unsigned int)(geometry->r_grid_amount * geometry->z_grid_amount * norm);

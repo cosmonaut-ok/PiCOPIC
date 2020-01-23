@@ -409,6 +409,17 @@ int main(int argc, char **argv)
       {
         unsigned int grid_cell_macro_amount = (int)(k->macro_amount / r_areas / z_areas);
 
+//// Correct plasma macroparticles number
+//// to satisfy conditions of regular/centered
+//// spatial distributions
+#if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)
+        LOG_DBG("Correcting area plasma particles macro amount to satisfy spatial distribution");
+        grid_cell_macro_amount = lib::nearest_divide(
+          grid_cell_macro_amount,
+          geom_area->r_size * geom_area->z_size
+          );
+#endif
+
         SpecieP *pps = new SpecieP (p_id_counter,
                                     k->name,
                                     k->charge, k->mass, grid_cell_macro_amount,

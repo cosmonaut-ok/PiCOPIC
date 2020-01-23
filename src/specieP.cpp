@@ -76,18 +76,31 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
   if (geometry->walls[2]) r_size -= dr;
   if (geometry->walls[3]) z_size -= dz;
 
-  unsigned int particles_count = 0;
+#if defined PLASMA_SPATIAL_REGULAR || defined PLASMA_SPATIAL_CENTERED
+  double macro_distance = lib::sq_rt(r_size * z_size / macro_amount);
+  // count macroparticles by r and z
+  double r_macro_count = 0;
+  double z_macro_count = 0;
+  // LOG_CRIT(macro_distance << " " << r_size <<" " << z_size, 1);
+  // LOG_CRIT(r_macro_distance << " " << z_macro_distance, 1);
+#endif
+
+  unsigned int macro_count = 0;
 
   // summary volume of all macroparticles
   double v_sum = 0;
   for (auto n = particles.begin(); n != particles.end(); ++n)
   {
-    double rand_r = math::random::uniform();
-    double rand_z = math::random::uniform();
+#if defined PLASMA_SPATIAL_RANDOM
+    double rand_r = math::random::uniform1();
+    double rand_z = math::random::uniform1();
+#elif defined PLASMA_SPATIAL_FLAT
+    double rand_r = math::random::random_reverse(macro_count, 13);
+    double rand_z = math::random::random_reverse(macro_amount - 1 - macro_count, 11);
+#endif
 
+#if defined PLASMA_SPATIAL_RANDOM || defined PLASMA_SPATIAL_FLAT
     P_POS_R((**n)) = r_size * rand_r;
-    P_POS_R((**n)) += int_cell_number * dr;
-    P_POS_R((**n)) += dr / 2.;
 
     P_POS_PHI((**n)) = 0;
 
@@ -96,14 +109,30 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
     else
       P_POS_Z((**n)) = z_size / dn
         * (lib::sq_rt(pow(dl, 2) + rand_z * (2 * dl * dn + pow(dn, 2))) - dl);
+
+#elif defined PLASMA_SPATIAL_REGULAR || defined PLASMA_SPATIAL_CENTERED
+    P_POS_R((**n)) = r_macro_count * macro_distance + MNZL;
+    P_POS_Z((**n)) = z_macro_count * macro_distance + MNZL;
+
+    if (macro_distance * r_macro_count > r_size)
+    {
+      r_macro_count = 0;
+      ++z_macro_count;
+    }
+    else
+      ++r_macro_count;
+#endif
+
+    P_POS_R((**n)) += int_cell_number * dr;
+    P_POS_R((**n)) += dr / 2.;
     P_POS_Z((**n)) += left_cell_number * dz; // shift by z to respect geometry with areas
     P_POS_Z((**n)) += dz / 2.;
-    
+
     v_sum += 2 * PI * P_POS_R((**n)) * dr * dz;
 
-    ++particles_count;
+    ++macro_count;
   }
-
+  // LOG_CRIT("CNT " << r_macro_count << " " << z_macro_count, 1);
   // average volume of single macroparticle
   double v_avg = v_sum / macro_amount;
   double N_total = (density[0] + density[1]) / 2
@@ -140,15 +169,14 @@ void SpecieP::thermal_velocity_distribution ()
   // Sample the energies in the MJ distribution
   vector<double> energies = math::maxwell_juttner::maxwellJuttner(macro_amount, temperature);
 
-  unsigned int particles_count = 0;
+  unsigned int macro_count = 0;
 
   // normalize to $\frac{1}{\sqrt{2}}$
   double norm = 0.707;
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
-    // for (unsigned int p = 0; p < macro_amount; p++)
   {
-    double therm_vel_el = lib::sq_rt(2 * EL_CHARGE * energies[particles_count] / mass);
+    double therm_vel_el = lib::sq_rt(2 * EL_CHARGE * energies[macro_count] / mass);
 
     double rnd_0 = math::random::uniform2();
     double rnd_1 = math::random::uniform2();
@@ -164,7 +192,7 @@ void SpecieP::thermal_velocity_distribution ()
     P_VEL_PHI((**p)) *= lib::get_gamma_inv(P_VEL_PHI((**p)) * P_VEL_PHI((**p)));
     P_VEL_Z((**p)) *= lib::get_gamma_inv(P_VEL_Z((**p)) * P_VEL_Z((**p)));
 
-    ++particles_count;
+    ++macro_count;
   }
 }
 
@@ -173,7 +201,7 @@ void SpecieP::rectangular_velocity_distribution ()
   // therm velocity for singular velocity component
   double therm_vel_cmp = lib::sq_rt(2. * EL_CHARGE * temperature / mass / 3.);
 
-  for (unsigned int p = 0; p < macro_amount; p++)
+  for (auto p = particles.begin(); p != particles.end(); ++p)
   {
     double rnd_0, rnd_1, rnd_2;
 
@@ -181,15 +209,15 @@ void SpecieP::rectangular_velocity_distribution ()
     rnd_1 = math::random::uniform2();
     rnd_2 = math::random::uniform2();
 
-    PP_VEL_R(particles, p) = rnd_0 * therm_vel_cmp;
-    PP_VEL_PHI(particles, p) = rnd_1 * therm_vel_cmp;
-    PP_VEL_Z(particles, p) = rnd_2 * therm_vel_cmp;
+    P_VEL_R((**p)) = rnd_0 * therm_vel_cmp;
+    P_VEL_PHI((**p)) = rnd_1 * therm_vel_cmp;
+    P_VEL_Z((**p)) = rnd_2 * therm_vel_cmp;
 
     // take into account relativistic factor
     // maxwellJuttner procedure returns relativistic momentums
-    PP_VEL_R(particles, p) *= lib::get_gamma_inv(PP_VEL_R(particles, p) * PP_VEL_R(particles, p));
-    PP_VEL_PHI(particles, p) *= lib::get_gamma_inv(PP_VEL_PHI(particles, p) * PP_VEL_PHI(particles, p));
-    PP_VEL_Z(particles, p) *= lib::get_gamma_inv(PP_VEL_Z(particles, p) * PP_VEL_Z(particles, p));
+    P_VEL_R((**p)) *= lib::get_gamma_inv(P_VEL_R((**p)) * P_VEL_R((**p)));
+    P_VEL_PHI((**p)) *= lib::get_gamma_inv(P_VEL_PHI((**p)) * P_VEL_PHI((**p)));
+    P_VEL_Z((**p)) *= lib::get_gamma_inv(P_VEL_Z((**p)) * P_VEL_Z((**p)));
   }
 }
 
@@ -200,11 +228,11 @@ void SpecieP::eigen_velocity_distribution ()
   double gamma = lib::get_gamma_inv(therm_vel_cmp);
   therm_vel_cmp *= gamma;
 
-  for (unsigned int p = 0; p < macro_amount; p++)
+  for (auto p = particles.begin(); p != particles.end(); ++p)
   {
-    PP_VEL_R(particles, p) = therm_vel_cmp;
-    PP_VEL_PHI(particles, p) = therm_vel_cmp;
-    PP_VEL_Z(particles, p) = therm_vel_cmp;
+    P_VEL_R((**p)) = therm_vel_cmp;
+    P_VEL_PHI((**p)) = therm_vel_cmp;
+    P_VEL_Z((**p)) = therm_vel_cmp;
   }
 }
 
@@ -221,16 +249,16 @@ void SpecieP::eigen_directed_velocity_distribution (unsigned int dir)
   switch (dir)
   {
   case 0:
-    for (unsigned int p = 0; p < macro_amount; p++)
-      PP_VEL_R(particles, p) = therm_vel;
+    for (auto p = particles.begin(); p != particles.end(); ++p)
+      P_VEL_R((**p)) = therm_vel;
     break;
   case 1:
-    for (unsigned int p = 0; p < macro_amount; p++)
-      PP_VEL_PHI(particles, p) = therm_vel;
+    for (auto p = particles.begin(); p != particles.end(); ++p)
+      P_VEL_PHI((**p)) = therm_vel;
     break;
   case 2:
-    for (unsigned int p = 0; p < macro_amount; p++)
-      PP_VEL_Z(particles, p) = therm_vel;
+    for (auto p = particles.begin(); p != particles.end(); ++p)
+      P_VEL_Z((**p)) = therm_vel;
     break;
   default:
     LOG_CRIT("Incorrect switch of rectangular directed velocity component: " << dir, 1);

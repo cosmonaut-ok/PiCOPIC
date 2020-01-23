@@ -41,7 +41,16 @@ void Area::distribute()
   {
     (**i).wakeup();
     (**i).fullyfill_spatial_distribution();
+
+#ifdef PLASMA_VELOCITY_THERMAL
     (**i).thermal_velocity_distribution();
+#elif PLASMA_VELOCITY_RECTANGULAR
+    (**i).rectangular_velocity_distribution();
+#elif PLASMA_VELOCITY_EIGEN
+    (**i).eigen_velocity_distribution();
+#else
+    LOG_CRIT("Plasma velocity distribution type unknown", 1);
+#endif
   }
 }
 
