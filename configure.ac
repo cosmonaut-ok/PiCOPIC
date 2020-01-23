@@ -57,7 +57,7 @@ AC_ARG_ENABLE([hdf5], [AC_HELP_STRING([--disable-hdf5], [Build application with 
 dnl AC_ARG_WITH([doc-formats], [AC_HELP_STRING([--with-doc-formats], [Set list of documentation formats to be generated])], [DOXYGEN_FORMATS="$withval"], [DOXYGEN_FORMATS="latex html rtf"])
 AC_ARG_WITH([pusher], [AC_HELP_STRING([--with-pusher], [Set particles pusher (supported: boris (default), vay, hc (n/a), rrll (n/a))])], [PUSHER="$withval"], [PUSHER="boris-adaptive"])
 
-AC_ARG_WITH([plasma-spatial-distribution], [AC_HELP_STRING([--with-plasma-spatial-distribution], [Set plasma particles spatial distribution type (supported: random (default), regular, centered, flat)])], [PLASMA_SPATIAL="$withval"], [PLASMA_SPATIAL="random"])
+AC_ARG_WITH([plasma-spatial-distribution], [AC_HELP_STRING([--with-plasma-spatial-distribution], [Set plasma particles spatial distribution type (supported: flat (default), random, regular, centered (not implemented) )])], [PLASMA_SPATIAL="$withval"], [PLASMA_SPATIAL="flat"])
 
 AC_ARG_WITH([plasma-velocity-distribution], [AC_HELP_STRING([--with-plasma-velocity-distribution], [Set plasma particles velocity distribution (supported: thermal (default), rectangular, eigen (singular velocities))])], [PLASMA_VELOCITY="$withval"], [PLASMA_VELOCITY="thermal"])
 
