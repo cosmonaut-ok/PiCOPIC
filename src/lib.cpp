@@ -224,4 +224,13 @@ namespace lib
       out.push_back(str.substr(start, end - start));
     }
   }
+
+  unsigned int nearest_divide (unsigned int number, double what)
+  {
+    unsigned int res = number;
+    while ( res / what != floor(res / what) )
+      ++res;
+
+    return res;
+  }
 }
