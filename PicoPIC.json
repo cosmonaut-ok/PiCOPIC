@@ -1,6 +1,6 @@
 {
   "debug": false,
-  "macro_amount": 2.1e5,
+  "macro_amount": 5e5,
   "beam_plasma_macro_size_ratio": 2,
   "geometry": {
     "size": {
@@ -20,7 +20,7 @@
       "right_wall": 0.05,
       "outer_wall": 0.2,
       "sigma_1": 1e-5,
-      "sigma_2": 7e-2
+      "sigma_2": 1.5
     }
   },
   "time": {
@@ -34,8 +34,8 @@
       "charge": -1,
       "mass": 1,
       "density": {
-        "left": 1e+17,
-        "right": 1e+17
+        "left": 1e17,
+        "right": 1.05e+17
       },
       "temperature": 1
     },
@@ -44,8 +44,8 @@
       "charge": 1,
       "mass": 1836,
       "density": {
-        "left": 1e+17,
-        "right": 1e+17
+        "left": 1e17,
+        "right": 1.05e17
       },
       "temperature": 0.1
     }
@@ -58,88 +58,80 @@
       "velocity": 2.8e8,
       "start_time": 0,
       "bunch": {
-        "amount": 2,
+        "amount": 200,
         "distance": 0.0914,
         "length": 0.0056,
         "radius": 0.005,
-        "density": 1e+16
+        "density": 5e+16
       }
     }
   ],
   "data": {
-    "data_root": "./simulation_result",
+    "data_root": "./",
     "compression": {
       "use": false,
       "level": 1
     },
     "probes": [
       {
-        "component": "temperature",
-        "specie": "electrons",
-        "schedule": 20,
-          "shape": "dot",
-	  "r": 20,
-	  "z": 40
-      },
-      {
         "component": "E_r",
-        "schedule": 20,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
         "component": "E_phi",
-        "schedule": 20,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
         "component": "E_z",
-        "schedule": 20,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
         "component": "H_r",
-        "schedule": 20,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
         "component": "H_phi",
-        "schedule": 20,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
         "component": "H_z",
-        "schedule": 20,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
         "component": "J_r",
-        "schedule": 20,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
         "component": "J_phi",
-        "schedule": 20,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
         "component": "J_z",
-        "schedule": 20,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
@@ -147,43 +139,83 @@
       {
         "component": "density",
         "specie": "beam_electrons",
-        "schedule": 20,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
-        "component": "velocity",
+        "component": "density",
         "specie": "electrons",
-        "schedule": 10,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
-        "component": "position",
+        "component": "density",
+        "specie": "ions",
+        "schedule": 50,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 128, "z": 512 }
+      },
+      {
+        "component": "temperature",
         "specie": "electrons",
-        "schedule": 10,
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
-        "component": "velocity",
-        "specie": "beam_electrons",
-        "schedule": 10,
+        "component": "charge",
+        "specie": "electrons",
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
       },
       {
-        "component": "position",
-        "specie": "beam_electrons",
-        "schedule": 10,
+        "component": "p_charge",
+        "specie": "electrons",
+        "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
-      }
+      },
+      {
+        "component": "p_mass",
+        "specie": "electrons",
+        "schedule": 50,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 128, "z": 512 }
+      },
+      {
+        "component": "temperature",
+        "specie": "ions",
+        "schedule": 50,
+        "shape": "rec",
+        "start": { "r": 0, "z": 0 },
+        "end": { "r": 128, "z": 512 }
+      },
+        {
+	    "component": "velocity",
+	    "specie": "electrons",
+	    "schedule": 50,
+	    "shape": "rec",
+	    "start": { "r": 0, "z": 0 },
+	    "end": { "r": 128, "z": 512 }
+	},
+	{
+	    "component": "position",
+	    "specie": "electrons",
+	    "schedule": 50,
+	    "shape": "rec",
+	    "start": { "r": 0, "z": 0 },
+	    "end": { "r": 128, "z": 512 }
+	}
     ],
     "plot": {
       "subplot": {
@@ -192,7 +224,7 @@
           "x_amount": 20,
           "y_amount": 8,
           "z_amount": 20,
-          "cbar_amount": 3
+          "cbar_amount": 5
         }
       },
       "figure": {
@@ -208,7 +240,7 @@
       },
       "video": {
         "codec": "mjpeg",
-        "fps": 20,
+        "fps": 10,
         "bitrate": 32000
       }
     }

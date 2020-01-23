@@ -97,6 +97,8 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
 #elif defined PLASMA_SPATIAL_FLAT
     double rand_r = math::random::random_reverse(macro_count, 13);
     double rand_z = math::random::random_reverse(macro_amount - 1 - macro_count, 11);
+    if (rand_r == 0) rand_r = MNZL;
+    if (rand_z == 0) rand_z = MNZL;
 #endif
 
 #if defined PLASMA_SPATIAL_RANDOM || defined PLASMA_SPATIAL_FLAT
