@@ -1,6 +1,7 @@
 // enable openmp optional
 #include <typeinfo>
 
+
 #include "msg.hpp"
 
 #ifdef _OPENMP
@@ -9,9 +10,9 @@
 // #define omp_get_thread_num() 0
 #endif
 
-// #ifdef USE_HDF5
-// #include "ioHDF5.h"
-// #endif
+#ifdef USE_HDF5
+#include <unistd.h>
+#endif
 
 #include "defines.hpp"
 #include "msg.hpp"
@@ -593,7 +594,12 @@ int main(int argc, char **argv)
     // dump data
 // #pragma omp parallel for
     for (unsigned int i=0; i < data_writers.size(); ++i)
-      data_writers[i].go();
+      {
+	data_writers[i].go();
+#ifdef USE_HDF5	 // sometimes it does not have a time to dump all of the data to .h5 file
+	usleep(500);
+#endif
+      }
 
     sim_time_clock->current += sim_time_clock->step;
   }
