@@ -1,7 +1,6 @@
 // enable openmp optional
 #include <typeinfo>
 
-
 #include "msg.hpp"
 
 #ifdef _OPENMP
@@ -10,9 +9,9 @@
 // #define omp_get_thread_num() 0
 #endif
 
-#ifdef USE_HDF5
-#include <unistd.h>
-#endif
+// #ifdef USE_HDF5
+// #include "ioHDF5.h"
+// #endif
 
 #include "defines.hpp"
 #include "msg.hpp"
@@ -190,29 +189,34 @@ void current_overlay (Grid<Area*> areas, Geometry *geometry_global)
   unsigned int r_areas = areas.x_size;
   unsigned int z_areas = areas.y_size;
 
-  for (unsigned int i=0; i < r_areas; i++)
-    for (unsigned int j = 0; j < z_areas; j++)
+  for (unsigned int idx = 0; idx < 2; ++idx)
+    for (unsigned int idy = 0; idy < 2; ++idy)
     {
-      Area *sim_area = areas(i, j);
+#pragma omp parallel for
+      for (unsigned int i = idx; i < r_areas; i+=2)
+        for (unsigned int j = idy; j < z_areas; j+=2)
+        {
+          Area *sim_area = areas(i, j);
 
-      // update grid
-      if (i < geometry_global->areas_by_r - 1)
-      {
-        Area *dst_area = areas(i+1, j);
-        sim_area->current->current.overlay_x(dst_area->current->current);
-      }
+          // update grid
+          if (i < geometry_global->areas_by_r - 1)
+          {
+            Area *dst_area = areas(i+1, j);
+            sim_area->current->current.overlay_x(dst_area->current->current);
+          }
 
-      if (j < geometry_global->areas_by_z - 1)
-      {
-        Area *dst_area = areas(i, j + 1);
-        sim_area->current->current.overlay_y(dst_area->current->current);
-      }
+          if (j < geometry_global->areas_by_z - 1)
+          {
+            Area *dst_area = areas(i, j + 1);
+            sim_area->current->current.overlay_y(dst_area->current->current);
+          }
 
-      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-      // {
-      //   Area *dst_area = areas(i + 1, j + 1);
-      //   sim_area->current->current.overlay_xy(dst_area->current->current);
-      // }
+          // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+          // {
+          //   Area *dst_area = areas(i + 1, j + 1);
+          //   sim_area->current->current.overlay_xy(dst_area->current->current);
+          // }
+        }
     }
 }
 
@@ -221,32 +225,37 @@ void field_h_overlay (Grid<Area*> areas, Geometry *geometry_global)
   unsigned int r_areas = areas.x_size;
   unsigned int z_areas = areas.y_size;
 
-  for (unsigned int i=0; i < r_areas; i++)
-    for (unsigned int j = 0; j < z_areas; j++)
+  for (unsigned int idx = 0; idx < 2; ++idx)
+    for (unsigned int idy = 0; idy < 2; ++idy)
     {
-      Area *sim_area = areas(i, j);
+#pragma omp parallel for
+      for (unsigned int i = idx; i < r_areas; i+=2)
+        for (unsigned int j = idy; j < z_areas; j+=2)
+        {
+          Area *sim_area = areas(i, j);
 
-      // update grid
-      if (i < geometry_global->areas_by_r - 1)
-      {
-        Area *dst_area = areas(i+1, j);
-        sim_area->field_h->field.overlay_x(dst_area->field_h->field);
-        sim_area->field_h->field_at_et.overlay_x(dst_area->field_h->field_at_et);
-      }
+          // update grid
+          if (i < geometry_global->areas_by_r - 1)
+          {
+            Area *dst_area = areas(i+1, j);
+            sim_area->field_h->field.overlay_x(dst_area->field_h->field);
+            sim_area->field_h->field_at_et.overlay_x(dst_area->field_h->field_at_et);
+          }
 
-      if (j < geometry_global->areas_by_z - 1)
-      {
-        Area *dst_area = areas(i, j + 1);
-        sim_area->field_h->field.overlay_y(dst_area->field_h->field);
-        sim_area->field_h->field_at_et.overlay_y(dst_area->field_h->field_at_et);
-      }
+          if (j < geometry_global->areas_by_z - 1)
+          {
+            Area *dst_area = areas(i, j + 1);
+            sim_area->field_h->field.overlay_y(dst_area->field_h->field);
+            sim_area->field_h->field_at_et.overlay_y(dst_area->field_h->field_at_et);
+          }
 
-      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-      // {
-      //   Area *dst_area = areas(i + 1, j + 1);
-      //   sim_area->field_h->field.overlay_xy(dst_area->field_h->field);
-      //   sim_area->field_h->field_at_et.overlay_xy(dst_area->field_h->field_at_et);
-      // }
+          // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+          // {
+          //   Area *dst_area = areas(i + 1, j + 1);
+          //   sim_area->field_h->field.overlay_xy(dst_area->field_h->field);
+          //   sim_area->field_h->field_at_et.overlay_xy(dst_area->field_h->field_at_et);
+          // }
+        }
     }
 }
 
@@ -255,29 +264,34 @@ void field_e_overlay (Grid<Area*> areas, Geometry *geometry_global)
   unsigned int r_areas = areas.x_size;
   unsigned int z_areas = areas.y_size;
 
-  for (unsigned int i=0; i < r_areas; i++)
-    for (unsigned int j = 0; j < z_areas; j++)
+  for (unsigned int idx = 0; idx < 2; ++idx)
+    for (unsigned int idy = 0; idy < 2; ++idy)
     {
-      Area *sim_area = areas(i, j);
+#pragma omp parallel for
+      for (unsigned int i = idx; i < r_areas; i+=2)
+        for (unsigned int j = idy; j < z_areas; j+=2)
+        {
+          Area *sim_area = areas(i, j);
 
-      // update grid
-      if (i < geometry_global->areas_by_r - 1)
-      {
-        Area *dst_area = areas(i+1, j);
-        sim_area->field_e->field.overlay_x(dst_area->field_e->field);
-      }
+          // update grid
+          if (i < geometry_global->areas_by_r - 1)
+          {
+            Area *dst_area = areas(i+1, j);
+            sim_area->field_e->field.overlay_x(dst_area->field_e->field);
+          }
 
-      if (j < geometry_global->areas_by_z - 1)
-      {
-        Area *dst_area = areas(i, j + 1);
-        sim_area->field_e->field.overlay_y(dst_area->field_e->field);
-      }
+          if (j < geometry_global->areas_by_z - 1)
+          {
+            Area *dst_area = areas(i, j + 1);
+            sim_area->field_e->field.overlay_y(dst_area->field_e->field);
+          }
 
-      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
-      // {
-      //   Area *dst_area = areas(i + 1, j + 1);
-      //   sim_area->field_e->field.overlay_xy(dst_area->field_e->field);
-      // }
+          // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+          // {
+          //   Area *dst_area = areas(i + 1, j + 1);
+          //   sim_area->field_e->field.overlay_xy(dst_area->field_e->field);
+          // }
+        }
     }
 }
 
@@ -594,12 +608,7 @@ int main(int argc, char **argv)
     // dump data
 // #pragma omp parallel for
     for (unsigned int i=0; i < data_writers.size(); ++i)
-      {
-	data_writers[i].go();
-#ifdef USE_HDF5	 // sometimes it does not have a time to dump all of the data to .h5 file
-	usleep(500);
-#endif
-      }
+      data_writers[i].go();
 
     sim_time_clock->current += sim_time_clock->step;
   }

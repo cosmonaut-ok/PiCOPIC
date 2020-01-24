@@ -154,7 +154,7 @@ test: clean test-unit
 	@python3 ./test/functional/test.py
 
 test-perf:
-	@/bin/sh ./test/performance/performance.sh
+	@/bin/bash ./test/performance/performance.sh
 
 # test-ext: clean
 # 	@python3 ./test/functional/test.py --type=ext

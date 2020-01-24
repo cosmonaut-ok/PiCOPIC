@@ -19,7 +19,7 @@ for var in `seq 5`; do
     ./configure 2>&1 >/dev/null
     make test 2>&1 >/dev/null
     SUM+=$(make test 2>&1 | grep 'Execution time is' | cut -d' ' -f4 | head -n1)
-    if [ ! $var == 5 ]; then
+    if [ ! ${var} == 5 ]; then
 	SUM+="+"
     fi
 
