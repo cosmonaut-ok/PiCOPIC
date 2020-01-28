@@ -1,7 +1,7 @@
 #include "cfg.hpp"
 #include <typeinfo>
 
-#define MIN_AREA_GRID_AMOUNT 16
+#define MIN_AREA_GRID_AMOUNT 64
 
 Cfg::Cfg(const char *json_file_name)
 {
