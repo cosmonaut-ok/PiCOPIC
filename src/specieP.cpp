@@ -78,13 +78,13 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
 
 #if defined PLASMA_SPATIAL_REGULAR || defined PLASMA_SPATIAL_CENTERED
   double macro_distance = lib::sq_rt(r_size * z_size / macro_amount);
+  double macros_per_cell = macro_amount / (r_size * z_size / dr / dz);
   // count macroparticles by r and z
   double r_macro_count = 0;
   double z_macro_count = 0;
-  // LOG_CRIT(macro_distance << " " << r_size <<" " << z_size, 1);
-  // LOG_CRIT(r_macro_distance << " " << z_macro_distance, 1);
 #endif
 
+  // MSG(r_size / dr << " " << z_size / dz << " " << macro_amount);
   unsigned int macro_count = 0;
 
   // summary volume of all macroparticles
@@ -112,11 +112,24 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
       P_POS_Z((**n)) = z_size / dn
         * (lib::sq_rt(pow(dl, 2) + rand_z * (2 * dl * dn + pow(dn, 2))) - dl);
 
-#elif defined PLASMA_SPATIAL_REGULAR || defined PLASMA_SPATIAL_CENTERED
+#elif defined PLASMA_SPATIAL_REGULAR
     P_POS_R((**n)) = r_macro_count * macro_distance + MNZL;
     P_POS_Z((**n)) = z_macro_count * macro_distance + MNZL;
 
-    if (macro_distance * r_macro_count > r_size)
+    if (macro_distance * r_macro_count >= r_size - dr / 2)
+    {
+      r_macro_count = 0;
+      ++z_macro_count;
+    }
+    else
+      ++r_macro_count;
+
+#elif defined PLASMA_SPATIAL_CENTERED
+    // place "macros_per_cell" amount of macroparticles per cell
+    P_POS_R((**n)) = floor(r_macro_count / macros_per_cell) * dr + MNZL;
+    P_POS_Z((**n)) = z_macro_count * dz + MNZL;
+
+    if (floor(r_macro_count / macros_per_cell) * dr >= r_size)
     {
       r_macro_count = 0;
       ++z_macro_count;
@@ -137,10 +150,14 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
   // LOG_CRIT("CNT " << r_macro_count << " " << z_macro_count, 1);
   // average volume of single macroparticle
   double v_avg = v_sum / macro_amount;
+
+  // set top and bottom radius cell numbers (decrease at r=r wall)
+  double top_r_num = geometry->top_r_grid_number;
+  double bot_r_num = geometry->bottom_r_grid_number;
+  if (geometry->walls[2]) top_r_num -= 1;
+
   double N_total = (density[0] + density[1]) / 2
-    * PI * dr * dr * (geometry->top_r_grid_number * geometry->top_r_grid_number
-                      - geometry->bottom_r_grid_number * geometry->bottom_r_grid_number)
-    * geometry->z_size;
+    * PI * dr * dr * (top_r_num * top_r_num - bot_r_num * bot_r_num) * z_size;
 
   double n_per_macro_avg = N_total / macro_amount;
 

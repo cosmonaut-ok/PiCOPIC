@@ -63,12 +63,11 @@ class H5Reader (Reader):
         path = self.__get_path__(p_component, p_type, shape)
         path += "/{}".format(number)
         size = self.__frame_size__(shape)
-        self.__validate_frame__(p_component, shape, number)
         if self.__verbose__:
             sys.stdout.write("Loading data set {}/{}:{}-{}_{}-{}/{}...".format(p_component, p_type, shape[0], shape[2], shape[1], shape[3], number))
             sys.stdout.flush()
-
-        frame = self.file[path][shape[0]:shape[2],shape[1]:shape[3]]
+        # self.__validate_frame__(p_component, shape, number)
+        frame = self.file[path] # [shape[0]:shape[2],shape[1]:shape[3]]
 
         if self.__verbose__:
             sys.stdout.write('done\n')

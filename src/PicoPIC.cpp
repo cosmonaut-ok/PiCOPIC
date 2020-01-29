@@ -88,91 +88,96 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
   unsigned int z_areas = areas.y_size;
   int j_c = 0;
   int r_c = 0;
-  for (unsigned int i=0; i < r_areas; i++)
-    for (unsigned int j = 0; j < z_areas; j++)
+  for (unsigned int idx = 0; idx < 2; ++idx)
+    for (unsigned int idy = 0; idy < 2; ++idy)
     {
-      Area *sim_area = areas(i, j);
+#pragma omp parallel for
+      for (unsigned int i = idx; i < r_areas; i+=2)
+        for (unsigned int j = idy; j < z_areas; j+=2)
+        {
+          Area *sim_area = areas(i, j);
 
-      for (auto ps = sim_area->species_p.begin(); ps != sim_area->species_p.end(); ++ps)
-      {
-        (**ps).particles.erase(
-          std::remove_if((**ps).particles.begin(), (**ps).particles.end(),
-                         [&j_c, &r_c, &ps, &areas, &sim_area, &i, &j, &geometry_global](vector <double> * & o)
-                         {
-                           bool res = false;
-
-                           // not unsigned, because it could be less, than zero
-                           int r_cell = CELL_NUMBER(P_POS_R((*o)), sim_area->geometry.r_cell_size);
-                           int z_cell = CELL_NUMBER(P_POS_Z((*o)), sim_area->geometry.z_cell_size);
-
-                           unsigned int i_dst = (unsigned int)ceil(r_cell / sim_area->geometry.r_grid_amount);
-                           unsigned int j_dst = (unsigned int)ceil(z_cell / sim_area->geometry.z_grid_amount);
-
-                           if (r_cell < 0 || z_cell < 0)
-                           {
-                             LOG_ERR("Particle's position is less, than 0. Position is: ["
-                                     << P_POS_R((*o)) << ", "
-                                     << P_POS_Z((*o)) << "]. Removing");
-                             ++r_c;
-                             res = true;
-                           }
-
-                           if (r_cell >= geometry_global->r_grid_amount)
-                           {
-                             LOG_ERR("Particle's r-position is more, than geometry r-size: "
-                                     << geometry_global->r_grid_amount
-                                     << ". Position is: ["
-                                     << P_POS_R((*o)) << ", "
-                                     << P_POS_Z((*o)) << "]. Removing");
-                             ++r_c;
-                             res = true;
-                           }
-
-                           // remove out-of-simulation particles
-                           if (z_cell >= geometry_global->z_grid_amount)
-                           {
-                             if ((**ps).id >= BEAM_ID_START)
+          for (auto ps = sim_area->species_p.begin(); ps != sim_area->species_p.end(); ++ps)
+          {
+            (**ps).particles.erase(
+              std::remove_if((**ps).particles.begin(), (**ps).particles.end(),
+                             [&j_c, &r_c, &ps, &areas, &sim_area, &i, &j, &geometry_global](vector <double> * & o)
                              {
-                               LOG_DBG("Beam particle is out of simulation area: ["
-                                       << P_POS_R((*o)) << ", "
-                                       << P_POS_Z((*o)) << "]. Removing");
-                             }
-                             else
-                             {
-                               LOG_ERR("Particle's z-position is more, than geometry z-size: "
-                                       << geometry_global->z_grid_amount
-                                       << ". Position is: ["
-                                       << P_POS_R((*o)) << ", "
-                                       << P_POS_Z((*o)) << "]. Removing");
-                             }
-                             ++r_c;
-                             res = true;
-                           }
+                               bool res = false;
 
-                           // move particles between cells
-                           else if (i_dst != i || j_dst != j) // check that destination area is different, than source
-                           {
-                             ++j_c;
+                               // not unsigned, because it could be less, than zero
+                               int r_cell = CELL_NUMBER(P_POS_R((*o)), sim_area->geometry.r_cell_size);
+                               int z_cell = CELL_NUMBER(P_POS_Z((*o)), sim_area->geometry.z_cell_size);
 
-                             Area *dst_area = areas(i_dst, j_dst);
-                             for (auto pd = dst_area->species_p.begin(); pd != dst_area->species_p.end(); ++pd)
-                               if ((**pd).id == (**ps).id)
+                               unsigned int i_dst = (unsigned int)ceil(r_cell / sim_area->geometry.r_grid_amount);
+                               unsigned int j_dst = (unsigned int)ceil(z_cell / sim_area->geometry.z_grid_amount);
+
+                               if (r_cell < 0 || z_cell < 0)
                                {
-                                 LOG_DBG("Particle with specie "
-                                         << (**ps).id
-                                         << " jump from area "
-                                         << i << "," << j
-                                         << " to area "
-                                         << i_dst << "," << j_dst);
-                                 (**pd).particles.push_back(o);
+                                 LOG_ERR("Particle's position is less, than 0. Position is: ["
+                                         << P_POS_R((*o)) << ", "
+                                         << P_POS_Z((*o)) << "]. Removing");
+                                 ++r_c;
+                                 res = true;
                                }
 
-                             res = true;
-                           }
-                           return res;
-                         }),
-          (**ps).particles.end());
-      }
+                               if (r_cell >= geometry_global->r_grid_amount)
+                               {
+                                 LOG_ERR("Particle's r-position is more, than geometry r-size: "
+                                         << geometry_global->r_grid_amount
+                                         << ". Position is: ["
+                                         << P_POS_R((*o)) << ", "
+                                         << P_POS_Z((*o)) << "]. Removing");
+                                 ++r_c;
+                                 res = true;
+                               }
+
+                               // remove out-of-simulation particles
+                               if (z_cell >= geometry_global->z_grid_amount)
+                               {
+                                 if ((**ps).id >= BEAM_ID_START)
+                                 {
+                                   LOG_DBG("Beam particle is out of simulation area: ["
+                                           << P_POS_R((*o)) << ", "
+                                           << P_POS_Z((*o)) << "]. Removing");
+                                 }
+                                 else
+                                 {
+                                   LOG_ERR("Particle's z-position is more, than geometry z-size: "
+                                           << geometry_global->z_grid_amount
+                                           << ". Position is: ["
+                                           << P_POS_R((*o)) << ", "
+                                           << P_POS_Z((*o)) << "]. Removing");
+                                 }
+                                 ++r_c;
+                                 res = true;
+                               }
+
+                               // move particles between cells
+                               else if (i_dst != i || j_dst != j) // check that destination area is different, than source
+                               {
+                                 ++j_c;
+
+                                 Area *dst_area = areas(i_dst, j_dst);
+                                 for (auto pd = dst_area->species_p.begin(); pd != dst_area->species_p.end(); ++pd)
+                                   if ((**pd).id == (**ps).id)
+                                   {
+                                     LOG_DBG("Particle with specie "
+                                             << (**ps).id
+                                             << " jump from area "
+                                             << i << "," << j
+                                             << " to area "
+                                             << i_dst << "," << j_dst);
+                                     (**pd).particles.push_back(o);
+                                   }
+
+                                 res = true;
+                               }
+                               return res;
+                             }),
+              (**ps).particles.end());
+          }
+        }
     }
   if (j_c > 0)
   {
@@ -429,9 +434,15 @@ int main(int argc, char **argv)
 //// spatial distributions
 #if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)
         LOG_DBG("Correcting area plasma particles macro amount to satisfy spatial distribution");
+        double r_size = geom_area->r_size;
+        double z_size = geom_area->z_size;
+
+        if (geom_area->walls[2]) r_size -= geom_area->r_cell_size;
+        if (geom_area->walls[3]) z_size -= geom_area->z_cell_size;
+
         grid_cell_macro_amount = lib::nearest_divide(
           grid_cell_macro_amount,
-          geom_area->r_size * geom_area->z_size
+          r_size / geom_area->r_cell_size * z_size / geom_area->z_cell_size
           );
 #endif
 
