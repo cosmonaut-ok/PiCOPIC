@@ -99,7 +99,15 @@ void Area::push_particles ()
 {
   // ! update particles velocity
   for (auto i = species_p.begin(); i != species_p.end(); i++)
+  {
+#if defined PUSHER_BORIS_ADAPTIVE || defined PUSHER_BORIS_CLASSIC || defined PUSHER_BORIS_RELATIVISTIC
     (*i)->boris_pusher();
+#elif defined PUSHER_VAY
+    (*i)->vay_pusher();
+#else
+    LOG_CRIT("Undefined particles pusher used", 1);
+#endif
+  }
 }
 
 void Area::update_particles_coords_at_half()

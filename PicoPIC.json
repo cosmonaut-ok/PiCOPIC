@@ -1,5 +1,4 @@
 {
-  "debug": false,
   "macro_amount": 5e5,
   "beam_plasma_macro_size_ratio": 2,
   "geometry": {

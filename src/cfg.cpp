@@ -31,9 +31,6 @@ Cfg::Cfg(const char *json_file_name)
   // set package version to config metadata
   json_data.get<object>()["package_version"] = value((string)PACKAGE_VERSION);
 
-  //! set debug option
-  debug = json_data.get<object>()["debug"].get<bool>();
-
   //! set amount of macroparticles
   macro_amount = json_data.get<object>()["macro_amount"].get<double>();
 
