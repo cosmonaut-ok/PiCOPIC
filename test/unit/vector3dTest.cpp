@@ -192,14 +192,6 @@ namespace {
     EXPECT_EQ(vec3[2], 0);
   }
 
-  TEST(vector3d, copy)
-  {
-    vector3d<int> vec(1, -2, 3);
-    vector3d<int> vec_cpy = vec.copy();
-
-    EXPECT_TRUE(vec == vec_cpy);
-  }
-
   TEST(vector3d, dot)
   {
     vector3d<int> vec(1, -2, 3);
