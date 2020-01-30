@@ -116,10 +116,11 @@ else
    HDF5_OPTION=false
 fi
 
+AC_DEFINE([REL_LIMIT], [5e7], [Relativistit calculations limit (for boris-adaptive pusher)])
+   
 # define a pusher
 if test x$PUSHER == xboris-adaptive; then
    AC_DEFINE_UNQUOTED([PUSHER_BORIS_ADAPTIVE], [true], [Performance debug option])
-   AC_DEFINE([REL_LIMIT], [5e7], [Relativistit calculations limit (for boris-adaptive pusher)])
 elif test x$PUSHER == xboris; then
    AC_DEFINE_UNQUOTED([PUSHER_BORIS_CLASSIC], [true], [Performance debug option])
 elif test x$PUSHER == xboris-relativistic; then
