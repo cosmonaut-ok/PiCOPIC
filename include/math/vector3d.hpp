@@ -61,18 +61,18 @@ public:
   // = for number and another vector3d
   vector3d& operator= (T const& rhs)&
   {
-    vec3d[0] = rhs;
-    vec3d[1] = rhs;
-    vec3d[2] = rhs;
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      vec3d[i] = rhs;
 
     return *this;
   };
 
   vector3d& operator= (vector3d const& rhs)&
   {
-    vec3d[0] = rhs.vec3d[0];
-    vec3d[1] = rhs.vec3d[1];
-    vec3d[2] = rhs.vec3d[2];
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      vec3d[i] = rhs.vec3d[i];
 
     return *this;
   };
@@ -80,18 +80,18 @@ public:
   // += for number and another vector3d
   vector3d& operator+= (T const& rhs)&
   {
-    vec3d[0] += rhs;
-    vec3d[1] += rhs;
-    vec3d[2] += rhs;
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      vec3d[i] += rhs;
 
     return *this;
   };
 
   vector3d& operator+= (vector3d const& rhs)&
   {
-    vec3d[0] += rhs.vec3d[0];
-    vec3d[1] += rhs.vec3d[1];
-    vec3d[2] += rhs.vec3d[2];
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      vec3d[i] += rhs.vec3d[i];
 
     return *this;
   };
@@ -99,18 +99,18 @@ public:
   // -= for number and another vector3d
   vector3d& operator-= (T const& rhs)&
   {
-    vec3d[0] -= rhs;
-    vec3d[1] -= rhs;
-    vec3d[2] -= rhs;
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      vec3d[i] -= rhs;
 
     return *this;
   };
 
   vector3d& operator-= (vector3d const& rhs)&
   {
-    vec3d[0] -= rhs.vec3d[0];
-    vec3d[1] -= rhs.vec3d[1];
-    vec3d[2] -= rhs.vec3d[2];
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      vec3d[i] -= rhs.vec3d[i];
 
     return *this;
   };
@@ -118,18 +118,18 @@ public:
   // *= for number and another vector3d
   vector3d& operator*= (T const& rhs)&
   {
-    vec3d[0] *= rhs;
-    vec3d[1] *= rhs;
-    vec3d[2] *= rhs;
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      vec3d[i] *= rhs;
 
     return *this;
   };
 
   vector3d& operator*= (vector3d const& rhs)&
   {
-    vec3d[0] *= rhs.vec3d[0];
-    vec3d[1] *= rhs.vec3d[1];
-    vec3d[2] *= rhs.vec3d[2];
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      vec3d[i] *= rhs.vec3d[i];
 
     return *this;
   };
@@ -137,32 +137,27 @@ public:
   // /= for number and another vector3d
   vector3d& operator/= (T const& rhs)&
   {
-    vec3d[0] /= rhs;
-    vec3d[1] /= rhs;
-    vec3d[2] /= rhs;
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      vec3d[i] /= rhs;
 
     return *this;
   };
 
   vector3d& operator/= (vector3d const& rhs)&
   {
-    vec3d[0] /= rhs.vec3d[0];
-    vec3d[1] /= rhs.vec3d[1];
-    vec3d[2] /= rhs.vec3d[2];
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      vec3d[i] /= rhs.vec3d[i];
 
     return *this;
   };
 
   // methods
-  vector3d copy()
-  {
-    vector3d<T> ret = vector3d<T>((*this)[0], (*this)[1], (*this)[2]);
-    return ret;
-  };
-
   T dot(vector3d const& rhs)
   {
     T ret = 0;
+#pragma omp simd
     for (int i = 0; i < 3; i++)
       ret += vec3d[i] * rhs.vec3d[i];
 
@@ -171,7 +166,7 @@ public:
 
   vector3d cross(vector3d const& rhs)
   {
-    vector3d vtmp = copy();
+    vector3d vtmp = *this;
 
     vtmp[0] = vec3d[1] * rhs.vec3d[2] - vec3d[2] * rhs.vec3d[1];
     vtmp[1] = vec3d[2] * rhs.vec3d[0] - vec3d[0] * rhs.vec3d[2];
@@ -195,6 +190,7 @@ public:
 
   vector3d pow(T power)
   {
+#pragma omp simd
     for (int i=0; i < 3; i++)
       vec3d[i] = std::pow(vec3d[i], power);
 
@@ -203,6 +199,7 @@ public:
 
   vector3d abs()
   {
+#pragma omp simd
     for (int i=0; i < 3; i++)
       vec3d[i] = std::abs(vec3d[i]);
 

@@ -74,7 +74,7 @@ if test x$SINGLETHREAD == xyes; then
   AC_DEFINE([SINGLETHREAD], [true], [Debug option])
 else
   AC_OPENMP
-  CFLAGS_ADDITIONAL+=" -fopenmp"
+  CFLAGS_ADDITIONAL+=" -fopenmp -fopenmp-simd"
 fi
 
 if test x$OMP_DYNAMIC == xyes; then
