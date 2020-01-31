@@ -153,6 +153,106 @@ public:
     return *this;
   };
 
+  vector3d& operator+ (vector3d const& rhs)&
+  {
+    vector3d res (0, 0, 0);
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      res[i] = vec3d[i] + rhs.vec3d[i];
+
+    return res;
+  };
+
+  vector3d& operator+ (T rhs)&
+  {
+    vector3d res (0, 0, 0);
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      res[i] = vec3d[i] + rhs;
+
+    return res;
+  };
+
+  vector3d& operator- (vector3d const& rhs)&
+  {
+    vector3d res (0, 0, 0);
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      res[i] = vec3d[i] - rhs.vec3d[i];
+
+    return res;
+  };
+
+vector3d& operator- (T rhs)&
+  {
+    vector3d res (0, 0, 0);
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      res[i] = vec3d[i] - rhs;
+
+    return res;
+  };
+
+  vector3d& operator* (vector3d const& rhs)&
+  {
+    vector3d res (0, 0, 0);
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      res[i] = vec3d[i] * rhs.vec3d[i];
+
+    return res;
+  };
+
+  vector3d& operator* (T rhs)&
+  {
+    vector3d res (0, 0, 0);
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      res[i] = vec3d[i] * rhs;
+
+    return res;
+  };
+
+  vector3d& operator/ (vector3d const& rhs)&
+  {
+    vector3d res (0, 0, 0);
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      res[i] = vec3d[i] / rhs.vec3d[i];
+
+    return res;
+  };
+
+  vector3d& operator/ (T rhs)&
+  {
+    vector3d res (0, 0, 0);
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      res[i] = vec3d[i] / rhs;
+
+    return res;
+  };
+
+  vector3d& operator% (vector3d const& rhs)&
+  {
+    vector3d res (0, 0, 0);
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      res[i] = vec3d[i] % rhs.vec3d[i];
+
+    return res;
+  };
+
+  vector3d& operator% (T rhs)&
+  {
+    vector3d res (0, 0, 0);
+#pragma omp simd
+    for (unsigned short i=0; i<3; ++i)
+      res[i] = vec3d[i] % rhs;
+
+    return res;
+  };
+
   // methods
   T dot(vector3d const& rhs)
   {
