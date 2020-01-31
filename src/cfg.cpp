@@ -298,6 +298,21 @@ void Cfg::weight_macro_amount()
   // calculate normalization coeffitient
   double norm = macro_amount / norm_sum;
 
+  // message about pusher, used in system
+#ifdef PUSHER_BORIS_CLASSIC
+  LOG_INFO("Using classic Boris particles pusher");
+#elif defined PUSHER_BORIS_ADAPTIVE
+  LOG_INFO("Using adaptive Boris particles pusher");
+#elif defined PUSHER_BORIS_RELATIVISTIC
+  LOG_INFO("Using fully relativistic Boris particles pusher");
+#elif defined PUSHER_VAY
+  LOG_INFO("Using Vay particles pusher");
+#elif defined PUSHER_HIGUERA_CARY
+  LOG_INFO("Using Higuera-Cary particles pusher");
+#else
+    LOG_CRIT("Undefined particles pusher used", 1);
+#endif
+
   // align macroparticles amount to particle species
   // with respect to normalization
 #if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)

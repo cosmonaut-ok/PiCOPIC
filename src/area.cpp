@@ -104,6 +104,8 @@ void Area::push_particles ()
     (*i)->boris_pusher();
 #elif defined PUSHER_VAY
     (*i)->vay_pusher();
+#elif defined PUSHER_HIGUERA_CARY
+    (*i)->hc_pusher();
 #else
     LOG_CRIT("Undefined particles pusher used", 1);
 #endif

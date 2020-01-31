@@ -166,6 +166,7 @@ public:
   void inject_bunch();
   void boris_pusher();
   void vay_pusher();
+  void hc_pusher();
   void half_step_mover_cylindrical();
   virtual void reflect();
   void back_position_to_rz();

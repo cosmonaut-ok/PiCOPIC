@@ -55,7 +55,7 @@ AC_ARG_ENABLE([omp_dynamic], [AC_HELP_STRING([--enable-omp-dynamic], [Enable ope
 AC_ARG_ENABLE([hdf5], [AC_HELP_STRING([--disable-hdf5], [Build application with hdf5 library support])], [HDF5="$enableval"], [HDF5=yes])
 
 dnl AC_ARG_WITH([doc-formats], [AC_HELP_STRING([--with-doc-formats], [Set list of documentation formats to be generated])], [DOXYGEN_FORMATS="$withval"], [DOXYGEN_FORMATS="latex html rtf"])
-AC_ARG_WITH([pusher], [AC_HELP_STRING([--with-pusher], [Set particles pusher (supported: boris (default), vay, hc (n/a), rrll (n/a))])], [PUSHER="$withval"], [PUSHER="boris-adaptive"])
+AC_ARG_WITH([pusher], [AC_HELP_STRING([--with-pusher], [Set particles pusher (supported: boris (default), vay, higuera-cary)])], [PUSHER="$withval"], [PUSHER="boris-adaptive"])
 
 AC_ARG_WITH([plasma-spatial-distribution], [AC_HELP_STRING([--with-plasma-spatial-distribution], [Set plasma particles spatial distribution type (supported: flat (default), random, regular, centered (not implemented) )])], [PLASMA_SPATIAL="$withval"], [PLASMA_SPATIAL="flat"])
 
@@ -127,6 +127,8 @@ elif test x$PUSHER == xboris-relativistic; then
    AC_DEFINE_UNQUOTED([PUSHER_BORIS_RELATIVISTIC], [true], [Performance debug option])
 elif test x$PUSHER == xvay; then
    AC_DEFINE_UNQUOTED([PUSHER_VAY], [true], [Performance debug option])
+elif test x$PUSHER == xhiguera-cary; then
+   AC_DEFINE_UNQUOTED([PUSHER_HIGUERA_CARY], [true], [Performance debug option])
 else
    AC_MSG_ERROR([Pusher is not supported.])
 fi
