@@ -142,11 +142,11 @@ try
 
     DataSpace fspace( 1, fdim );
 
-    DataSet* dataset = new DataSet(group.createDataSet(
-                                     a_name,
-                                     PredType::NATIVE_DOUBLE, fspace, plist));
+    DataSet dataset(group.createDataSet(
+                      a_name,
+                      PredType::NATIVE_DOUBLE, fspace, plist));
 
-    dataset->write(arr, PredType::NATIVE_DOUBLE);
+    dataset.write(arr, PredType::NATIVE_DOUBLE);
 
     file.close();
   }
@@ -182,12 +182,12 @@ void OutEngineHDF5::write_dot(string a_name, Grid<double> data)
     hsize_t fdim[] = {1};
     DataSpace fspace( 1, fdim );
 
-    DataSet* dataset = new DataSet(group.createDataSet(
-                                     a_name,
-                                     PredType::NATIVE_DOUBLE, fspace, plist));
+    DataSet dataset(group.createDataSet(
+                      a_name,
+                      PredType::NATIVE_DOUBLE, fspace, plist));
 
     double ds[] = {data(size[2], size[3])};
-    dataset->write(ds, PredType::NATIVE_DOUBLE);
+    dataset.write(ds, PredType::NATIVE_DOUBLE);
 
     file.close();
   }
@@ -227,11 +227,11 @@ void OutEngineHDF5::write_1d_vector(string a_name, vector<double> data)
     hsize_t fdim[] = {data.size()};
     DataSpace fspace( 1, fdim );
 
-    DataSet* dataset = new DataSet(group.createDataSet(
-                                     a_name,
-                                     PredType::NATIVE_DOUBLE, fspace, plist));
+    DataSet dataset(group.createDataSet(
+                      a_name,
+                      PredType::NATIVE_DOUBLE, fspace, plist));
 
-    dataset->write(arr, PredType::NATIVE_DOUBLE);
+    dataset.write(arr, PredType::NATIVE_DOUBLE);
 
     file.close();
   }
