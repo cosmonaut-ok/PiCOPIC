@@ -77,16 +77,16 @@ void OutEngineHDF5::write_rec(string a_name, Grid<double> data)
     hsize_t fdim[] = {size_x, size_y};
     DataSpace fspace( 2, fdim );
 
-    DataSet* dataset = new DataSet(group.createDataSet(
-                                     a_name,
-                                     PredType::NATIVE_DOUBLE, fspace, plist));
+    DataSet dataset (group.createDataSet(
+                       a_name,
+                       PredType::NATIVE_DOUBLE, fspace, plist));
 
     double tmparr[size_x][size_y];
     for (int i = size[0]; i < size[2]; ++i)
       for (int j = size[1]; j < size[3]; ++j)
-	tmparr[i-size[0]][j-size[1]] = data(i, j);
+        tmparr[i-size[0]][j-size[1]] = data(i, j);
 
-    dataset->write(tmparr, PredType::NATIVE_DOUBLE);
+    dataset.write(tmparr, PredType::NATIVE_DOUBLE);
 
     file.close();
   }
