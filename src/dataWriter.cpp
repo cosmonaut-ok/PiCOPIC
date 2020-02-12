@@ -315,21 +315,62 @@ void DataWriter::merge_particle_areas(string parameter,
                                       string specie)
 {
   Grid<double> value;
-  if (shape == 0)
-  {
-    for (unsigned int r = 0; r < geometry->areas_by_r; ++r)
-      for (unsigned int z = 0; z < geometry->areas_by_z; ++z)
+  // if (shape == 0)
+  // {
+  for (unsigned int r = 0; r < geometry->areas_by_r; ++r)
+    for (unsigned int z = 0; z < geometry->areas_by_z; ++z)
+    {
+      Area *sim_area = areas(r, z);
+      vector<SpecieP *> species = sim_area->species_p;
+
+      for (auto ps = species.begin(); ps != species.end(); ++ps)
       {
-        Area *sim_area = areas(r, z);
-        vector<SpecieP *> species = sim_area->species_p;
-
-        for (auto ps = species.begin(); ps != species.end(); ++ps)
+        if (specie.compare((**ps).name) == 0)
         {
-          if (specie.compare((**ps).name) == 0)
-          {
-            vector< vector<double> * > pp = (**ps).particles;
+          vector< vector<double> * > pp = (**ps).particles;
 
-            for (unsigned int p = 0; p < pp.size(); ++p)
+          for (unsigned int p = 0; p < pp.size(); ++p)
+          {
+            bool allow_to_push = false;
+
+            double dr = geometry->r_cell_size;
+            double dz = geometry->z_cell_size;
+            int i_p = CELL_NUMBER((*pp[p])[0], dr);
+            int k_p = CELL_NUMBER((*pp[p])[2], dz);
+
+            switch (shape)
+            {
+            case 0:
+              // rec
+              if (i_p >= size[0]
+                  && i_p < size[2]
+                  && k_p >= size[1]
+                  && k_p < size[3])
+                allow_to_push = true;
+              break;
+            case 1:
+              // col
+              if (i_p >= size[0]
+                  && i_p < size[2]
+                  && k_p == size[1])
+                allow_to_push = true;
+              break;
+            case 2:
+              // row
+              if (i_p == size[0]
+                  && k_p >= size[1]
+                  && k_p < size[3])
+                allow_to_push = true;
+              break;
+            case 3:
+              // dot
+              if (i_p == size[0]
+                  && k_p == size[1])
+                allow_to_push = true;
+              break;
+            }
+
+            if (allow_to_push == true)
             {
               if (parameter.compare("position") == 0)
                 out_data_plain.push_back((*pp[p])[component]);
@@ -343,10 +384,11 @@ void DataWriter::merge_particle_areas(string parameter,
                 LOG_CRIT("Unknown DataWriter component ``" << parameter << "''", 1);
             }
           }
+        }
       }
-      }
-  }
-  else
-    LOG_CRIT("Incorrect DataWriter shape ``" << shape
-             << "''(not allowed for particle sets) or size", 1);
+    }
+  // }
+  // else
+  //   LOG_CRIT("Incorrect DataWriter shape ``" << shape
+  //            << "''(not allowed for particle sets) or size", 1);
 }
