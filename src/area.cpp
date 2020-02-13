@@ -17,7 +17,12 @@ Area::Area(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry(geo
 
   current = new Current(&geometry, time, species_p);
 
-  temperature = new Temperature(&geometry, species_p);
+#ifdef TEMP_CALC_COUNTING
+  temperature = new TemperatureCounted(&geometry, species_p);
+#elif TEMP_CALC_WEIGHTING
+  temperature = new TemperatureWeighted(&geometry, species_p);
+#endif
+
   density = new Density(&geometry, species_p);
   charge = new DensityCharge(&geometry, species_p);
 

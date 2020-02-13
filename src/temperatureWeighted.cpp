@@ -1,19 +1,6 @@
-#include "temperature.hpp"
+#include "temperatureWeighted.hpp"
 
-Temperature::Temperature(Geometry *geom, vector<SpecieP *> species) : geometry(geom)
-{
-  vel_full = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  vel_r = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  vel_phi = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  vel_z = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  temperature = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-
-  density = Density (geometry, species);
-
-  species_p = species;
-}
-
-void Temperature::weight_temperature_cylindrical(string specie)
+void TemperatureWeighted::weight_temperature_cylindrical(string specie)
 {
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
     if (specie.compare((**ps).name) == 0)
@@ -189,7 +176,7 @@ void Temperature::weight_temperature_cylindrical(string specie)
       }
 }
 
-void Temperature::calc_temperature_cylindrical(string specie)
+void TemperatureWeighted::calc_temperature_cylindrical(string specie)
 {
   // get specie
   SpecieP *speciep;
