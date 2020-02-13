@@ -15,10 +15,15 @@
 #include "fieldE.hpp"
 #include "fieldH.hpp"
 #include "current.hpp"
-#include "temperature.hpp"
+
 #include "densityCharge.hpp"
 #include "density.hpp"
-#include "densityCharge.hpp"
+
+#ifdef TEMP_CALC_COUNTING
+#include "temperatureCounted.hpp"
+#elif TEMP_CALC_WEIGHTING
+#include "temperatureWeighted.hpp"
+#endif
 
 using namespace std;
 

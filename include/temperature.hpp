@@ -16,14 +16,19 @@ public:
   Grid<double> vel_z;
   Grid<double> temperature;
   vector<SpecieP *> species_p;
-  Density density;
 
   Temperature(void) {};
-  Temperature(Geometry *geom, vector<SpecieP *> species);
-  ~Temperature() {};
+  Temperature(Geometry *geom, vector<SpecieP *> species) : geometry(geom)
+  {
+    vel_full = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+    vel_r = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+    vel_phi = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+    vel_z = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+    temperature = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+    species_p = species;
+  };
+  
+  ~Temperature(void) {};
 
-  void calc_temperature_cylindrical(string specie);
-
-private:
-  void weight_temperature_cylindrical(string specie);
+  virtual void calc_temperature_cylindrical(string specie) = 0;
 };
