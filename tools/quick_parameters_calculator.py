@@ -6,7 +6,8 @@ import argparse
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lib/python"))
 
-from picopic.meta_reader import MetaReader
+from picopic.h5_reader import H5Reader
+from picopic.plain_reader import PlainReader
 
 def langmur_freq(density):
     # pi = 3.1415
@@ -43,7 +44,15 @@ def main():
 
     args = parser.parse_args()
 
-    config = MetaReader(args.properties_path)
+    # set reader
+    if os.path.isfile(os.path.join(args.properties_path, "metadata.json")):
+        reader = PlainReader(path = args.properties_path, use_cache=False, verbose=False)
+    elif os.path.isfile(os.path.join(args.properties_path, "data.h5")):
+        reader = H5Reader(path = args.properties_path, use_cache=False, verbose=False)
+    else:
+        raise EnvironmentError("There is no corresponding data/metadata files in the path " + config_path + ". Can not continue.")
+
+    config = reader.meta
 
     for i in config.species:
         if i.name.lower() == 'electrons':
