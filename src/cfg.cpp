@@ -36,24 +36,28 @@ Cfg::Cfg(const char *json_file_name)
   object o;
   o["package_version"] = value((string)PACKAGE_VERSION);
   o["debug"] = value((bool)DEBUG);
-  o["ieee"] = value((bool)!SPEEDUP);
+#ifdef SPEEDUP
+  o["ieee"] = value(false);
+#else
+  o["ieee"] = value(true);
+#endif
   
 #if defined(PLASMA_SPATIAL_CENTERED)
-  o["plasma_spatial_dist"] = value("centered");
+  o["plasma_spatial_distribution"] = value("centered");
 #elif defined(PLASMA_SPATIAL_FLAT)
-  o["plasma_spatial_dist"] = value("flat");
+  o["plasma_spatial_distribution"] = value("flat");
 #elif defined(PLASMA_SPATIAL_RANDOM)
-  o["plasma_spatial_dist"] = value("random"); 
+  o["plasma_spatial_distribution"] = value("random"); 
 #elif defined(PLASMA_SPATIAL_REGULAR)
-  o["plasma_spatial_dist"] = value("regular");
+  o["plasma_spatial_distribution"] = value("regular");
 #endif
   
 #if defined(PLASMA_VELOCITY_THERMAL)
-  o["plasma_velocity_dist"] = value("thermal");
+  o["plasma_velocity_distribution"] = value("thermal");
 #elif defined(PLASMA_VELOCITY_EIGEN)
-  o["plasma_velocity_dist"] = value("eigen");
+  o["plasma_velocity_distribution"] = value("eigen");
 #elif defined(PLASMA_VELOCITY_RECTANGULAR)
-  o["plasma_velocity_dist"] = value("rectangular"); 
+  o["plasma_velocity_distribution"] = value("rectangular"); 
 #endif
 
 #if defined(PUSHER_BORIS_ADAPTIVE)
@@ -69,9 +73,9 @@ Cfg::Cfg(const char *json_file_name)
 #endif
 
 #if defined(TEMP_CALC_COUNTING)
-  o["temp_calc_algo"] = value("counting");
+  o["temperature_calculation_algorithm"] = value("counting");
 #elif defined(TEMP_CALC_WEIGHTING)
-  o["temp_calc_algo"] = value("weighting");
+  o["temperature_calculation_algorithm"] = value("weighting");
 #endif
   
   json_data.get<object>()["build_options"] = value(o);

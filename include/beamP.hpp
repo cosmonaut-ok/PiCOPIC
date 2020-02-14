@@ -37,10 +37,10 @@ public:
          Geometry *geom,
          TimeSim *t );
 
-  void fullyfill_spatial_distribution();
   void inject();
-  void wakeup() {};
   void reflect();
-  void thermal_velocity_distribution () {};
-  // bool hes_dead_jim (); // check if particles bunch is dead
+
+  // just dummy methods. Not used by BeamP
+  void fullyfill_spatial_distribution() {};
+  void velocity_distribution () {};
 };
