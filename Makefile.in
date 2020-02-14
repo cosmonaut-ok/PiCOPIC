@@ -16,9 +16,9 @@ INCLUDE_PATH          = -I$(INCLUDEDIR)
 LIBRARY_PATH          =
 LIBRARIES             =
 DOXYGEN               = doxygen
-DOXYGEN_CONFIGS       = doc/app.conf doc/vis.conf
+DOXYGEN_CONFIGS       = doc/app.conf doc/lib.conf doc/vis.conf
 DOXYGEN_FORMATS       = @DOXYGEN_FORMATS@
-DOXYGEN_DIRS          = doc/app doc/vis
+DOXYGEN_DIRS          = doc/app doc/lib doc/vis
 RELEASE               = @RELEASE@
 
 ### PicoPIC sources and settings

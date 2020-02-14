@@ -54,7 +54,7 @@ AC_ARG_ENABLE([omp_dynamic], [AC_HELP_STRING([--enable-omp-dynamic], [Enable ope
 
 AC_ARG_ENABLE([hdf5], [AC_HELP_STRING([--disable-hdf5], [Build application with hdf5 library support])], [HDF5="$enableval"], [HDF5=yes])
 
-dnl AC_ARG_WITH([doc-formats], [AC_HELP_STRING([--with-doc-formats], [Set list of documentation formats to be generated])], [DOXYGEN_FORMATS="$withval"], [DOXYGEN_FORMATS="latex html rtf"])
+AC_ARG_WITH([doc-formats], [AC_HELP_STRING([--with-doc-formats], [Set list of documentation formats to be generated])], [DOXYGEN_FORMATS="$withval"], [DOXYGEN_FORMATS="latex html rtf"])
 AC_ARG_WITH([pusher], [AC_HELP_STRING([--with-pusher], [Set particles pusher (supported: boris (default), vay, higuera-cary)])], [PUSHER="$withval"], [PUSHER="boris-adaptive"])
 AC_ARG_WITH([temperature-calc], [AC_HELP_STRING([--with-temperature-calc], [Set temperature calculation algorithm (supported: counting (default), weighting])], [TEMP_CALC="$withval"], [TEMP_CALC="counting"])
 

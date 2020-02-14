@@ -164,7 +164,7 @@ user@host$ /path/to/PicoPIC/tools/nbrun.sh /path/to/PicoPIC/tools/<notebook name
 **Pre-required software:**
 
 ``` shell
-root@host# doxygen texlive-latex-base texlive-latex-extra imagemagick
+root@host# doxygen texlive-latex-base texlive-latex-extra imagemagick graphviz
 ```
 **Generate:**
 
