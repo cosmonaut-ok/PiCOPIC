@@ -48,6 +48,7 @@ class MetaReader:
         elif isinstance(config, dict):
             cfg = config
 
+        self.json = cfg
         self.geometry_size = [cfg['geometry']['size']['radius'], cfg['geometry']['size']['longitude']]
         self.geometry_grid = [cfg['geometry']['grid']['radius'], cfg['geometry']['grid']['longitude']]
         self.geometry_areas = [cfg['geometry']['areas_amount']['radius'], cfg['geometry']['areas_amount']['longitude']]

@@ -8,6 +8,6 @@ setup(name='picopic',
       author_email='alexander.vynnyk@gmail.com',
       url='https://gitlab.com/my-funny-plasma/PIC/picopic',
       install_requires=[
-          'matplotlib', 'numpy', 'scipy', 'h5py', 'setupext-janitor'
+          'matplotlib', 'numpy', 'scipy', 'h5py', 'setupext-janitor', 'pygments'
       ],
       zip_safe=False)
