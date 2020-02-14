@@ -28,9 +28,54 @@ Cfg::Cfg(const char *json_file_name)
 
   json_data = v;
 
+  //! update json with additional items
+  //! to inform about build options
+  //! and package version
   // set package version to config metadata
-  json_data.get<object>()["package_version"] = value((string)PACKAGE_VERSION);
+  // json_data.get<object>()["package_version"] = value((string)PACKAGE_VERSION);
+  object o;
+  o["package_version"] = value((string)PACKAGE_VERSION);
+  o["debug"] = value((bool)DEBUG);
+  o["ieee"] = value((bool)!SPEEDUP);
+  
+#if defined(PLASMA_SPATIAL_CENTERED)
+  o["plasma_spatial_dist"] = value("centered");
+#elif defined(PLASMA_SPATIAL_FLAT)
+  o["plasma_spatial_dist"] = value("flat");
+#elif defined(PLASMA_SPATIAL_RANDOM)
+  o["plasma_spatial_dist"] = value("random"); 
+#elif defined(PLASMA_SPATIAL_REGULAR)
+  o["plasma_spatial_dist"] = value("regular");
+#endif
+  
+#if defined(PLASMA_VELOCITY_THERMAL)
+  o["plasma_velocity_dist"] = value("thermal");
+#elif defined(PLASMA_VELOCITY_EIGEN)
+  o["plasma_velocity_dist"] = value("eigen");
+#elif defined(PLASMA_VELOCITY_RECTANGULAR)
+  o["plasma_velocity_dist"] = value("rectangular"); 
+#endif
 
+#if defined(PUSHER_BORIS_ADAPTIVE)
+  o["particles_pusher"] = value("boris adaptive");
+#elif defined(PUSHER_BORIS_CLASSIC)
+  o["particles_pusher"] = value("boris classic");
+#elif defined(PUSHER_BORIS_RELATIVISTIC)
+  o["particles_pusher"] = value("boris relativistic");
+#elif defined(PUSHER_HIGUERA_CARY)
+  o["particles_pusher"] = value("higuera-cary");
+  #elif defined(PUSHER_VAY)
+  o["particles_pusher"] = value("vay"); 
+#endif
+
+#if defined(TEMP_CALC_COUNTING)
+  o["temp_calc_algo"] = value("counting");
+#elif defined(TEMP_CALC_WEIGHTING)
+  o["temp_calc_algo"] = value("weighting");
+#endif
+  
+  json_data.get<object>()["build_options"] = value(o);
+  
   //! set amount of macroparticles
   macro_amount = json_data.get<object>()["macro_amount"].get<double>();
 
