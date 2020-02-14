@@ -41,7 +41,7 @@ def main():
     elif os.path.isfile(os.path.join(args.properties_path, "data.h5")):
         reader = H5Reader(path = args.properties_path, use_cache=False, verbose=False)
     else:
-        raise EnvironmentError("There is no corresponding data/metadata files in the path " + config_path + ". Can not continue.")
+        raise EnvironmentError("There is no corresponding data/metadata files in the path " + args.properties_path + ". Can not continue.")
 
     config = reader.meta.json
     if args.subtree:
