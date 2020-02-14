@@ -28,6 +28,9 @@ def main():
     parser.add_argument('--colorize', action='store_true',
                         help='Make metadata output colorful',
                         default=False)
+    parser.add_argument('--bo', action='store_true',
+                        help='Display build options of PiCOPIC package, generated the data. Shortcut for `--subtree=[build_options]`',
+                        default=False)
 
     args = parser.parse_args()
 
@@ -44,6 +47,7 @@ def main():
         raise EnvironmentError("There is no corresponding data/metadata files in the path " + args.properties_path + ". Can not continue.")
 
     config = reader.meta.json
+    if args.bo: args.subtree = False
     if args.subtree:
         try:
             config = eval('config' + str(args.subtree).replace('[', '["').replace(']', '"]'))
@@ -51,6 +55,8 @@ def main():
             print("Invalid metadata subtree key >>", args.subtree, "<< can not continue")
             sys.exit(1)
 
+    if args.bo:
+        config = config['build_options']
     json_dumped = json.dumps(config, indent=2, sort_keys=True)
     if args.colorize:
         print(highlight(json_dumped, JsonLexer(), Terminal256Formatter(style=args.color_style)))
