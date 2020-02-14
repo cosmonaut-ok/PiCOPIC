@@ -52,10 +52,6 @@ BeamP::BeamP (unsigned int id, // ID for every particles specie
   macro_per_step_to_inject = bunch_macro_amount * velocity * time->step / bunch_length;
 }
 
-void BeamP::fullyfill_spatial_distribution()
-{
-}
-
 void BeamP::inject()
 {
   // check if limit of bunches is reached

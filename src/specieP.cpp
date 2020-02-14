@@ -20,7 +20,23 @@ SpecieP::SpecieP (unsigned int p_id,
   charge = p_charge * EL_CHARGE;
   mass = p_mass * EL_MASS;
 
+/// Correct plasma macroparticles amount
+/// to satisfy conditions of regular/centered
+/// spatial distributions
+#if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)
+  LOG_DBG("Correcting area plasma particles macro amount to satisfy spatial distribution");
+  double r_size = geometry->r_size;
+  double z_size = geometry->z_size;
+  double dr = geometry->r_cell_size;
+  double dz = geometry->z_cell_size;
+
+  if (geometry->walls[2]) r_size -= geometry->r_cell_size;
+  if (geometry->walls[3]) z_size -= geometry->z_cell_size;
+
+  macro_amount = lib::nearest_divide(p_macro_amount, r_size / dr * z_size / dz);
+#else
   macro_amount = p_macro_amount;
+#endif
 
   density[0] = p_left_density;
   density[1] = p_right_density;
@@ -63,10 +79,108 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
 // ! spatial distribution for rectangular (for cartese coordinates)
 // ! or cylindrical ring-shaped macroparticles cloud
 {
+#if defined (PLASMA_SPATIAL_CENTERED)
+  rectangular_centered_placement (int_cell_number,
+                                  ext_cell_number,
+                                  left_cell_number,
+                                  right_cell_number);
+#elif defined (PLASMA_SPATIAL_FLAT) || defined (PLASMA_SPATIAL_RANDOM)
+  rectangular_random_placement (int_cell_number,
+                                ext_cell_number,
+                                left_cell_number,
+                                right_cell_number);
+#elif PLASMA_SPATIAL_REGULAR
+  rectangular_regular_placement (int_cell_number,
+                                 ext_cell_number,
+                                 left_cell_number,
+                                 right_cell_number);
+#endif
+
+  set_mass_charges(int_cell_number, ext_cell_number, left_cell_number, right_cell_number);
+}
+
+void SpecieP::rectangular_random_placement (unsigned int int_cell_number,
+                                            unsigned int ext_cell_number,
+                                            unsigned int left_cell_number,
+                                            unsigned int right_cell_number)
+{
+  //! macroparticles spatial placement
+  //! for "random" and "flat" cases
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
   double dn = density[1] - density[0];
   double dl = density[0]; // dl is for "density left"
+
+  double r_size = (ext_cell_number - int_cell_number) * dr;
+  double z_size = (right_cell_number - left_cell_number) * dz;
+
+  double rand_r, rand_z;
+
+  // decrease size at r=r and z=z walls
+  // this caused by particles formfactor
+  if (geometry->walls[2]) r_size -= dr;
+  if (geometry->walls[3]) z_size -= dz;
+
+#ifdef PLASMA_SPATIAL_FLAT
+  unsigned int macro_count = 0;
+#endif
+
+  for (unsigned int i = 0; i < macro_amount; i++)
+  {
+    vector<double> *n = new vector<double>(13, 0);
+
+#if defined PLASMA_SPATIAL_RANDOM
+    rand_r = math::random::uniform1();
+    rand_z = math::random::uniform1();
+#elif defined PLASMA_SPATIAL_FLAT
+    rand_r = math::random::random_reverse(macro_count, 13);
+    rand_z = math::random::random_reverse(macro_amount - 1 - macro_count, 11);
+#endif
+    if (rand_r == 0) rand_r = MNZL;
+    if (rand_z == 0) rand_z = MNZL;
+
+    P_POS_R((*n)) = r_size * rand_r;
+
+    P_POS_PHI((*n)) = 0;
+
+    if (density[0] == density[1])
+      P_POS_Z((*n)) = z_size * rand_z;
+    else
+      P_POS_Z((*n)) = z_size / dn
+        * (lib::sq_rt(pow(dl, 2) + rand_z * (2 * dl * dn + pow(dn, 2))) - dl);
+
+    P_POS_R((*n)) += int_cell_number * dr;
+    P_POS_R((*n)) += dr / 2.;
+    P_POS_Z((*n)) += left_cell_number * dz; // shift by z to respect geometry with areas
+    P_POS_Z((*n)) += dz / 2.;
+
+#ifdef PLASMA_SPATIAL_FLAT
+    ++macro_count;
+#endif
+
+    particles.push_back(n);
+  }
+}
+
+void SpecieP::rectangular_regular_placement (unsigned int int_cell_number,
+                                             unsigned int ext_cell_number,
+                                             unsigned int left_cell_number,
+                                             unsigned int right_cell_number)
+{
+  //! macroparticles spatial placement
+  //! for "regular" case
+
+  // initiate particles array // FIXME: remove it.
+  for (unsigned int i = 0; i < macro_amount; i++)
+  {
+    vector<double> *v = new vector<double>(13, 0);
+    particles.push_back(v);
+  }
+
+  double dr = geometry->r_cell_size;
+  double dz = geometry->z_cell_size;
+  // double dn = density[1] - density[0];
+  // double dl = density[0]; // dl is for "density left"
 
   double r_size = (ext_cell_number - int_cell_number) * dr;
   double z_size = (right_cell_number - left_cell_number) * dz;
@@ -76,43 +190,15 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
   if (geometry->walls[2]) r_size -= dr;
   if (geometry->walls[3]) z_size -= dz;
 
-#if defined PLASMA_SPATIAL_REGULAR || defined PLASMA_SPATIAL_CENTERED
   double macro_distance = lib::sq_rt(r_size * z_size / macro_amount);
-  double macros_per_cell = macro_amount / (r_size * z_size / dr / dz);
   // count macroparticles by r and z
   double r_macro_count = 0;
   double z_macro_count = 0;
-#endif
 
-  // MSG(r_size / dr << " " << z_size / dz << " " << macro_amount);
-  unsigned int macro_count = 0;
+  // unsigned int macro_count = 0;
 
-  // summary volume of all macroparticles
-  double v_sum = 0;
   for (auto n = particles.begin(); n != particles.end(); ++n)
   {
-#if defined PLASMA_SPATIAL_RANDOM
-    double rand_r = math::random::uniform1();
-    double rand_z = math::random::uniform1();
-#elif defined PLASMA_SPATIAL_FLAT
-    double rand_r = math::random::random_reverse(macro_count, 13);
-    double rand_z = math::random::random_reverse(macro_amount - 1 - macro_count, 11);
-    if (rand_r == 0) rand_r = MNZL;
-    if (rand_z == 0) rand_z = MNZL;
-#endif
-
-#if defined PLASMA_SPATIAL_RANDOM || defined PLASMA_SPATIAL_FLAT
-    P_POS_R((**n)) = r_size * rand_r;
-
-    P_POS_PHI((**n)) = 0;
-
-    if (density[0] == density[1])
-      P_POS_Z((**n)) = z_size * rand_z;
-    else
-      P_POS_Z((**n)) = z_size / dn
-        * (lib::sq_rt(pow(dl, 2) + rand_z * (2 * dl * dn + pow(dn, 2))) - dl);
-
-#elif defined PLASMA_SPATIAL_REGULAR
     P_POS_R((**n)) = r_macro_count * macro_distance + MNZL;
     P_POS_Z((**n)) = z_macro_count * macro_distance + MNZL;
 
@@ -124,31 +210,41 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
     else
       ++r_macro_count;
 
-#elif defined PLASMA_SPATIAL_CENTERED
-    // place "macros_per_cell" amount of macroparticles per cell
-    P_POS_R((**n)) = floor(r_macro_count / macros_per_cell) * dr + MNZL;
-    P_POS_Z((**n)) = z_macro_count * dz + MNZL;
-
-    if (floor(r_macro_count / macros_per_cell) * dr >= r_size)
-    {
-      r_macro_count = 0;
-      ++z_macro_count;
-    }
-    else
-      ++r_macro_count;
-#endif
-
     P_POS_R((**n)) += int_cell_number * dr;
     P_POS_R((**n)) += dr / 2.;
     P_POS_Z((**n)) += left_cell_number * dz; // shift by z to respect geometry with areas
     P_POS_Z((**n)) += dz / 2.;
+  }
+}
+void SpecieP::rectangular_centered_placement (unsigned int int_cell_number,
+                                              unsigned int ext_cell_number,
+                                              unsigned int left_cell_number,
+                                              unsigned int right_cell_number)
+{
+  //! macroparticles spatial placement
+  //! for "centered" case
+  LOG_CRIT("rectangular_centered_placement still not implemented", 1);
+}
 
+void SpecieP::set_mass_charges (unsigned int int_cell_number,
+                                unsigned int ext_cell_number,
+                                unsigned int left_cell_number,
+                                unsigned int right_cell_number)
+{
+  double dr = geometry->r_cell_size;
+  double dz = geometry->z_cell_size;
+  double r_size = (ext_cell_number - int_cell_number) * dr;
+  double z_size = (right_cell_number - left_cell_number) * dz;
+
+  // decrease size at r=r and z=z walls
+  // this caused by particles formfactor
+  if (geometry->walls[2]) r_size -= dr;
+  if (geometry->walls[3]) z_size -= dz;
+
+  double v_sum = 0; // summary volume of all particles
+  for (auto n = particles.begin(); n != particles.end(); ++n)
     v_sum += 2 * PI * P_POS_R((**n)) * dr * dz;
 
-    ++macro_count;
-  }
-  // LOG_CRIT("CNT " << r_macro_count << " " << z_macro_count, 1);
-  // average volume of single macroparticle
   double v_avg = v_sum / macro_amount;
 
   // set top and bottom radius cell numbers (decrease at r=r wall)
@@ -179,6 +275,23 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
     P_CHARGE((**n)) = charge * n_per_macro;
     P_MASS((**n)) = mass * n_per_macro;
   }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+void SpecieP::velocity_distribution ()
+{
+#ifdef PLASMA_VELOCITY_THERMAL
+  thermal_velocity_distribution();
+#elif PLASMA_VELOCITY_RECTANGULAR
+  rectangular_velocity_distribution();
+#elif PLASMA_VELOCITY_EIGEN
+  eigen_velocity_distribution();
+#else
+  LOG_CRIT("Plasma velocity distribution type unknown", 1);
+#endif
 }
 
 void SpecieP::thermal_velocity_distribution ()
@@ -282,19 +395,6 @@ void SpecieP::eigen_directed_velocity_distribution (unsigned int dir)
   default:
     LOG_CRIT("Incorrect switch of rectangular directed velocity component: " << dir, 1);
     break;
-  }
-}
-
-void SpecieP::wakeup ()
-// ! activate all particles
-{
-  // fill particles vector with particle vector objects
-  for (unsigned int i = 0; i < macro_amount; i++)
-  {
-    vector<double> *v = new vector<double>(13, 0);
-    // vector<double> *v_old = new vector<double>(15, 0);
-    particles.push_back(v);
-    // particles_old.push_back(v_old);
   }
 }
 

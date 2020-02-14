@@ -150,18 +150,20 @@ public:
   FieldE* field_e;
 
 public:
-  virtual void fullyfill_spatial_distribution();
-  void linear_spatial_distribution(unsigned int int_cell_number,
-                                   unsigned int ext_cell_number);
+  virtual void fullyfill_spatial_distribution (void);
+  void linear_spatial_distribution (unsigned int int_cell_number,
+                                    unsigned int ext_cell_number);
+
   void rectangular_spatial_distribution(unsigned int int_cell_number,
                                         unsigned int ext_cell_number,
                                         unsigned int left_cell_number,
                                         unsigned int right_cell_number);
-  virtual void thermal_velocity_distribution ();
-  void rectangular_velocity_distribution ();
-  void eigen_velocity_distribution ();
-  void eigen_directed_velocity_distribution (unsigned int dir);
-  virtual void wakeup();
+
+  virtual void velocity_distribution ();
+  // virtual void thermal_velocity_distribution ();
+  // void rectangular_velocity_distribution ();
+  // void eigen_velocity_distribution ();
+  // void eigen_directed_velocity_distribution (unsigned int dir);
   virtual void inject();
   void inject_bunch();
   void boris_pusher();
@@ -172,7 +174,32 @@ public:
   void back_position_to_rz();
   void back_velocity_to_rz();
 
-  virtual bool hes_dead_jim() { return false; }; // check if particles bunch is dead
-
   void dump_position_to_old();
+
+protected:
+  void rectangular_random_placement (unsigned int int_cell_number,
+                                     unsigned int ext_cell_number,
+                                     unsigned int left_cell_number,
+                                     unsigned int right_cell_number);
+  void rectangular_flat_placement (unsigned int int_cell_number,
+                                   unsigned int ext_cell_number,
+                                   unsigned int left_cell_number,
+                                   unsigned int right_cell_number);
+  void rectangular_regular_placement (unsigned int int_cell_number,
+                                      unsigned int ext_cell_number,
+                                      unsigned int left_cell_number,
+                                      unsigned int right_cell_number);
+  void rectangular_centered_placement (unsigned int int_cell_number,
+                                       unsigned int ext_cell_number,
+                                       unsigned int left_cell_number,
+                                       unsigned int right_cell_number);
+  void set_mass_charges (unsigned int int_cell_number,
+                         unsigned int ext_cell_number,
+                         unsigned int left_cell_number,
+                         unsigned int right_cell_number);
+
+  void thermal_velocity_distribution ();
+  void rectangular_velocity_distribution ();
+  void eigen_velocity_distribution ();
+  void eigen_directed_velocity_distribution (unsigned int dir); // 0,1,2 are for r, phi, z
 };
