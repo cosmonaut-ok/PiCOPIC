@@ -170,13 +170,6 @@ void SpecieP::rectangular_regular_placement (unsigned int int_cell_number,
   //! macroparticles spatial placement
   //! for "regular" case
 
-  // initiate particles array // FIXME: remove it.
-  for (unsigned int i = 0; i < macro_amount; i++)
-  {
-    vector<double> *v = new vector<double>(13, 0);
-    particles.push_back(v);
-  }
-
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
   // double dn = density[1] - density[0];
@@ -190,32 +183,45 @@ void SpecieP::rectangular_regular_placement (unsigned int int_cell_number,
   if (geometry->walls[2]) r_size -= dr;
   if (geometry->walls[3]) z_size -= dz;
 
-  double macro_distance = lib::sq_rt(r_size * z_size / macro_amount);
+  // +dr and +dz because, we counting particles from "0" to "r_size".
+  // So, there are "plus 1" interval, related to particles.
+  double macro_distance = lib::sq_rt((r_size + dr) * (z_size + dz) / macro_amount);
   // count macroparticles by r and z
   double r_macro_count = 0;
   double z_macro_count = 0;
 
-  // unsigned int macro_count = 0;
-
-  for (auto n = particles.begin(); n != particles.end(); ++n)
+  unsigned int macro_count = 0;
+  while (true)
   {
-    P_POS_R((**n)) = r_macro_count * macro_distance + MNZL;
-    P_POS_Z((**n)) = z_macro_count * macro_distance + MNZL;
+    double r_place = r_macro_count * macro_distance + MNZL;
+    double z_place = z_macro_count * macro_distance + MNZL;
 
-    if (macro_distance * r_macro_count >= r_size - dr / 2)
+    if (z_place > z_size) // FIXME: some f*cking magic. Should be z_size - macro_distance
+      break;
+
+    if (r_place > r_size - macro_distance)
     {
       r_macro_count = 0;
       ++z_macro_count;
     }
     else
       ++r_macro_count;
+    ++macro_count;
 
-    P_POS_R((**n)) += int_cell_number * dr;
-    P_POS_R((**n)) += dr / 2.;
-    P_POS_Z((**n)) += left_cell_number * dz; // shift by z to respect geometry with areas
-    P_POS_Z((**n)) += dz / 2.;
+    vector<double> *n = new vector<double>(13, 0);
+
+    P_POS_R((*n)) = r_place;
+    P_POS_Z((*n)) = z_place;
+
+    P_POS_R((*n)) += int_cell_number * dr;
+    P_POS_R((*n)) += dr / 2.;
+    P_POS_Z((*n)) += left_cell_number * dz; // shift by z to respect geometry with areas
+    P_POS_Z((*n)) += dz / 2.;
+
+    particles.push_back(n);
   }
 }
+
 void SpecieP::rectangular_centered_placement (unsigned int int_cell_number,
                                               unsigned int ext_cell_number,
                                               unsigned int left_cell_number,
@@ -243,7 +249,10 @@ void SpecieP::set_mass_charges (unsigned int int_cell_number,
 
   double v_sum = 0; // summary volume of all particles
   for (auto n = particles.begin(); n != particles.end(); ++n)
-    v_sum += 2 * PI * P_POS_R((**n)) * dr * dz;
+    if (P_POS_R((**n)) > dr / 2)
+      v_sum += 2 * PI * P_POS_R((**n)) * dr * dz;
+    else
+      v_sum += PI * P_POS_R((**n)) * P_POS_R((**n)) * dz;
 
   double v_avg = v_sum / macro_amount;
 
