@@ -15,7 +15,7 @@ doc/*.html
 doc/app/
 doc/vis/
 doc/lib/
-PicoPIC
+PiCOPIC
 simulation_result/
 .ipynb_checkpoints
 __pycache__

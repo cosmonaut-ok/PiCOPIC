@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT(PicoPIC, esyscmd(git log --pretty=%h -1 | tr -d \\n), cosmonaut.ok@zoho.com)
+AC_INIT(PiCOPIC, esyscmd(git log --pretty=%h -1 | tr -d \\n), cosmonaut.ok@zoho.com)
 
 AC_CONFIG_HEADERS([include/defines.hpp])
 

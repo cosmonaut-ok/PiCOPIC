@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(name='picopic',
       version='0.0.1',
-      description='Data analysis tools for PicoPIC project',
+      description='Data analysis tools for PiCOPIC project',
       author='Alexander Vynnyk',
       author_email='alexander.vynnyk@gmail.com',
       url='https://gitlab.com/my-funny-plasma/PIC/picopic',

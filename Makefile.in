@@ -6,7 +6,7 @@ OBJDIR                = $(TARGETDIR)/obj
 INCLUDEDIR            = $(ROOTDIR)/include
 SUBDIRS               =
 TESTSUBDIRS           = test/unit
-EXES                  = PicoPIC
+EXES                  = PiCOPIC
 TESTDIR               = testingdir
 ### Common settings
 CEXTRA                =
@@ -21,47 +21,47 @@ DOXYGEN_FORMATS       = @DOXYGEN_FORMATS@
 DOXYGEN_DIRS          = doc/app doc/lib doc/vis
 RELEASE               = @RELEASE@
 
-### PicoPIC sources and settings
-PicoPIC_MODULE           = PicoPIC
-PicoPIC_C_SRCS           =
+### PiCOPIC sources and settings
+PiCOPIC_MODULE           = PiCOPIC
+PiCOPIC_C_SRCS           =
 
-PicoPIC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp)
+PiCOPIC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp)
 
-PicoPIC_LDFLAGS          = @LDFLAGS_ADDITIONAL@
-PicoPIC_ARFLAGS          =
-PicoPIC_LIBRARY_PATH     =
-PicoPIC_LIBRARIES        =
+PiCOPIC_LDFLAGS          = @LDFLAGS_ADDITIONAL@
+PiCOPIC_ARFLAGS          =
+PiCOPIC_LIBRARY_PATH     =
+PiCOPIC_LIBRARIES        =
 
 ### picojson sources and settings
 picojson_SUBDIR := $(ROOTDIR)/lib/picojson
 INCLUDE_PATH += -I$(picojson_SUBDIR)
 SUBDIRS += $(picojson_SUBDIR)
-# PicoPIC_LIBRARIES += picojson
+# PiCOPIC_LIBRARIES += picojson
 # LDFLAGS += -L$(picojson_SUBDIR)
 
 ### tinyvec3d sources and settings
 # tinyvec3d_SUBDIR := $(ROOTDIR)lib/tinyvec3d
 # INCLUDE_PATH += -I$(tinyvec3d_SUBDIR)
 # SUBDIRS += $(tinyvec3d_SUBDIR)
-# PicoPIC_LIBRARIES += tinyvec3d
+# PiCOPIC_LIBRARIES += tinyvec3d
 # LDFLAGS += -L$(tinyvec3d_SUBDIR)
 
 ### link hdf5 library
 ifeq (@HDF5_OPTION@, true)
-PicoPIC_LIBRARIES += hdf5
-PicoPIC_LIBRARIES += hdf5_cpp
+PiCOPIC_LIBRARIES += hdf5
+PiCOPIC_LIBRARIES += hdf5_cpp
 else
-PicoPIC_CXX_SRCS_TMP := $(PicoPIC_CXX_SRCS)
-PicoPIC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngineHDF5.cpp, $(PicoPIC_CXX_SRCS_TMP))
+PiCOPIC_CXX_SRCS_TMP := $(PiCOPIC_CXX_SRCS)
+PiCOPIC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngineHDF5.cpp, $(PiCOPIC_CXX_SRCS_TMP))
 endif
 
-PicoPIC_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PicoPIC_CXX_SRCS))
+PiCOPIC_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PiCOPIC_CXX_SRCS))
 
-LDFLAGS += $(PicoPIC_LDFLAGS)
+LDFLAGS += $(PiCOPIC_LDFLAGS)
 
 ### Global source lists
-C_SRCS                = $(PicoPIC_C_SRCS)
-CXX_SRCS              = $(PicoPIC_CXX_SRCS)
+C_SRCS                = $(PiCOPIC_C_SRCS)
+CXX_SRCS              = $(PiCOPIC_CXX_SRCS)
 
 ### Tools
 CC ?= gcc
@@ -116,7 +116,7 @@ space +=
 comma :=,
 
 clean: $(SUBDIRS:%=%/__clean__) $(EXTRASUBDIRS:%=%/__clean__) $(TESTSUBDIRS:%=%/__clean__) $(DOXYGEN_FORMATS:%=%/__clean__)
-	$(RM) $(PicoPIC_OBJS) $(CLEAN_FILES)
+	$(RM) $(PiCOPIC_OBJS) $(CLEAN_FILES)
 	$(RM) $(LIBS) $(EXES) $(EXES:%=%.so)
 	$(RM) -r $(ROOTDIR)/tools/__pycache__/
 	$(RM) -r $(DOXYGEN_DIRS)
@@ -139,8 +139,8 @@ $(EXTRASUBDIRS:%=%/__clean__): dummy
 $(TESTSUBDIRS:%=%/__clean__): dummy
 	-cd `dirname $@` && $(MAKE) clean
 
-$(PicoPIC_MODULE): $(PicoPIC_OBJS)
-	$(CXX) $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) $(LDFLAGS) -o $@ $(PicoPIC_OBJS) $(PicoPIC_LIBRARY_PATH) $(PicoPIC_LIBRARIES:%=-l%)
+$(PiCOPIC_MODULE): $(PiCOPIC_OBJS)
+	$(CXX) $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) $(LDFLAGS) -o $@ $(PiCOPIC_OBJS) $(PiCOPIC_LIBRARY_PATH) $(PiCOPIC_LIBRARIES:%=-l%)
 
 distclean: clean
 	$(RM) -r *.avi *.png $(BUILD_DIRS) $(RELEASE) $(RELEASE).zip autom4te.cache config.log config.status configure Makefile scripts/*.sh simulation_result/
@@ -168,7 +168,7 @@ test-perf:
 test-full: test-unit test-perf test
 
 check-syntax:
-	$(CXX) $(LIBRARY_PATH) $(INCLUDE_PATH) $(CXXFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(PicoPIC_CXX_SRCS)
+	$(CXX) $(LIBRARY_PATH) $(INCLUDE_PATH) $(CXXFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(PiCOPIC_CXX_SRCS)
 
 prepare:
 	$(MKDIR) -p $(BUILD_DIRS)
@@ -180,11 +180,11 @@ doxygen:
 doc: doxygen $(DOXYGEN_FORMATS)
 
 # dist: all doc
-# 	cp PicoPIC $(RELEASE)
+# 	cp PiCOPIC $(RELEASE)
 # 	cp -r CHANGELOG.md $(RELEASE)
 # 	cp -r tools $(RELEASE)/tools
 # 	$(MKDIR) -p $(RELEASE)/doc
-# 	cp doc/app/latex/refman.pdf $(RELEASE)/doc/PicoPIC.pdf
+# 	cp doc/app/latex/refman.pdf $(RELEASE)/doc/PiCOPIC.pdf
 # 	cp doc/vis/latex/refman.pdf $(RELEASE)/doc/visualization.pdf
 # 	zip -r `basename $(RELEASE)`.zip $(RELEASE)
 

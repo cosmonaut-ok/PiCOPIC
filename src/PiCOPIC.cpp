@@ -54,7 +54,7 @@ string parse_argv_get_config(int argc, char **argv)
 
   if (lib::cmd_option_exists(argv, argv+argc, "-h"))
   {
-    cerr << "USAGE:" << endl << "  picopic [ --version | -f path/to/PicoPIC.json ]" << endl;
+    cerr << "USAGE:" << endl << "  picopic [ --version | -f path/to/PiCOPIC.json ]" << endl;
     exit(1);
   }
 
