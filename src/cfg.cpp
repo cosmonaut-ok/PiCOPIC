@@ -446,7 +446,7 @@ bool Cfg::method_limitations_check ()
     }
   }
 
-  if (electron_density == 0 || electron_temperature == 0)
+  if (electron_density == 0)
   {
     LOG_CRIT("There is no electrons present in system", 1);
   }
@@ -477,37 +477,39 @@ bool Cfg::method_limitations_check ()
   double debye_length = 7400 * sqrt(electron_temperature / electron_density);
   unsigned int debye_multiplicator = 100;
 
-  if (geometry->r_cell_size > debye_length * debye_multiplicator
-      || geometry->z_cell_size > debye_length * debye_multiplicator)
+  if ( electron_temperature != 0)
   {
-    LOG_CRIT("Too large grid size: ``"
-             << geometry->r_cell_size << " x " << geometry->z_cell_size
-             << " m.''. Should be less, than ``"
-             << debye_length * debye_multiplicator
-             << " m.''", 1);
-  }
+    if (geometry->r_cell_size > debye_length * debye_multiplicator
+	|| geometry->z_cell_size > debye_length * debye_multiplicator)
+    {
+      LOG_CRIT("Too large grid size: ``"
+	       << geometry->r_cell_size << " x " << geometry->z_cell_size
+	       << " m.''. Should be less, than ``"
+	       << debye_length * debye_multiplicator
+	       << " m.''", 1);
+    }
 
-  // \f$ L >> R_{debye} \f$
-  if (geometry->r_size < debye_length * debye_multiplicator
-      || geometry->z_size < debye_length * debye_multiplicator)
-  {
-    LOG_CRIT("Too small system size: ``"
-             << geometry->r_size << " x " << geometry->z_size
-             << " m.''. Should be more, than ``"
-             <<  debye_length * debye_multiplicator
-             << " m.''", 1);
-  }
+    // \f$ L >> R_{debye} \f$
+    if (geometry->r_size < debye_length * debye_multiplicator
+	|| geometry->z_size < debye_length * debye_multiplicator)
+    {
+      LOG_CRIT("Too small system size: ``"
+	       << geometry->r_size << " x " << geometry->z_size
+	       << " m.''. Should be more, than ``"
+	       <<  debye_length * debye_multiplicator
+	       << " m.''", 1);
+    }
 
-  // \f$ L << N_{particles} * R_{debye} \f$
-  if (geometry->r_size > debye_length * full_macro_amount * debye_multiplicator
-      || geometry->z_size > debye_length * full_macro_amount * debye_multiplicator)
-  {
-    LOG_CRIT("Too large system size: ``"
-             << geometry->r_size << " x " << geometry->z_size
-             << " m.''. Should be less, than ``"
-             <<  debye_length * full_macro_amount * debye_multiplicator
-             << " m.''", 1);
-
+    // \f$ L << N_{particles} * R_{debye} \f$
+    if (geometry->r_size > debye_length * full_macro_amount * debye_multiplicator
+	|| geometry->z_size > debye_length * full_macro_amount * debye_multiplicator)
+    {
+      LOG_CRIT("Too large system size: ``"
+	       << geometry->r_size << " x " << geometry->z_size
+	       << " m.''. Should be less, than ``"
+	       <<  debye_length * full_macro_amount * debye_multiplicator
+	       << " m.''", 1);    
+    }
   }
 
   unsigned int grid_multiplicator = 10;
