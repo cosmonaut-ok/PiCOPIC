@@ -17,9 +17,12 @@
 
 #pragma once
 
+#include <vector>
+
 #include "constant.hpp"
 #include "geometry.hpp"
 #include "grid.hpp"
+#include "lib.hpp"
 #include "specieP.hpp"
 #include "density.hpp"
 

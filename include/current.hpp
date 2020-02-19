@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "geometry.hpp"
 #include "grid3d.hpp"
 #include "timeSim.hpp"
@@ -32,6 +34,8 @@
 #define SOME_SHIT_DENSITY_Z(q, r, dr, dz, delta_t) \
   (q) / (2. * PI * (r) * (dr) * (dz)                \
          * (delta_t) * (dz));
+
+using namespace std;
 
 class SpecieP;
 class Geometry;
