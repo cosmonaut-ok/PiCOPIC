@@ -446,10 +446,14 @@ int main(int argc, char **argv)
       {
         unsigned int grid_cell_macro_amount = (int)(k->macro_amount / r_areas / z_areas);
 
+	double drho_by_dz = (k->right_density - k->left_density) / geometry_global->z_size;
+	double ld_local = k->left_density + drho_by_dz * left_z * geom_area->z_cell_size;
+	double rd_local = k->left_density + drho_by_dz * right_z * geom_area->z_cell_size;
+
         SpecieP *pps = new SpecieP (p_id_counter,
                                     k->name,
                                     k->charge, k->mass, grid_cell_macro_amount,
-                                    k->left_density, k->right_density,
+                                    ld_local, rd_local,
                                     k->temperature, geom_area, sim_time_clock);
         species_p.push_back(pps);
 

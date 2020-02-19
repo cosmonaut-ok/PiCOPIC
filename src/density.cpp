@@ -139,4 +139,8 @@ void Density::calc_density_cylindrical(string specie)
           density.inc(r_i_shift + 1, z_k_shift + 1, ro_p * value);
         }
       }
+#if defined DENSITY_POSTPROC_BILINEAR
+  Grid<double> density_src = density;
+  lib::bilinear_interpolation<Grid<double>>(density_src, density);
+#endif
 }

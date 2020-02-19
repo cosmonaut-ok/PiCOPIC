@@ -252,12 +252,11 @@ void TemperatureWeighted::calc_temperature_cylindrical(string specie)
       temperature.d_a(r, z, abs(speciep->charge));
     }
 
-// #if defined TEMPERATURE_POSTPROC_BILINEAR
-//   lib::bilinear_interpolation(t_src, t, geom->n_grid_r, geom->n_grid_z);
+#if defined TEMPERATURE_POSTPROC_BILINEAR
+  Grid<double> temperature_src = temperature;
+  lib::bilinear_interpolation<Grid<double>>(temperature_src, temperature);
 // #elif defined TEMPERATURE_POSTPROC_BICUBIC
 //   lib::bicubic_interpolation(t_src, t, geom->n_grid_r, geom->n_grid_z);
-// #else
-//   t = t_src;
-// #endif
+#endif
 
 }
