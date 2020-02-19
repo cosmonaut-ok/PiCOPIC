@@ -449,7 +449,6 @@ int main(int argc, char **argv)
 	double drho_by_dz = (k->right_density - k->left_density) / geometry_global->z_size;
 	double ld_local = k->left_density + drho_by_dz * left_z * geom_area->z_cell_size;
 	double rd_local = k->left_density + drho_by_dz * right_z * geom_area->z_cell_size;
-	LOG_ERR(left_z * drho_by_dz * geom_area->z_cell_size << " " << ld_local << " " << rd_local << " " << left_z << " " << right_z);
 
         SpecieP *pps = new SpecieP (p_id_counter,
                                     k->name,
