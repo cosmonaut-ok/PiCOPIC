@@ -169,7 +169,12 @@ def main():
             sys.exit(1)
 
     if args.bo:
-        config = config['build_options']
+        try:
+            config = config['build_options']
+        except KeyError:
+            print("ERROR: Build options are absent. Seems, metadata is incomplete (is it configfile?).")
+            sys.exit(1)
+
     json_dumped = json.dumps(config, indent=2, sort_keys=True)
     if args.colorize:
         print(highlight(json_dumped, JsonLexer(), Terminal256Formatter(style=args.color_style)))
