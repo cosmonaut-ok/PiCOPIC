@@ -62,20 +62,20 @@ void FieldE::set_pml()
   double radial_shift = geometry->bottom_r_grid_number * geometry->r_cell_size;
   double longitudinal_shift = geometry->left_z_grid_number * geometry->z_cell_size;
 
-  double global_r_grid_amount = geometry->r_grid_amount * geometry->areas_by_r;
-  double global_z_grid_amount = geometry->z_grid_amount * geometry->areas_by_z;
+  double global_r_grid_amount = geometry->r_grid_amount * geometry->domains_by_r;
+  double global_z_grid_amount = geometry->z_grid_amount * geometry->domains_by_z;
 
   // r=r wall
   if (geometry->pml_length[2] != 0)
     for(int i = 0; i < geometry->r_grid_amount; i++)
       for(int k = 0; k < geometry->z_grid_amount; k++)
-        if ((geometry->areas_by_r * geometry->r_grid_amount - geometry->bottom_r_grid_number - i) * geometry->r_cell_size
+        if ((geometry->domains_by_r * geometry->r_grid_amount - geometry->bottom_r_grid_number - i) * geometry->r_cell_size
             < lenght_sigma_extern)
           sigma.inc(i, k, geometry->pml_sigma[0] +
                     (geometry->pml_sigma[1] - geometry->pml_sigma[0])
                     / pow(lenght_sigma_extern, 2)
                     * pow(geometry->r_cell_size * (i + 1) + radial_shift
-                          - geometry->r_size * geometry->areas_by_r
+                          - geometry->r_size * geometry->domains_by_r
                           + lenght_sigma_extern, 2));
 
   // sigma on z=0 and z=z walls
@@ -94,13 +94,13 @@ void FieldE::set_pml()
 
     for(int k = 0; k < geometry->z_grid_amount; k++)
       for(int i = 0; i < geometry->r_grid_amount; i++)
-        if ((geometry->areas_by_z * geometry->z_grid_amount - geometry->left_z_grid_number - k) * geometry->z_cell_size
+        if ((geometry->domains_by_z * geometry->z_grid_amount - geometry->left_z_grid_number - k) * geometry->z_cell_size
             < lenght_sigma_right)
           sigma.inc(i, k, geometry->pml_sigma[0]
                     + (geometry->pml_sigma[1] - geometry->pml_sigma[0])
                     / pow(lenght_sigma_right, 2)
                     * pow(geometry->z_cell_size * (k + 1) + longitudinal_shift
-                          - geometry->z_size * geometry->areas_by_z
+                          - geometry->z_size * geometry->domains_by_z
                           + lenght_sigma_right, 2));
 }
 

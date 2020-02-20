@@ -15,11 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "area.hpp"
+#include "domain.hpp"
 
-Area::Area(){}
+Domain::Domain(){}
 
-Area::Area(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry(geom)
+Domain::Domain(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry(geom)
 {
   //! Pass geometry, particle species configuration and time
   // TODO: is it ok to pass only configuration,
@@ -57,7 +57,7 @@ Area::Area(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry(geo
   }
 }
 
-void Area::distribute()
+void Domain::distribute()
 {
   for (auto i = species_p.begin(); i != species_p.end(); i++)
   {
@@ -66,48 +66,48 @@ void Area::distribute()
   }
 }
 
-void Area::weight_density(string specie)
+void Domain::weight_density(string specie)
 {
   density->density = 0;
   density->density.overlay_set(0);
   density->calc_density_cylindrical(specie);
 }
 
-void Area::weight_temperature(string specie)
+void Domain::weight_temperature(string specie)
 {
   temperature->temperature = 0;
   temperature->temperature.overlay_set(0);
   temperature->calc_temperature_cylindrical(specie);
 }
 
-void Area::weight_charge(string specie)
+void Domain::weight_charge(string specie)
 {
   charge->density = 0;
   charge->density.overlay_set(0);
   charge->calc_density_cylindrical(specie);
 }
 
-void Area::weight_field_h()
+void Domain::weight_field_h()
 {
   field_h->calc_field_cylindrical();
 }
 
-void Area::weight_field_e()
+void Domain::weight_field_e()
 {
   field_e->calc_field_cylindrical();
 }
 
-void Area::reset_current()
+void Domain::reset_current()
 {
   current->current = 0;
 }
 
-// void Area::reset_charge()
+// void Domain::reset_charge()
 // {
 //   charge->density = 0;
 // }
 
-void Area::push_particles ()
+void Domain::push_particles ()
 {
   // ! update particles velocity
   for (auto i = species_p.begin(); i != species_p.end(); i++)
@@ -124,14 +124,14 @@ void Area::push_particles ()
   }
 }
 
-void Area::update_particles_coords_at_half()
+void Domain::update_particles_coords_at_half()
 {
   // ! update particles coordinates
   for (auto i = species_p.begin(); i != species_p.end(); i++)
     (*i)->half_step_mover_cylindrical();
 }
 
-void Area::reflect()
+void Domain::reflect()
 {
   // ! update particles coordinates
   for (auto i = species_p.begin(); i != species_p.end(); i++)
@@ -139,19 +139,19 @@ void Area::reflect()
 }
 
 
-void Area::particles_back_position_to_rz()
+void Domain::particles_back_position_to_rz()
 {
   for (auto i = species_p.begin(); i != species_p.end(); i++)
     (*i)->back_position_to_rz();
 }
 
-void Area::particles_back_velocity_to_rz()
+void Domain::particles_back_velocity_to_rz()
 {
   for (auto i = species_p.begin(); i != species_p.end(); i++)
     (*i)->back_velocity_to_rz();
 }
 
-void Area::manage_beam()
+void Domain::manage_beam()
 {
   // injecting bunch
   if (geometry.left_z_grid_number == 0) // inject only from left wall
@@ -159,17 +159,17 @@ void Area::manage_beam()
       (**i).inject();
 }
 
-void Area::weight_current_azimuthal()
+void Domain::weight_current_azimuthal()
 {
   current->azimuthal_current_distribution();
 }
 
-void Area::weight_current()
+void Domain::weight_current()
 {
   current->current_distribution();
 }
 
-void Area::dump_particle_positions_to_old()
+void Domain::dump_particle_positions_to_old()
 {
   for (auto i = species_p.begin(); i != species_p.end(); i++)
     (**i).dump_position_to_old();

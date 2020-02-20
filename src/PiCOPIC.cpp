@@ -46,7 +46,7 @@
 
 // #include "particles.hpp"
 
-// #include "area.hpp"
+// #include "domain.hpp"
 #include "timeSim.hpp"
 
 #include "specieP.hpp"
@@ -96,38 +96,38 @@ string parse_argv_get_config(int argc, char **argv)
   return filename;
 }
 
-void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
+void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_global)
 {
-  // ! collects particles, that runaways from their areas and moves it to
-  // ! area, corresponding to their actual position
-  // ! also, erase particles, that run out of simulation area
-  unsigned int r_areas = areas.x_size;
-  unsigned int z_areas = areas.y_size;
+  // ! collects particles, that runaways from their domains and moves it to
+  // ! domain, corresponding to their actual position
+  // ! also, erase particles, that run out of simulation domain
+  unsigned int r_domains = domains.x_size;
+  unsigned int z_domains = domains.y_size;
   int j_c = 0;
   int r_c = 0;
   for (unsigned int idx = 0; idx < 2; ++idx)
     for (unsigned int idy = 0; idy < 2; ++idy)
     {
 #pragma omp parallel for
-      for (unsigned int i = idx; i < r_areas; i+=2)
-        for (unsigned int j = idy; j < z_areas; j+=2)
+      for (unsigned int i = idx; i < r_domains; i+=2)
+        for (unsigned int j = idy; j < z_domains; j+=2)
         {
-          Area *sim_area = areas(i, j);
+          Domain *sim_domain = domains(i, j);
 
-          for (auto ps = sim_area->species_p.begin(); ps != sim_area->species_p.end(); ++ps)
+          for (auto ps = sim_domain->species_p.begin(); ps != sim_domain->species_p.end(); ++ps)
           {
             (**ps).particles.erase(
               std::remove_if((**ps).particles.begin(), (**ps).particles.end(),
-                             [&j_c, &r_c, &ps, &areas, &sim_area, &i, &j, &geometry_global](vector <double> * & o)
+                             [&j_c, &r_c, &ps, &domains, &sim_domain, &i, &j, &geometry_global](vector <double> * & o)
                              {
                                bool res = false;
 
                                // not unsigned, because it could be less, than zero
-                               int r_cell = CELL_NUMBER(P_POS_R((*o)), sim_area->geometry.r_cell_size);
-                               int z_cell = CELL_NUMBER(P_POS_Z((*o)), sim_area->geometry.z_cell_size);
+                               int r_cell = CELL_NUMBER(P_POS_R((*o)), sim_domain->geometry.r_cell_size);
+                               int z_cell = CELL_NUMBER(P_POS_Z((*o)), sim_domain->geometry.z_cell_size);
 
-                               unsigned int i_dst = (unsigned int)ceil(r_cell / sim_area->geometry.r_grid_amount);
-                               unsigned int j_dst = (unsigned int)ceil(z_cell / sim_area->geometry.z_grid_amount);
+                               unsigned int i_dst = (unsigned int)ceil(r_cell / sim_domain->geometry.r_grid_amount);
+                               unsigned int j_dst = (unsigned int)ceil(z_cell / sim_domain->geometry.z_grid_amount);
 
                                if (r_cell < 0 || z_cell < 0)
                                {
@@ -154,7 +154,7 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
                                {
                                  if ((**ps).id >= BEAM_ID_START)
                                  {
-                                   LOG_DBG("Beam particle is out of simulation area: ["
+                                   LOG_DBG("Beam particle is out of simulation domain: ["
                                            << P_POS_R((*o)) << ", "
                                            << P_POS_Z((*o)) << "]. Removing");
                                  }
@@ -171,19 +171,19 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
                                }
 
                                // move particles between cells
-                               else if (i_dst != i || j_dst != j) // check that destination area is different, than source
+                               else if (i_dst != i || j_dst != j) // check that destination domain is different, than source
                                {
                                  ++j_c;
 
-                                 Area *dst_area = areas(i_dst, j_dst);
-                                 for (auto pd = dst_area->species_p.begin(); pd != dst_area->species_p.end(); ++pd)
+                                 Domain *dst_domain = domains(i_dst, j_dst);
+                                 for (auto pd = dst_domain->species_p.begin(); pd != dst_domain->species_p.end(); ++pd)
                                    if ((**pd).id == (**ps).id)
                                    {
                                      LOG_DBG("Particle with specie "
                                              << (**ps).id
-                                             << " jump from area "
+                                             << " jump from domain "
                                              << i << "," << j
-                                             << " to area "
+                                             << " to domain "
                                              << i_dst << "," << j_dst);
                                      (**pd).particles.push_back(o);
                                    }
@@ -198,7 +198,7 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
     }
   if (j_c > 0)
   {
-    LOG_DBG("Amount of particles to jump between areas: " << j_c);
+    LOG_DBG("Amount of particles to jump between domains: " << j_c);
   }
   if (r_c > 0)
   {
@@ -206,112 +206,112 @@ void particles_runaway_collector (Grid<Area*> areas, Geometry *geometry_global)
   }
 }
 
-void current_overlay (Grid<Area*> areas, Geometry *geometry_global)
+void current_overlay (Grid<Domain*> domains, Geometry *geometry_global)
 {
-  unsigned int r_areas = areas.x_size;
-  unsigned int z_areas = areas.y_size;
+  unsigned int r_domains = domains.x_size;
+  unsigned int z_domains = domains.y_size;
 
   for (unsigned int idx = 0; idx < 2; ++idx)
     for (unsigned int idy = 0; idy < 2; ++idy)
     {
 #pragma omp parallel for
-      for (unsigned int i = idx; i < r_areas; i+=2)
-        for (unsigned int j = idy; j < z_areas; j+=2)
+      for (unsigned int i = idx; i < r_domains; i+=2)
+        for (unsigned int j = idy; j < z_domains; j+=2)
         {
-          Area *sim_area = areas(i, j);
+          Domain *sim_domain = domains(i, j);
 
           // update grid
-          if (i < geometry_global->areas_by_r - 1)
+          if (i < geometry_global->domains_by_r - 1)
           {
-            Area *dst_area = areas(i+1, j);
-            sim_area->current->current.overlay_x(dst_area->current->current);
+            Domain *dst_domain = domains(i+1, j);
+            sim_domain->current->current.overlay_x(dst_domain->current->current);
           }
 
-          if (j < geometry_global->areas_by_z - 1)
+          if (j < geometry_global->domains_by_z - 1)
           {
-            Area *dst_area = areas(i, j + 1);
-            sim_area->current->current.overlay_y(dst_area->current->current);
+            Domain *dst_domain = domains(i, j + 1);
+            sim_domain->current->current.overlay_y(dst_domain->current->current);
           }
 
-          // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+          // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
           // {
-          //   Area *dst_area = areas(i + 1, j + 1);
-          //   sim_area->current->current.overlay_xy(dst_area->current->current);
+          //   Domain *dst_domain = domains(i + 1, j + 1);
+          //   sim_domain->current->current.overlay_xy(dst_domain->current->current);
           // }
         }
     }
 }
 
-void field_h_overlay (Grid<Area*> areas, Geometry *geometry_global)
+void field_h_overlay (Grid<Domain*> domains, Geometry *geometry_global)
 {
-  unsigned int r_areas = areas.x_size;
-  unsigned int z_areas = areas.y_size;
+  unsigned int r_domains = domains.x_size;
+  unsigned int z_domains = domains.y_size;
 
   for (unsigned int idx = 0; idx < 2; ++idx)
     for (unsigned int idy = 0; idy < 2; ++idy)
     {
 #pragma omp parallel for
-      for (unsigned int i = idx; i < r_areas; i+=2)
-        for (unsigned int j = idy; j < z_areas; j+=2)
+      for (unsigned int i = idx; i < r_domains; i+=2)
+        for (unsigned int j = idy; j < z_domains; j+=2)
         {
-          Area *sim_area = areas(i, j);
+          Domain *sim_domain = domains(i, j);
 
           // update grid
-          if (i < geometry_global->areas_by_r - 1)
+          if (i < geometry_global->domains_by_r - 1)
           {
-            Area *dst_area = areas(i+1, j);
-            sim_area->field_h->field.overlay_x(dst_area->field_h->field);
-            sim_area->field_h->field_at_et.overlay_x(dst_area->field_h->field_at_et);
+            Domain *dst_domain = domains(i+1, j);
+            sim_domain->field_h->field.overlay_x(dst_domain->field_h->field);
+            sim_domain->field_h->field_at_et.overlay_x(dst_domain->field_h->field_at_et);
           }
 
-          if (j < geometry_global->areas_by_z - 1)
+          if (j < geometry_global->domains_by_z - 1)
           {
-            Area *dst_area = areas(i, j + 1);
-            sim_area->field_h->field.overlay_y(dst_area->field_h->field);
-            sim_area->field_h->field_at_et.overlay_y(dst_area->field_h->field_at_et);
+            Domain *dst_domain = domains(i, j + 1);
+            sim_domain->field_h->field.overlay_y(dst_domain->field_h->field);
+            sim_domain->field_h->field_at_et.overlay_y(dst_domain->field_h->field_at_et);
           }
 
-          // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+          // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
           // {
-          //   Area *dst_area = areas(i + 1, j + 1);
-          //   sim_area->field_h->field.overlay_xy(dst_area->field_h->field);
-          //   sim_area->field_h->field_at_et.overlay_xy(dst_area->field_h->field_at_et);
+          //   Domain *dst_domain = domains(i + 1, j + 1);
+          //   sim_domain->field_h->field.overlay_xy(dst_domain->field_h->field);
+          //   sim_domain->field_h->field_at_et.overlay_xy(dst_domain->field_h->field_at_et);
           // }
         }
     }
 }
 
-void field_e_overlay (Grid<Area*> areas, Geometry *geometry_global)
+void field_e_overlay (Grid<Domain*> domains, Geometry *geometry_global)
 {
-  unsigned int r_areas = areas.x_size;
-  unsigned int z_areas = areas.y_size;
+  unsigned int r_domains = domains.x_size;
+  unsigned int z_domains = domains.y_size;
 
   for (unsigned int idx = 0; idx < 2; ++idx)
     for (unsigned int idy = 0; idy < 2; ++idy)
     {
 #pragma omp parallel for
-      for (unsigned int i = idx; i < r_areas; i+=2)
-        for (unsigned int j = idy; j < z_areas; j+=2)
+      for (unsigned int i = idx; i < r_domains; i+=2)
+        for (unsigned int j = idy; j < z_domains; j+=2)
         {
-          Area *sim_area = areas(i, j);
+          Domain *sim_domain = domains(i, j);
 
           // update grid
-          if (i < geometry_global->areas_by_r - 1)
+          if (i < geometry_global->domains_by_r - 1)
           {
-            Area *dst_area = areas(i+1, j);
-            sim_area->field_e->field.overlay_x(dst_area->field_e->field);
+            Domain *dst_domain = domains(i+1, j);
+            sim_domain->field_e->field.overlay_x(dst_domain->field_e->field);
           }
 
-          if (j < geometry_global->areas_by_z - 1)
+          if (j < geometry_global->domains_by_z - 1)
           {
-            Area *dst_area = areas(i, j + 1);
-            sim_area->field_e->field.overlay_y(dst_area->field_e->field);
+            Domain *dst_domain = domains(i, j + 1);
+            sim_domain->field_e->field.overlay_y(dst_domain->field_e->field);
           }
 
-          // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+          // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
           // {
-          //   Area *dst_area = areas(i + 1, j + 1);
-          //   sim_area->field_e->field.overlay_xy(dst_area->field_e->field);
+          //   Domain *dst_domain = domains(i + 1, j + 1);
+          //   sim_domain->field_e->field.overlay_xy(dst_domain->field_e->field);
           // }
         }
     }
@@ -349,9 +349,9 @@ int main(int argc, char **argv)
 
   TimeSim* sim_time_clock = cfg.time;
 
-  LOG_DBG("Initializing Geometry, Particle Species and Simulation Areas");
+  LOG_DBG("Initializing Geometry, Particle Species and Simulation Domains");
 
-  Grid<Area*> areas (geometry_global->areas_by_r, geometry_global->areas_by_z, 0);
+  Grid<Domain*> domains (geometry_global->domains_by_r, geometry_global->domains_by_z, 0);
 
   LOG_DBG("Initializing Data Paths");
 
@@ -364,19 +364,19 @@ int main(int argc, char **argv)
     DataWriter writer (cfg.output_data->data_root, i->component,
                        i->specie, i->shape, probe_size, i->schedule,
                        cfg.output_data->compress, cfg.output_data->compress_level,
-                       geometry_global, sim_time_clock, areas, cfg.cfg2str());
+                       geometry_global, sim_time_clock, domains, cfg.cfg2str());
 
     data_writers.push_back(writer);
   }
 
-  unsigned int r_areas = geometry_global->areas_by_r;
-  unsigned int z_areas = geometry_global->areas_by_z;
+  unsigned int r_domains = geometry_global->domains_by_r;
+  unsigned int z_domains = geometry_global->domains_by_z;
 
   unsigned int p_id_counter = 0;
   unsigned int b_id_counter = BEAM_ID_START;
 
-  for (unsigned int i=0; i < r_areas; i++)
-    for (unsigned int j = 0; j < z_areas; j++)
+  for (unsigned int i=0; i < r_domains; i++)
+    for (unsigned int j = 0; j < z_domains; j++)
     {
       //! init geometry
       bool wall_r0 = false;
@@ -388,39 +388,39 @@ int main(int argc, char **argv)
       double pml_l_zwall = 0;
       double pml_l_rwall = 0;
 
-      // set walls to areas
+      // set walls to domains
       if (i == 0)
         wall_r0 = true;
-      if (i == r_areas - 1)
+      if (i == r_domains - 1)
         wall_rr = true;
       if (j == 0)
         wall_z0 = true;
-      if (j == z_areas - 1)
+      if (j == z_domains - 1)
         wall_zz = true;
 
-      // set PML to areas
-      if (geometry_global->r_size - geometry_global->r_size / r_areas * (i + 1)
+      // set PML to domains
+      if (geometry_global->r_size - geometry_global->r_size / r_domains * (i + 1)
           < geometry_global->pml_length[2])
         pml_l_rwall = geometry_global->pml_length[2];
-      if (j * geometry_global->z_size / z_areas < geometry_global->pml_length[1])
+      if (j * geometry_global->z_size / z_domains < geometry_global->pml_length[1])
         pml_l_z0 = geometry_global->pml_length[1];
-      if (geometry_global->z_size - geometry_global->z_size / z_areas * (j + 1)
+      if (geometry_global->z_size - geometry_global->z_size / z_domains * (j + 1)
           < geometry_global->pml_length[3])
         pml_l_zwall = geometry_global->pml_length[3];
 
-      unsigned int bot_r = (unsigned int)geometry_global->r_grid_amount * i / r_areas;
-      unsigned int top_r = (unsigned int)geometry_global->r_grid_amount * (i + 1) / r_areas;
+      unsigned int bot_r = (unsigned int)geometry_global->r_grid_amount * i / r_domains;
+      unsigned int top_r = (unsigned int)geometry_global->r_grid_amount * (i + 1) / r_domains;
 
-      unsigned int left_z = (unsigned int)geometry_global->z_grid_amount * j / z_areas;
-      unsigned int right_z = (unsigned int)geometry_global->z_grid_amount * (j + 1) / z_areas;
+      unsigned int left_z = (unsigned int)geometry_global->z_grid_amount * j / z_domains;
+      unsigned int right_z = (unsigned int)geometry_global->z_grid_amount * (j + 1) / z_domains;
 
-      Geometry *geom_area = new Geometry (
-        geometry_global->r_size / r_areas,
-        geometry_global->z_size / z_areas,
+      Geometry *geom_domain = new Geometry (
+        geometry_global->r_size / r_domains,
+        geometry_global->z_size / z_domains,
         bot_r, top_r, left_z, right_z,
-        pml_l_z0 * z_areas,    // multiplying is a workaround, because area
-        pml_l_zwall * z_areas, // doesn't know abount whole simulation area size
-        pml_l_rwall * r_areas, // aka geometry_global
+        pml_l_z0 * z_domains,    // multiplying is a workaround, because domain
+        pml_l_zwall * z_domains, // doesn't know abount whole simulation domain size
+        pml_l_rwall * r_domains, // aka geometry_global
         geometry_global->pml_sigma[0],
         geometry_global->pml_sigma[1],
         wall_r0,
@@ -432,8 +432,8 @@ int main(int argc, char **argv)
       // WORKAROUND: // used just to set PML
       // for information about global geometry
       // WARNING! don't use it in local geometries!
-      geom_area->areas_by_r = r_areas;
-      geom_area->areas_by_z = z_areas;
+      geom_domain->domains_by_r = r_domains;
+      geom_domain->domains_by_z = z_domains;
       // /WORKAROUND
 
       // init particle species
@@ -444,17 +444,17 @@ int main(int argc, char **argv)
 
       for (auto k = cfg.particle_species.begin(); k != cfg.particle_species.end(); ++k)
       {
-        unsigned int grid_cell_macro_amount = (int)(k->macro_amount / r_areas / z_areas);
+        unsigned int grid_cell_macro_amount = (int)(k->macro_amount / r_domains / z_domains);
 
 	double drho_by_dz = (k->right_density - k->left_density) / geometry_global->z_size;
-	double ld_local = k->left_density + drho_by_dz * left_z * geom_area->z_cell_size;
-	double rd_local = k->left_density + drho_by_dz * right_z * geom_area->z_cell_size;
+	double ld_local = k->left_density + drho_by_dz * left_z * geom_domain->z_cell_size;
+	double rd_local = k->left_density + drho_by_dz * right_z * geom_domain->z_cell_size;
 
         SpecieP *pps = new SpecieP (p_id_counter,
                                     k->name,
                                     k->charge, k->mass, grid_cell_macro_amount,
                                     ld_local, rd_local,
-                                    k->temperature, geom_area, sim_time_clock);
+                                    k->temperature, geom_domain, sim_time_clock);
         species_p.push_back(pps);
 
         ++p_id_counter;
@@ -471,7 +471,7 @@ int main(int argc, char **argv)
                                      bm->start_time, bm->bunch_radius, bm->density,
                                      bm->bunches_amount, bm->bunch_length,
                                      bm->bunches_distance, bm->velocity,
-                                     geom_area, sim_time_clock);
+                                     geom_domain, sim_time_clock);
 
             species_p.push_back(beam);
           }
@@ -481,19 +481,19 @@ int main(int argc, char **argv)
       {
         LOG_WARN("There is no particle beams");
       }
-      Area *sim_area = new Area(*geom_area, species_p, sim_time_clock);
-      areas.set(i, j, sim_area);
+      Domain *sim_domain = new Domain(*geom_domain, species_p, sim_time_clock);
+      domains.set(i, j, sim_domain);
     };
 
   LOG_INFO("Preparation to calculation");
 
 #pragma omp parallel for collapse(2)
-  for (unsigned int i=0; i < r_areas; i++)
-    for (unsigned int j = 0; j < z_areas; j++)
+  for (unsigned int i=0; i < r_domains; i++)
+    for (unsigned int j = 0; j < z_domains; j++)
     {
-      Area *sim_area = areas(i, j);
+      Domain *sim_domain = domains(i, j);
 
-      sim_area->distribute(); // spatial and velocity distribution
+      sim_domain->distribute(); // spatial and velocity distribution
     }
 
   LOG_DBG("Initializing Boundary Conditions (TBD)");
@@ -553,72 +553,72 @@ int main(int argc, char **argv)
     LOG_DBG("Run calculation loop for timestamp: " << sim_time_clock->current);
 
 #pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_areas; i++)
-      for (unsigned int j = 0; j < z_areas; j++)
+    for (unsigned int i=0; i < r_domains; i++)
+      for (unsigned int j = 0; j < z_domains; j++)
       {
-        Area *sim_area = areas(i, j);
+        Domain *sim_domain = domains(i, j);
 
         // ! 1. manage beam
         if (! cfg.particle_beams.empty())
-          sim_area->manage_beam();
+          sim_domain->manage_beam();
 
         // ! 2. Calculate magnetic field (H)
-        sim_area->weight_field_h(); // +
+        sim_domain->weight_field_h(); // +
       }
-    field_h_overlay(areas, geometry_global);
+    field_h_overlay(domains, geometry_global);
 
 #pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_areas; i++)
-      for (unsigned int j = 0; j < z_areas; j++)
+    for (unsigned int i=0; i < r_domains; i++)
+      for (unsigned int j = 0; j < z_domains; j++)
       {
-        Area *sim_area = areas(i, j);
+        Domain *sim_domain = domains(i, j);
 
-        sim_area->reset_current();
+        sim_domain->reset_current();
         // ! 3. Calculate velocity
-        sim_area->push_particles(); // +
-        sim_area->dump_particle_positions_to_old(); // +
-        sim_area->update_particles_coords_at_half(); // + +reflect
-	sim_area->reflect();
-	sim_area->particles_back_position_to_rz(); // +
+        sim_domain->push_particles(); // +
+        sim_domain->dump_particle_positions_to_old(); // +
+        sim_domain->update_particles_coords_at_half(); // + +reflect
+	sim_domain->reflect();
+	sim_domain->particles_back_position_to_rz(); // +
       }
-    particles_runaway_collector(areas, geometry_global);
+    particles_runaway_collector(domains, geometry_global);
 
 #pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_areas; i++)
-      for (unsigned int j = 0; j < z_areas; j++)
+    for (unsigned int i=0; i < r_domains; i++)
+      for (unsigned int j = 0; j < z_domains; j++)
       {
-        Area *sim_area = areas(i, j);
+        Domain *sim_domain = domains(i, j);
 
         // current distribution
-        sim_area->weight_current_azimuthal();
-        sim_area->update_particles_coords_at_half();
-        sim_area->reflect(); // +
-	sim_area->particles_back_position_to_rz();
+        sim_domain->weight_current_azimuthal();
+        sim_domain->update_particles_coords_at_half();
+        sim_domain->reflect(); // +
+	sim_domain->particles_back_position_to_rz();
       }
-    particles_runaway_collector(areas, geometry_global);
-    current_overlay(areas, geometry_global);
+    particles_runaway_collector(domains, geometry_global);
+    current_overlay(domains, geometry_global);
 
 #pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_areas; i++)
-      for (unsigned int j = 0; j < z_areas; j++)
+    for (unsigned int i=0; i < r_domains; i++)
+      for (unsigned int j = 0; j < z_domains; j++)
       {
-        Area *sim_area = areas(i, j);
+        Domain *sim_domain = domains(i, j);
 
-        sim_area->weight_current();
-        sim_area->particles_back_velocity_to_rz();
+        sim_domain->weight_current();
+        sim_domain->particles_back_velocity_to_rz();
       }
-    current_overlay(areas, geometry_global);
+    current_overlay(domains, geometry_global);
 
 #pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_areas; i++)
-      for (unsigned int j = 0; j < z_areas; j++)
+    for (unsigned int i=0; i < r_domains; i++)
+      for (unsigned int j = 0; j < z_domains; j++)
       {
-        Area *sim_area = areas(i, j);
+        Domain *sim_domain = domains(i, j);
 
         // ! 5. Calculate electric field (E)
-        sim_area->weight_field_e(); // +
+        sim_domain->weight_field_e(); // +
       }
-    field_e_overlay(areas, geometry_global);
+    field_e_overlay(domains, geometry_global);
 
     // dump data
 // #pragma omp parallel for

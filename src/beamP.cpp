@@ -52,17 +52,17 @@ BeamP::BeamP (unsigned int id, // ID for every particles specie
     + bunches_distance / velocity * (bunches_amount - 1);
 
 
-  // find bunch radius, compared to current area
+  // find bunch radius, compared to current domain
   if (geometry->left_z_grid_number > 0)
-    area_radius = 0;
+    domain_radius = 0;
   else if (radius > geometry->top_r_grid_number * geometry->r_cell_size)
-    area_radius = geometry->r_size;
+    domain_radius = geometry->r_size;
   else if (radius > geometry->bottom_r_grid_number * geometry->r_cell_size)
-    area_radius = radius - geometry->bottom_r_grid_number * geometry->r_cell_size;
+    domain_radius = radius - geometry->bottom_r_grid_number * geometry->r_cell_size;
   else
-    area_radius = 0;
+    domain_radius = 0;
 
-  double macro_normalizer = area_radius / radius;
+  double macro_normalizer = domain_radius / radius;
 
   bunch_macro_amount = macro_amount / bunches_amount * macro_normalizer;
 
@@ -105,7 +105,7 @@ void BeamP::inject()
         double rand_r = math::random::uniform();
         double rand_z = math::random::uniform();
 
-        double pos_r = (area_radius - dr) * rand_r + dr / 2;
+        double pos_r = (domain_radius - dr) * rand_r + dr / 2;
         // 1. set pos_r
         P_POS_R((*v)) = pos_r;
         // 2. set pos_phi
@@ -142,7 +142,7 @@ void BeamP::inject()
 
     // increase current bunch number after whole bunch injection
     if (time->current > bunch_finish_time
-        && geometry->left_z_grid_number == 0 // print message only for area 0,0
+        && geometry->left_z_grid_number == 0 // print message only for domain 0,0
         && geometry->bottom_r_grid_number == 0)
     {
       LOG_DBG("Bunch #" << current_bunch_number << " of beam ``" << name << "'' has been injected");

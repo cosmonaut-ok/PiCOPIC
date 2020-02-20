@@ -41,7 +41,7 @@ SpecieP::SpecieP (unsigned int p_id,
 /// to satisfy conditions of regular/centered
 /// spatial distributions
 #if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)
-  LOG_DBG("Correcting area plasma particles macro amount to satisfy spatial distribution");
+  LOG_DBG("Correcting domain plasma particles macro amount to satisfy spatial distribution");
   double r_size = geometry->r_size;
   double z_size = geometry->z_size;
   double dr = geometry->r_cell_size;
@@ -168,7 +168,7 @@ void SpecieP::rectangular_random_placement (unsigned int int_cell_number,
 
     P_POS_R((*n)) += int_cell_number * dr;
     P_POS_R((*n)) += dr / 2.;
-    P_POS_Z((*n)) += left_cell_number * dz; // shift by z to respect geometry with areas
+    P_POS_Z((*n)) += left_cell_number * dz; // shift by z to respect geometry with domains
     P_POS_Z((*n)) += dz / 2.;
 
 #ifdef PLASMA_SPATIAL_FLAT
@@ -232,7 +232,7 @@ void SpecieP::rectangular_regular_placement (unsigned int int_cell_number,
 
     P_POS_R((*n)) += int_cell_number * dr;
     P_POS_R((*n)) += dr / 2.;
-    P_POS_Z((*n)) += left_cell_number * dz; // shift by z to respect geometry with areas
+    P_POS_Z((*n)) += left_cell_number * dz; // shift by z to respect geometry with domains
     P_POS_Z((*n)) += dz / 2.;
 
     particles.push_back(n);

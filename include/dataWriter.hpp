@@ -25,7 +25,7 @@
 #include "grid.hpp"
 #include "timeSim.hpp"
 #include "geometry.hpp"
-#include "area.hpp"
+#include "domain.hpp"
 
 #ifdef USE_HDF5
 #include "outEngineHDF5.hpp"
@@ -36,7 +36,7 @@
 
 using namespace std;
 
-class Area;
+class Domain;
 
 class DataWriter
 {
@@ -53,7 +53,7 @@ public:
 
   Geometry *geometry;
   TimeSim *time;
-  Grid<Area*> areas;
+  Grid<Domain*> domains;
 
 #ifdef USE_HDF5
   OutEngineHDF5 engine;
@@ -71,9 +71,9 @@ public:
              int *a_size, unsigned int a_schedule,
              bool a_compress, unsigned int a_compress_level,
              Geometry *a_geom, TimeSim *a_time,
-             Grid<Area *> a_areas, string a_metadata);
+             Grid<Domain *> a_domains, string a_metadata);
 
-  void merge_areas(string component, string specie);
-  void merge_particle_areas(string parameter, unsigned int component, string specie);
+  void merge_domains(string component, string specie);
+  void merge_particle_domains(string parameter, unsigned int component, string specie);
   void go();
 };

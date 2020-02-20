@@ -40,10 +40,10 @@ public:
   Field(void) {};
   Field(Geometry *geom, TimeSim *t) : geometry(geom), time(t)
   {
-    //! The important feature is to leave so called 'overlay areas'
+    //! The important feature is to leave so called 'overlay domains'
     //! around field and current grids. In this case it takes
-    //! one grid cell before and after main grid area.
-    //! e.g. overlay areas are grid[0:1][i], grid[i][0:1],
+    //! one grid cell before and after main grid domain.
+    //! e.g. overlay domains are grid[0:1][i], grid[i][0:1],
     //! grid[0:1][geometry->z_grid_amount-1:geometry->z_grid_amount-2]
     //! and grid[geometry->r_grid_amount-1:geometry->r_grid_amount-2][i]
     //! So, we need to shift all of the grid numbers to 2
@@ -55,7 +55,7 @@ public:
     field = 0;
     field.overlay_set(0);
     
-    // shift to use overlay area (2 before and 2 after main grid)
+    // shift to use overlay domain (2 before and 2 after main grid)
     r_begin = 0;
     z_begin = 0;
     r_end = geometry->r_grid_amount;

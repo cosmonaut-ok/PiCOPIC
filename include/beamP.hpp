@@ -36,7 +36,7 @@ public:
   double bunch_length;
   double bunch_macro_amount;
   double macro_per_step_to_inject;
-  double area_radius;
+  double domain_radius;
 
 public:
   BeamP (unsigned int id, // ID for every particles specie

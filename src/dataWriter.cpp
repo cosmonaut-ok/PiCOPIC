@@ -22,7 +22,7 @@ DataWriter::DataWriter(string a_path, string a_component,
                        int *a_size, unsigned int a_schedule,
                        bool a_compress,  unsigned int a_compress_level,
                        Geometry *a_geom, TimeSim *a_time,
-                       Grid<Area *> a_areas, string a_metadata)
+                       Grid<Domain *> a_domains, string a_metadata)
 {
   // ! path - path to save the results
   // ! component - some parameter, that should be dumped:
@@ -40,7 +40,7 @@ DataWriter::DataWriter(string a_path, string a_component,
   // ! compress_level - output data compress level
   // ! geom - pointer to global geometry object
   // ! time - pointer to global time object
-  // ! areas - grid of pointers to areas
+  // ! domains - grid of pointers to domains
 
   path = a_path;
   component = a_component;
@@ -58,7 +58,7 @@ DataWriter::DataWriter(string a_path, string a_component,
   compress_level = a_compress_level;
   geometry = a_geom;
   time = a_time;
-  areas = a_areas;
+  domains = a_domains;
 
   out_data = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 0);
   out_data_plain = vector<double> (0);
@@ -155,7 +155,7 @@ void DataWriter::go()
       {
         string dump_step_name = dump_step + "_" + to_string(i);
         out_data_plain.resize(0);
-        merge_particle_areas(component, i, specie);
+        merge_particle_domains(component, i, specie);
 
         engine.write_1d_vector(dump_step_name, out_data_plain);
         shape_name = "rec";
@@ -171,7 +171,7 @@ void DataWriter::go()
       LOG_DBG("Launch 1d-vector-shaped writer " << component << " at step " << dump_step);
       string dump_step_name = dump_step;
       out_data_plain.resize(0);
-      merge_particle_areas(component, 0, specie);
+      merge_particle_domains(component, 0, specie);
       engine.write_1d_vector(dump_step_name, out_data_plain);
       shape_name = "rec";
       component_name = specie
@@ -182,7 +182,7 @@ void DataWriter::go()
     else
     {
       out_data = 0;
-      merge_areas(component, specie);
+      merge_domains(component, specie);
 
       // shape: dot (3), column (col - 1), row (2), rectangle (rec - 0)
       switch(shape)
@@ -234,111 +234,111 @@ void DataWriter::go()
   }
 }
 
-void DataWriter::merge_areas(string component, string specie)
+void DataWriter::merge_domains(string component, string specie)
 {
-  // prepare to merge areas
-  for (unsigned int r = 0; r < geometry->areas_by_r; ++r)
-    for (unsigned int z = 0; z < geometry->areas_by_z; ++z)
+  // prepare to merge domains
+  for (unsigned int r = 0; r < geometry->domains_by_r; ++r)
+    for (unsigned int z = 0; z < geometry->domains_by_z; ++z)
     {
-      Area *sim_area = areas(r, z);
+      Domain *sim_domain = domains(r, z);
 
       if (component.compare("density") == 0)
-        sim_area->weight_density(specie);
+        sim_domain->weight_density(specie);
       else if (component.compare("temperature") == 0)
-        sim_area->weight_temperature(specie);
+        sim_domain->weight_temperature(specie);
       else if (component.compare("charge") == 0)
-        sim_area->weight_charge(specie);
+        sim_domain->weight_charge(specie);
     }
 
-  for (unsigned int i=0; i < geometry->areas_by_r; i++)
-    for (unsigned int j = 0; j < geometry->areas_by_z; j++)
+  for (unsigned int i=0; i < geometry->domains_by_r; i++)
+    for (unsigned int j = 0; j < geometry->domains_by_z; j++)
     {
-      Area *sim_area = areas(i, j);
+      Domain *sim_domain = domains(i, j);
 
       // update grid
-      if (i < geometry->areas_by_r - 1)
+      if (i < geometry->domains_by_r - 1)
       {
-        Area *dst_area = areas(i+1, j);
+        Domain *dst_domain = domains(i+1, j);
         if (component.compare("density") == 0)
-          sim_area->density->density.overlay_x(dst_area->density->density);
+          sim_domain->density->density.overlay_x(dst_domain->density->density);
         else if (component.compare("temperature") == 0)
-          sim_area->temperature->temperature.overlay_x(dst_area->temperature->temperature);
+          sim_domain->temperature->temperature.overlay_x(dst_domain->temperature->temperature);
 	else if (component.compare("charge") == 0)
-          sim_area->charge->density.overlay_x(dst_area->charge->density);
+          sim_domain->charge->density.overlay_x(dst_domain->charge->density);
       }
 
-      if (j < geometry->areas_by_z - 1)
+      if (j < geometry->domains_by_z - 1)
       {
-        Area *dst_area = areas(i, j + 1);
+        Domain *dst_domain = domains(i, j + 1);
         if (component.compare("density") == 0)
-          sim_area->density->density.overlay_y(dst_area->density->density);
+          sim_domain->density->density.overlay_y(dst_domain->density->density);
         else if (component.compare("temperature") == 0)
-          sim_area->temperature->temperature.overlay_y(dst_area->temperature->temperature);
+          sim_domain->temperature->temperature.overlay_y(dst_domain->temperature->temperature);
 	else if (component.compare("charge") == 0)
-          sim_area->charge->density.overlay_y(dst_area->temperature->temperature);
+          sim_domain->charge->density.overlay_y(dst_domain->temperature->temperature);
       }
 
-      // if (i < geometry_global->areas_by_r - 1 && j < geometry_global->areas_by_z - 1)
+      // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
       // {
-      //   Area *dst_area = areas(i + 1, j + 1);
-      //   sim_area->current->current.overlay_xy(dst_area->current->current);
+      //   Domain *dst_domain = domains(i + 1, j + 1);
+      //   sim_domain->current->current.overlay_xy(dst_domain->current->current);
       // }
     }
 
   // merge values
-  for (unsigned int r = 0; r < geometry->areas_by_r; ++r)
-    for (unsigned int z = 0; z < geometry->areas_by_z; ++z)
+  for (unsigned int r = 0; r < geometry->domains_by_r; ++r)
+    for (unsigned int z = 0; z < geometry->domains_by_z; ++z)
     {
       Grid<double> value;
-      Area *sim_area = areas(r, z);
+      Domain *sim_domain = domains(r, z);
 
       if (component.compare("E_r") == 0)
-        value = sim_area->field_e->field[0];
+        value = sim_domain->field_e->field[0];
       else if (component.compare("E_phi") == 0)
-        value = sim_area->field_e->field[1];
+        value = sim_domain->field_e->field[1];
       else if (component.compare("E_z") == 0)
-        value = sim_area->field_e->field[2];
+        value = sim_domain->field_e->field[2];
       else if (component.compare("H_r") == 0)
-        value = sim_area->field_h->field_at_et[0];
+        value = sim_domain->field_h->field_at_et[0];
       else if (component.compare("H_phi") == 0)
-        value = sim_area->field_h->field_at_et[1];
+        value = sim_domain->field_h->field_at_et[1];
       else if (component.compare("H_z") == 0)
-        value = sim_area->field_h->field_at_et[2];
+        value = sim_domain->field_h->field_at_et[2];
       else if (component.compare("J_r") == 0)
-        value = sim_area->current->current[0];
+        value = sim_domain->current->current[0];
       else if (component.compare("J_phi") == 0)
-        value = sim_area->current->current[1];
+        value = sim_domain->current->current[1];
       else if (component.compare("J_z") == 0)
-        value = sim_area->current->current[2];
+        value = sim_domain->current->current[2];
       else if (component.compare("temperature") == 0)
-        value = sim_area->temperature->temperature;
+        value = sim_domain->temperature->temperature;
       else if (component.compare("density") == 0)
-        value = sim_area->density->density;
+        value = sim_domain->density->density;
       else if (component.compare("charge") == 0)
-        value = sim_area->charge->density;
+        value = sim_domain->charge->density;
       else
         LOG_ERR("Unknown DataWriter component ``" << component << "''");
 
-      for (unsigned int i = 0; i < value.x_size; ++i) // shifting to avoid overlay areas
+      for (unsigned int i = 0; i < value.x_size; ++i) // shifting to avoid overlay domains
         for (unsigned int j = 0; j < value.y_size; ++j)
-          out_data.set (i + r * sim_area->geometry.r_grid_amount,
-                        j + z * sim_area->geometry.z_grid_amount,
+          out_data.set (i + r * sim_domain->geometry.r_grid_amount,
+                        j + z * sim_domain->geometry.z_grid_amount,
                         value(i, j));
     }
 }
 
-void DataWriter::merge_particle_areas(string parameter,
+void DataWriter::merge_particle_domains(string parameter,
                                       unsigned int component,
                                       string specie)
 {
   Grid<double> value;
   // if (shape == 0)
   // {
-  for (unsigned int r = 0; r < geometry->areas_by_r; ++r)
-    for (unsigned int z = 0; z < geometry->areas_by_z; ++z)
+  for (unsigned int r = 0; r < geometry->domains_by_r; ++r)
+    for (unsigned int z = 0; z < geometry->domains_by_z; ++z)
     {
-      Area *sim_area = areas(r, z);
-      vector<SpecieP *> species = sim_area->species_p;
+      Domain *sim_domain = domains(r, z);
+      vector<SpecieP *> species = sim_domain->species_p;
 
       for (auto ps = species.begin(); ps != species.end(); ++ps)
       {

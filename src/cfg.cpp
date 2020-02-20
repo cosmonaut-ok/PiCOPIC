@@ -224,13 +224,13 @@ void Cfg::init_probes ()
     }
     else if (p_p.r_end > geometry->r_grid_amount)
     {
-      LOG_CRIT("Probe's " << p_p.component << "/" << p_shape << " radius is out of simulation area: "
+      LOG_CRIT("Probe's " << p_p.component << "/" << p_shape << " radius is out of simulation domain: "
                << p_p.r_end << ". Must be less, than "
                << geometry->r_grid_amount, 1);
     }
     else if (p_p.z_end > geometry->z_grid_amount)
     {
-      LOG_CRIT("Probe's " << p_p.component << "/" << p_shape << " longitude is out of simulation area: "
+      LOG_CRIT("Probe's " << p_p.component << "/" << p_shape << " longitude is out of simulation domain: "
                << p_p.z_end << ". Must be less, than "
                << geometry->z_grid_amount, 1);
     }
@@ -311,12 +311,12 @@ void Cfg::init_geometry ()
 
   //
 #ifdef SINGLETHREAD
-  LOG_INFO("Singlethread mode. Reducing areas amount to 1");
-  geometry->areas_by_r = 1;
-  geometry->areas_by_z = 1;
+  LOG_INFO("Singlethread mode. Reducing domains amount to 1");
+  geometry->domains_by_r = 1;
+  geometry->domains_by_z = 1;
 #else
-  geometry->areas_by_r = (int)json_root["areas_amount"].get<object>()["radius"].get<double>();
-  geometry->areas_by_z = (int)json_root["areas_amount"].get<object>()["longitude"].get<double>();
+  geometry->domains_by_r = (int)json_root["domains_amount"].get<object>()["radius"].get<double>();
+  geometry->domains_by_z = (int)json_root["domains_amount"].get<object>()["longitude"].get<double>();
 #endif
 }
 
@@ -410,24 +410,24 @@ bool Cfg::method_limitations_check ()
   double electron_temperature = 0;
 
   // grid limitations
-  if ((fmod(geometry->areas_by_r, 2) != 0 && geometry->areas_by_r != 1) || (fmod(geometry->areas_by_z, 2) != 0 && geometry->areas_by_z != 1))
+  if ((fmod(geometry->domains_by_r, 2) != 0 && geometry->domains_by_r != 1) || (fmod(geometry->domains_by_z, 2) != 0 && geometry->domains_by_z != 1))
     {
-      LOG_CRIT("Amount of areas should be multiple of 2, or 1", 1);
+      LOG_CRIT("Amount of domains should be multiple of 2, or 1", 1);
     }
 
-  if (geometry->r_grid_amount / geometry->areas_by_r < MIN_AREA_GRID_AMOUNT)
+  if (geometry->r_grid_amount / geometry->domains_by_r < MIN_AREA_GRID_AMOUNT)
     {
-      LOG_CRIT("Too small area size by r. Must be ``" << MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
+      LOG_CRIT("Too small domain size by r. Must be ``" << MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
     }
 
-  if (geometry->z_grid_amount / geometry->areas_by_z < MIN_AREA_GRID_AMOUNT)
+  if (geometry->z_grid_amount / geometry->domains_by_z < MIN_AREA_GRID_AMOUNT)
     {
-      LOG_CRIT("Too small area size by z. Must be ``" << MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
+      LOG_CRIT("Too small domain size by z. Must be ``" << MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
     }
 
-  if (geometry->r_grid_amount / geometry->areas_by_r * geometry->z_grid_amount / geometry->areas_by_z < MIN_AREA_GRID_AMOUNT * MIN_AREA_GRID_AMOUNT)
+  if (geometry->r_grid_amount / geometry->domains_by_r * geometry->z_grid_amount / geometry->domains_by_z < MIN_AREA_GRID_AMOUNT * MIN_AREA_GRID_AMOUNT)
     {
-      LOG_CRIT("Too small area size. Must be ``" << MIN_AREA_GRID_AMOUNT * MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
+      LOG_CRIT("Too small domain size. Must be ``" << MIN_AREA_GRID_AMOUNT * MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
     }
 
 // try to figure out, where is electrons

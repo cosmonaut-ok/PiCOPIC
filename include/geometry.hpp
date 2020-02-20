@@ -48,8 +48,8 @@ public:
 
   bool is_near_z_axis;
 
-  unsigned int areas_by_r;
-  unsigned int areas_by_z;
+  unsigned int domains_by_r;
+  unsigned int domains_by_z;
 
   Geometry(double rs, double zs,
            int bot_ngr, int top_ngr, int left_ngz, int right_ngz,

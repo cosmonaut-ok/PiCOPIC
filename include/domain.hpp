@@ -42,7 +42,7 @@
 
 using namespace std;
 
-class Area
+class Domain
 {
 public:
   vector<SpecieP *> species_p;
@@ -63,8 +63,8 @@ public:
   TimeSim *time_sim; // simulation time object
 
 public:
-  Area();
-  Area(Geometry geom, vector<SpecieP *> species, TimeSim* time);
+  Domain();
+  Domain(Geometry geom, vector<SpecieP *> species, TimeSim* time);
 
   // wrapper methods
   void distribute();
