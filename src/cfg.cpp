@@ -18,7 +18,7 @@
 #include "cfg.hpp"
 #include <typeinfo>
 
-#define MIN_AREA_GRID_AMOUNT 64
+#define MIN_DOMAIN_GRID_AMOUNT 64
 
 Cfg::Cfg(const char *json_file_name)
 {
@@ -415,19 +415,19 @@ bool Cfg::method_limitations_check ()
       LOG_CRIT("Amount of domains should be multiple of 2, or 1", 1);
     }
 
-  if (geometry->r_grid_amount / geometry->domains_by_r < MIN_AREA_GRID_AMOUNT)
+  if (geometry->r_grid_amount / geometry->domains_by_r < MIN_DOMAIN_GRID_AMOUNT)
     {
-      LOG_CRIT("Too small domain size by r. Must be ``" << MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
+      LOG_CRIT("Too small domain size by r. Must be ``" << MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
     }
 
-  if (geometry->z_grid_amount / geometry->domains_by_z < MIN_AREA_GRID_AMOUNT)
+  if (geometry->z_grid_amount / geometry->domains_by_z < MIN_DOMAIN_GRID_AMOUNT)
     {
-      LOG_CRIT("Too small domain size by z. Must be ``" << MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
+      LOG_CRIT("Too small domain size by z. Must be ``" << MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
     }
 
-  if (geometry->r_grid_amount / geometry->domains_by_r * geometry->z_grid_amount / geometry->domains_by_z < MIN_AREA_GRID_AMOUNT * MIN_AREA_GRID_AMOUNT)
+  if (geometry->r_grid_amount / geometry->domains_by_r * geometry->z_grid_amount / geometry->domains_by_z < MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT)
     {
-      LOG_CRIT("Too small domain size. Must be ``" << MIN_AREA_GRID_AMOUNT * MIN_AREA_GRID_AMOUNT << "'' cells or more", 1);
+      LOG_CRIT("Too small domain size. Must be ``" << MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
     }
 
 // try to figure out, where is electrons

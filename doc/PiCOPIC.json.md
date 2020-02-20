@@ -5,20 +5,20 @@
 - bool: `"debug": true/false` - set or unset debugging output (not implemented yet. Only as compile option)
 - bool: `"hdf5": true/false`, - enable or disable HDF5 output (not implemented yet. Only as compile option)
 - float: `"macro_amount": 1e6` - set full amount of macroparticles (for all particle species and beams)
-- integer: `"beam_plasma_macro_size_ratio": 2` - by default PiCOPIC makes that all of the macroparticles represents the same number of real particles. But, sometimes, lighter macroparticles for beams required (in this case larger number os such macroparticles should be present in the simulation area). This option allows to set ratio, between background plasma and beam macroparticles.
+- integer: `"beam_plasma_macro_size_ratio": 2` - by default PiCOPIC makes that all of the macroparticles represents the same number of real particles. But, sometimes, lighter macroparticles for beams required (in this case larger number os such macroparticles should be present in the simulation domain). This option allows to set ratio, between background plasma and beam macroparticles.
 
 ### geometry
-- float `"radius": 0.075` - simulation area radius
-- float `"longitude": 0.075` - simulation area longitude
+- float `"radius": 0.075` - simulation domain radius
+- float `"longitude": 0.075` - simulation domain longitude
 
 #### grid_size
 - integer `"radius": 128` - grid nodes amount by r-direction
 - integer `"longitude": 128` - grid nodes amount by z-direction
 
-#### areas_amount
-Simulation area separated to several subareas (called "areas" also), which are independent and calculated in parallel. So, amount of such areas is the maximum number of parallel threads. Here can be defined amount of such areas by radius and longitude.
+#### domains_amount
+Simulation domain separated to several subdomains (called "domains" also), which are independent and calculated in parallel. So, amount of such domains is the maximum number of parallel threads. Here can be defined amount of such domains by radius and longitude.
 
-**INFO** areas amount automatically sets to 1 by r and 1 by z in case if application runs in single-thread mode.
+**INFO** domains amount automatically sets to 1 by r and 1 by z in case if application runs in single-thread mode.
 
 - integer `"radius": 2`
 - integer `"longitude": 4`
@@ -164,7 +164,7 @@ Figure parameters
       "radius": 128,
       "longitude": 512
     },
-    "areas_amount": {
+    "domains_amount": {
       "radius": 2,
       "longitude": 8
     }

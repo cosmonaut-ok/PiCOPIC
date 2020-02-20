@@ -10,7 +10,7 @@
 *PiCOPIC* is a successor of *[PDP3](https://github.com/cosmonaut-ok/pdp3/)* ([old repo](https://github.com/knuniv/pdp3)) project. Developed as electromagnetic particle-in-cell code for collisionless plasma simulation, PDP3 designed as single-thread code. Late versions of PDP3 are partially parallelized, but it can not be fully parallelized and can not be pupulated to large number of threads (it still effective with 2-8 threads). Such critical limitation of PDP3 was a motivation to replace the project as new fully parallel PIC code, called PiCOPIC.
 
 ## General Description
-PiCOPIC still uses same algorithms as PDP3, but separates the simulation area to numerous areas, which are fully independent from each other, except synchronization points, when edges of their currents and fields are "stitched" with overlaying.
+PiCOPIC still uses same algorithms as PDP3, but separates the simulation area to numerous domains, which are fully independent from each other, except synchronization points, when edges of their currents and fields are "stitched" with overlaying.
 
 ## Build
 
