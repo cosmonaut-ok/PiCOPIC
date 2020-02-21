@@ -2,12 +2,17 @@
 
 *PiCOPIC* - PiCOPIC Is Code (Computer/Calculator) Of Particle In Cell
 
+
 [![Gitlab Pipeline Status](https://gitlab.com/my-funny-plasma/PIC/picopic/badges/master/pipeline.svg)](https://gitlab.com/my-funny-plasma/PIC/picopic/commits/master)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+[![Language](https://img.shields.io/badge/Language-C%2B%2B-green)]
+[![Platform](https://img.shields.io/badge/platform-Linux-brightgreen)]
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## Motivation
 
-*PiCOPIC* is a successor of *[PDP3](https://github.com/cosmonaut-ok/pdp3/)* ([old repo](https://github.com/knuniv/pdp3)) project. Developed as electromagnetic particle-in-cell code for collisionless plasma simulation, PDP3 designed as single-thread code. Late versions of PDP3 are partially parallelized, but it can not be fully parallelized and can not be pupulated to large number of threads (it still effective with 2-8 threads). Such critical limitation of PDP3 was a motivation to replace the project as new fully parallel PIC code, called PiCOPIC.
+*PiCOPIC* is a successor of *[PDP3](https://github.com/knuniv/pdp3)* (and its further [incarnation](https://github.com/cosmonaut-ok/pdp3)) project. Developed as electromagnetic particle-in-cell code for collisionless plasma simulation, PDP3 designed as single-thread code. Late versions of PDP3 are partially parallelized, but it can not be fully parallelized and can not be pupulated to large number of threads (it still effective with 2-8 threads). Such critical limitation of PDP3 was a motivation to replace the project as new fully parallel PIC code, called PiCOPIC.
 
 ## General Description
 PiCOPIC still uses same algorithms as PDP3, but separates the simulation area to numerous domains, which are fully independent from each other, except synchronization points, when edges of their currents and fields are "stitched" with overlaying.
