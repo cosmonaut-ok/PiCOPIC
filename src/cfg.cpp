@@ -149,9 +149,10 @@ void Cfg::init_particles()
     p_s.name = (char*)o["name"].get<string>().c_str();
     p_s.mass = (int)o["mass"].get<double>();
     p_s.charge = (int)o["charge"].get<double>();
-    // p_s.macro_amount = o["macro_amount"].get<double>();
-    p_s.left_density = o["density"].get<object>()["left"].get<double>();
-    p_s.right_density = o["density"].get<object>()["right"].get<double>();
+    // p_s.left_density = o["density"].get<object>()["left"].get<double>();
+    // p_s.right_density = o["density"].get<object>()["right"].get<double>();
+    p_s.left_density = o["density"].get<double>(); // TODO: density profile still not supported, but planned
+    p_s.right_density = o["density"].get<double>(); // TODO: density profile still not supported, but planned
     p_s.temperature = o["temperature"].get<double>();
 
     particle_species.push_back(p_s);
