@@ -32,16 +32,14 @@
       "name": "electrons",
       "charge": -1,
       "mass": 1,
-      "density": 1e17
-      },
+      "density": 1e17,
       "temperature": 1
     },
     {
       "name": "ions",
       "charge": 1,
       "mass": 1836,
-      "density": 1e17
-      },
+      "density": 1e17,
       "temperature": 0.1
     }
   ],
