@@ -5,10 +5,8 @@
 
 [![Gitlab Pipeline Status](https://gitlab.com/my-funny-plasma/PIC/picopic/badges/master/pipeline.svg)](https://gitlab.com/my-funny-plasma/PIC/picopic/commits/master)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
-[![Language](https://img.shields.io/badge/Language-C%2B%2B-green)]
-[![Platform](https://img.shields.io/badge/platform-Linux-brightgreen)]
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[Language](https://img.shields.io/badge/Language-C%2B%2B-green)
+[Platform](https://img.shields.io/badge/platform-Linux-brightgreen)
 
 ## Motivation
 
