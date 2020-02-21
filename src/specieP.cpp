@@ -246,7 +246,42 @@ void SpecieP::rectangular_centered_placement (unsigned int int_cell_number,
 {
   //! macroparticles spatial placement
   //! for "centered" case
-  LOG_CRIT("rectangular_centered_placement still not implemented", 1);
+
+  double dr = geometry->r_cell_size;
+  double dz = geometry->z_cell_size;
+  double r_cells = (ext_cell_number - int_cell_number);
+  double z_cells = (right_cell_number - left_cell_number);
+
+  // decrease size at r=r and z=z walls
+  // this caused by particles formfactor
+  if (geometry->walls[2]) r_cells -= 1;
+  if (geometry->walls[3]) z_cells -= 1;
+
+  unsigned int macro_per_cell = floor(macro_amount / (r_cells * z_cells));
+
+  for (unsigned int rc = 0; rc < r_cells; ++rc)
+    for (unsigned int zc = 0; zc < z_cells; ++zc)
+    {
+      unsigned int macro_counter = 0;
+      while (macro_counter < macro_per_cell)
+      {
+        double r_place = dr * rc + MNZL;
+        double z_place = dz * zc + MNZL;
+
+        vector<double> *n = new vector<double>(13, 0);
+
+        P_POS_R((*n)) = r_place;
+        P_POS_Z((*n)) = z_place;
+
+        P_POS_R((*n)) += int_cell_number * dr;
+        P_POS_R((*n)) += dr / 2.;
+        P_POS_Z((*n)) += left_cell_number * dz; // shift by z to respect geometry with domains
+        P_POS_Z((*n)) += dz / 2.;
+
+        particles.push_back(n);
+        ++macro_counter;
+      }
+    }
 }
 
 void SpecieP::set_mass_charges (unsigned int int_cell_number,

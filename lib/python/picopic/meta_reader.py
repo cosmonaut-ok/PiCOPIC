@@ -76,8 +76,8 @@ class MetaReader:
 
         self.species = []
         for i in cfg['particles']:
-            pp = SpecieP(i['name'], 1e6, i['density']['left'],
-                         i['density']['right'], i['temperature'],
+            pp = SpecieP(i['name'], 1e6, i['density'],
+                         i['density'], i['temperature'],
                          i['charge'], i['mass'])
             self.species.append(pp)
 
