@@ -167,12 +167,6 @@ void BeamP::reflect ()
   {
     double pos_r = P_POS_R((**p)) - r_shift;
 
-    if (pos_r > radius_wall && geometry->walls[2])
-    {
-      P_POS_R((**p)) = radius_wallX2 - pos_r + r_shift;
-      P_VEL_R((**p)) = - P_VEL_R((**p));
-    }
-
     if (pos_r < half_dr && geometry->walls[0])
     {
       P_POS_R((**p)) = dr - pos_r + r_shift;
