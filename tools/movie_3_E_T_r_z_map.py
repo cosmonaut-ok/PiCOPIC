@@ -61,24 +61,24 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
             if (probe.shape == 'rec') and (probe.size[0] <= frame_size[0]) and (probe.size[1] <= frame_size[1]) and(probe.size[2] >= frame_size[2]) and(probe.size[3] >= frame_size[3]):
                 frame_src_size = probe.size
 
+    r_scale = (frame_size[2] - frame_size[0]) / reader.meta.geometry_grid[0]
+    z_scale = (frame_size[3] - frame_size[1]) / reader.meta.geometry_grid[1]
     # define plot builder
     plot = PlotBuilder(frame_size[3] - frame_size[1],
                        frame_size[2] - frame_size[0],
                        fig_color=reader.meta.figure_color,
-                       fig_width=9, # reader.meta.figure_width,
-                       fig_height=9.2, # reader.meta.figure_height,
-                       fig_dpi=reader.meta.figure_dpi + 10,
+                       fig_width=reader.meta.figure_width,
+                       fig_height=reader.meta.figure_height,
+                       fig_dpi=reader.meta.figure_dpi,
                        font_family=reader.meta.figure_font_family,
                        font_name=reader.meta.figure_font_name,
-                       font_size=10, # reader.meta.figure_font_size,
-
-                       x_ticklabel_start=reader.meta.geometry_size[1] / reader.meta.geometry_grid[1] * frame_size[1],
-                       y_ticklabel_start=reader.meta.geometry_size[0] / reader.meta.geometry_grid[0] * frame_size[0],
-                       x_ticklabel_end=reader.meta.geometry_size[1] / reader.meta.geometry_grid[1] * frame_size[3],
-                       y_ticklabel_end=reader.meta.geometry_size[0] / reader.meta.geometry_grid[0] * frame_size[2],
-                       number_x_ticks=20, number_y_ticks=10, number_cbar_ticks=3,
+                       font_size=reader.meta.figure_font_size,
+                       x_ticklabel_end=reader.meta.geometry_size[1] * z_scale,
+                       y_ticklabel_end=reader.meta.geometry_size[0] * r_scale,
                        tickbox=True, grid=use_grid, is_invert_y_axe=False,
-                       aspect='equal', image_interpolation='bicubic')
+                       aspect='equal', image_interpolation=plot_image_interpolation,
+                       guess_number_ticks = 20)
+
 
     # add subplots
     plot.add_subplot_cartesian_2d(e_r_plot_name, 312, x_axe_label=x_axis_label, y_axe_label=y_axis_label)
