@@ -39,8 +39,13 @@ class PlainReader (Reader):
     def __init__(self, path, use_cache=False, verbose=False):
         self.__data_set_ranges__ = {}
         config_json = {}
-        with open(join(path, 'metadata.json')) as json_file:
-            config_json = json.loads(json_file.read())
+        if os.path.isfile(path):
+            with open(path) as json_file:
+                config_json = json.loads(json_file.read())
+                use_cache=False
+        else:
+            with open(join(path, 'metadata.json')) as json_file:
+                config_json = json.loads(json_file.read())
 
         super(PlainReader, self).__init__(path, config_json, use_cache, verbose)
 

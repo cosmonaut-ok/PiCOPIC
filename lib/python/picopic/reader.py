@@ -42,7 +42,10 @@ class Reader:
         self.meta = MetaReader(config_json)
         self.__verbose__ = verbose
         self.__use_cache__ = use_cache
-        self.__tiny_cache__ = TinyCache(join(self.meta.config_path, '.cache'))
+        if use_cache:
+            self.__tiny_cache__ = TinyCache(join(self.meta.config_path, '.cache'))
+        else:
+            self.__tiny_cache__ = None
 
 
     def __get_path__(self, p_component, p_type, shape):

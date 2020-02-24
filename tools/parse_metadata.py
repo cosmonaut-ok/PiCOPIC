@@ -47,6 +47,8 @@ def wake_length(density, beam_velocity):
 
 def phys_info(properties_path):
     # set reader
+    if os.path.isfile(properties_path):
+        reader = PlainReader(path = properties_path, use_cache=False, verbose=False)
     if os.path.isfile(os.path.join(properties_path, "metadata.json")):
         reader = PlainReader(path = properties_path, use_cache=False, verbose=False)
     elif os.path.isfile(os.path.join(properties_path, "data.h5")):
