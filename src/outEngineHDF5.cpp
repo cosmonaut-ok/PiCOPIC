@@ -75,6 +75,22 @@ OutEngineHDF5::OutEngineHDF5 (string a_path, string a_subpath, unsigned int a_sh
 
 void OutEngineHDF5::write_rec(string a_name, Grid<double> data)
 {
+  // FIXME: workaround: set stack size to required value
+  unsigned int size_x = size[2] - size[0];
+  unsigned int size_y = size[3] - size[1];
+
+  const rlim_t kStackSize = size_x * size_y * sizeof(double) * 1024;
+  struct rlimit rl;
+  int result;
+
+  result = getrlimit(RLIMIT_STACK, &rl);
+  if (result == 0)
+    if (rl.rlim_cur < kStackSize)
+    {
+      rl.rlim_cur = kStackSize;
+      result = setrlimit(RLIMIT_STACK, &rl);
+    };
+
   try
   {
     Exception::dontPrint();
@@ -88,9 +104,7 @@ void OutEngineHDF5::write_rec(string a_name, Grid<double> data)
     DSetCreatPropList plist;
     plist.setFillValue(PredType::NATIVE_INT, &fillvalue);
 
-    // Create dataspace for the dataset in the file.
-    unsigned int size_x = size[2] - size[0];
-    unsigned int size_y = size[3] - size[1];
+    // Create dataspace for the dataset in the file
     hsize_t fdim[] = {size_x, size_y};
     DataSpace fspace( 2, fdim );
 
@@ -99,9 +113,9 @@ void OutEngineHDF5::write_rec(string a_name, Grid<double> data)
                        PredType::NATIVE_DOUBLE, fspace, plist));
 
     double tmparr[size_x][size_y];
-    for (int i = size[0]; i < size[2]; ++i)
-      for (int j = size[1]; j < size[3]; ++j)
-        tmparr[i-size[0]][j-size[1]] = data(i, j);
+    for (unsigned int i = 0; i < size_x; ++i)
+      for (unsigned int j = 0; j < size_y; ++j)
+        tmparr[i][j] = data(i+size[0], j+size[1]);
 
     dataset.write(tmparr, PredType::NATIVE_DOUBLE);
 
