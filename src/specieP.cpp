@@ -47,9 +47,6 @@ SpecieP::SpecieP (unsigned int p_id,
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
-  if (geometry->walls[2]) r_size -= geometry->r_cell_size;
-  if (geometry->walls[3]) z_size -= geometry->z_cell_size;
-
   macro_amount = lib::nearest_divide(p_macro_amount, r_size / dr * z_size / dz);
 #else
   macro_amount = p_macro_amount;
@@ -189,54 +186,36 @@ void SpecieP::rectangular_regular_placement (unsigned int int_cell_number,
 
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
-  // double dn = density[1] - density[0];
-  // double dl = density[0]; // dl is for "density left"
 
   double r_size = (ext_cell_number - int_cell_number) * dr;
   double z_size = (right_cell_number - left_cell_number) * dz;
+
+  double r_macro = lib::sq_rt(macro_amount * r_size / z_size);
+  double z_macro = lib::sq_rt(macro_amount * z_size / r_size);
+
+  double r_macro_interval = r_size / r_macro;
+  double z_macro_interval = z_size / z_macro;
 
   // decrease size at r=r and z=z walls
   // this caused by particles formfactor
   if (geometry->walls[2]) r_size -= dr;
   if (geometry->walls[3]) z_size -= dz;
 
-  // +dr and +dz because, we counting particles from "0" to "r_size".
-  // So, there are "plus 1" interval, related to particles.
-  double macro_distance = lib::sq_rt((r_size + dr) * (z_size + dz) / macro_amount);
-  // count macroparticles by r and z
-  double r_macro_count = 0;
-  double z_macro_count = 0;
-
-  unsigned int macro_count = 0;
-  while (true)
-  {
-    double r_place = r_macro_count * macro_distance + MNZL;
-    double z_place = z_macro_count * macro_distance + MNZL;
-
-    if (z_place > z_size) // FIXME: some f*cking magic. Should be z_size - macro_distance
-      break;
-
-    if (r_place > r_size - macro_distance)
+  for (double i = MNZL; i <= r_size - r_macro_interval; i += r_macro_interval)
+    for (double j = MNZL; j <= z_size - z_macro_interval; j += z_macro_interval)
     {
-      r_macro_count = 0;
-      ++z_macro_count;
+      vector<double> *n = new vector<double>(13, 0);
+
+        P_POS_R((*n)) = i;
+        P_POS_Z((*n)) = j;
+
+      P_POS_R((*n)) += int_cell_number * dr;
+      P_POS_R((*n)) += dr / 2.;
+      P_POS_Z((*n)) += left_cell_number * dz; // shift by z to respect geometry with domains
+      P_POS_Z((*n)) += dz / 2.;
+
+      particles.push_back(n);
     }
-    else
-      ++r_macro_count;
-    ++macro_count;
-
-    vector<double> *n = new vector<double>(13, 0);
-
-    P_POS_R((*n)) = r_place;
-    P_POS_Z((*n)) = z_place;
-
-    P_POS_R((*n)) += int_cell_number * dr;
-    P_POS_R((*n)) += dr / 2.;
-    P_POS_Z((*n)) += left_cell_number * dz; // shift by z to respect geometry with domains
-    P_POS_Z((*n)) += dz / 2.;
-
-    particles.push_back(n);
-  }
 }
 
 void SpecieP::rectangular_centered_placement (unsigned int int_cell_number,
