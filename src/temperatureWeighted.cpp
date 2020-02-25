@@ -23,173 +23,34 @@ void TemperatureWeighted::weight_temperature_cylindrical(string specie)
     if (specie.compare((**ps).name) == 0)
       for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
       {
-        double dr = geometry->r_cell_size;
-        double dz = geometry->z_cell_size;
-        double r1, r2, r3; // temp variables for calculation
-        double dz1, dz2; // temp var.: width of k and k + 1 cell
+        double p_vel_r = P_MASS((**i)) * P_VEL_R((**i));
+        double p_vel_phi = P_MASS((**i)) * P_VEL_PHI((**i));
+        double p_vel_z = P_MASS((**i)) * P_VEL_Z((**i));
+        double p_vel_full = lib::sq_rt(
+          pow(p_vel_r, 2)
+          + pow(p_vel_phi, 2)
+          + pow(p_vel_z, 2)
+          );
 
-        double v_0 = 0; // charge temperature Q/V, V - volume of particle
-        double v_1 = 0; // volume of [i][k] cell
-        double v_2 = 0; // volume of [i + 1][k] cell
-        double value = 0;
+        weight_cylindrical<double>(geometry, &vel_r,
+                                   P_POS_R((**i)),
+                                   P_POS_Z((**i)),
+                                   p_vel_r);
 
-        // finding number of i and k cell. example: dr = 0.5; r = 0.4; i =0
-        unsigned int r_i = CELL_NUMBER(P_POS_R((**i)), dr);
-        unsigned int z_k = CELL_NUMBER(P_POS_Z((**i)), dz);
-        unsigned int r_i_shift = r_i - geometry->bottom_r_grid_number;
-        unsigned int z_k_shift = z_k - geometry->left_z_grid_number;
+        weight_cylindrical<double>(geometry, &vel_phi,
+                                   P_POS_R((**i)),
+                                   P_POS_Z((**i)),
+                                   p_vel_phi);
 
-        double p_vel_r = P_VEL_R((**i));
-        double p_vel_phi = P_VEL_PHI((**i));
-        double p_vel_z = P_VEL_Z((**i));
+        weight_cylindrical<double>(geometry, &vel_z,
+                                   P_POS_R((**i)),
+                                   P_POS_Z((**i)),
+                                   p_vel_z);
 
-        double velocity = lib::sq_rt(pow(p_vel_r, 2) + pow(p_vel_phi, 2) + pow(p_vel_z, 2));
-
-        double ro_vel;
-        double ro_vel_r;
-        double ro_vel_phi;
-        double ro_vel_z;
-        double ro_p;
-
-        if (P_POS_R((**i)) > dr)
-        {
-          r1 =  P_POS_R((**i)) - 0.5 * dr;
-          r2 = (r_i + 0.5) * dr;
-          r3 = P_POS_R((**i)) + 0.5 * dr;
-          v_0 = 2. * PI * dz * dr * P_POS_R((**i));
-
-          ro_vel_r = P_MASS((**i)) * p_vel_r / v_0;
-          ro_vel_phi = P_MASS((**i)) * p_vel_phi / v_0;
-          ro_vel_z = P_MASS((**i)) * p_vel_z / v_0;
-          ro_vel = P_MASS((**i)) * velocity / v_0;
-          ro_p = P_MASS((**i)) / (**ps).mass / v_0;
-
-          v_1 = CELL_VOLUME(r_i, dr, dz);
-          v_2 = CELL_VOLUME(r_i + 1, dr, dz);
-          dz1 = (z_k + 0.5) * dz - (P_POS_Z((**i)) - 0.5 * dz);
-          dz2 = (P_POS_Z((**i)) + 0.5 * dz) - (z_k + 0.5) * dz;
-
-          // weighting in ro[i][k] cell
-          value = CYL_RNG_VOL(dz1, r1, r2) / v_1;
-          vel_r.inc(r_i_shift, z_k_shift, ro_vel_r * value);
-          vel_phi.inc(r_i_shift, z_k_shift, ro_vel_phi * value);
-          vel_z.inc(r_i_shift, z_k_shift, ro_vel_z * value);
-          vel_full.inc(r_i_shift, z_k_shift, ro_vel * value);
-
-          // weighting in ro[i + 1][k] cell
-          value = CYL_RNG_VOL(dz1, r2, r3) / v_2;
-          vel_r.inc(r_i_shift + 1, z_k_shift, ro_vel_r * value);
-          vel_phi.inc(r_i_shift + 1, z_k_shift, ro_vel_phi * value);
-          vel_z.inc(r_i_shift + 1, z_k_shift, ro_vel_z * value);
-          vel_full.inc(r_i_shift + 1, z_k_shift, ro_vel * value);
-
-          // weighting in ro[i][k + 1] cell
-          value = CYL_RNG_VOL(dz2, r1, r2) / v_1;
-          vel_r.inc(r_i_shift, z_k_shift + 1, ro_vel_r * value);
-          vel_phi.inc(r_i_shift, z_k_shift + 1, ro_vel_phi * value);
-          vel_z.inc(r_i_shift, z_k_shift + 1, ro_vel_z * value);
-          vel_full.inc(r_i_shift, z_k_shift + 1, ro_vel * value);
-
-          // weighting in ro[i + 1][k + 1] cell
-          value = CYL_RNG_VOL(dz2, r2, r3) / v_2;
-          vel_r.inc(r_i_shift + 1, z_k_shift + 1, ro_vel_r * value);
-          vel_phi.inc(r_i_shift + 1, z_k_shift + 1, ro_vel_phi * value);
-          vel_z.inc(r_i_shift + 1, z_k_shift + 1, ro_vel_z * value);
-          vel_full.inc(r_i_shift + 1, z_k_shift + 1, ro_vel * value);
-        }
-        else if (P_POS_R((**i)) <= dr / 2.)
-        {
-          r_i = 0;
-          r1 =  0.;
-          r2 = (r_i + 0.5) * dr;
-          r3 = P_POS_R((**i)) + 0.5 * dr;
-          dz1 = (z_k + 0.5) * dz - (P_POS_Z((**i)) - 0.5 * dz);
-          dz2 = (P_POS_Z((**i)) + 0.5 * dz) - (z_k + 0.5) * dz;
-          v_0 = PI * dz * (2. * P_POS_R((**i)) * P_POS_R((**i)) + dr * dr / 2.);
-
-          ro_vel_r = P_MASS((**i)) * p_vel_r / v_0;
-          ro_vel_phi = P_MASS((**i)) * p_vel_phi / v_0;
-          ro_vel_z = P_MASS((**i)) * p_vel_z / v_0;
-          ro_vel = P_MASS((**i)) * velocity / v_0;
-          ro_p = P_MASS((**i)) / (**ps).mass / v_0;
-
-          v_1 = CYL_VOL(dz, dr);
-          v_2 = CELL_VOLUME(r_i + 1, dr, dz);
-
-          // weighting in ro[i][k] cell
-          value = PI * dz1 * (dr * dr / 2. - P_POS_R((**i)) * dr + P_POS_R((**i)) * P_POS_R((**i))) / v_1;
-          vel_r.inc(r_i_shift, z_k_shift, ro_vel_r * value);
-          vel_phi.inc(r_i_shift, z_k_shift, ro_vel_phi * value);
-          vel_z.inc(r_i_shift, z_k_shift, ro_vel_z * value);
-          vel_full.inc(r_i_shift, z_k_shift, ro_vel * value);
-
-          // weighting in ro[i + 1][k] cell
-          value = CYL_RNG_VOL(dz1, r2, r3) / v_2;
-          vel_r.inc(r_i_shift + 1, z_k_shift, ro_vel_r * value);
-          vel_phi.inc(r_i_shift + 1, z_k_shift, ro_vel_phi * value);
-          vel_z.inc(r_i_shift + 1, z_k_shift, ro_vel_z * value);
-          vel_full.inc(r_i_shift + 1, z_k_shift, ro_vel * value);
-
-          // weighting in ro[i][k + 1] cell
-          value = PI * dz2 * (dr * dr / 2. - P_POS_R((**i)) * dr + P_POS_R((**i)) * P_POS_R((**i))) / v_1;
-          vel_r.inc(r_i_shift, z_k_shift + 1, ro_vel_r * value);
-          vel_phi.inc(r_i_shift, z_k_shift + 1, ro_vel_phi * value);
-          vel_z.inc(r_i_shift, z_k_shift + 1, ro_vel_z * value);
-          vel_full.inc(r_i_shift, z_k_shift + 1, ro_vel * value);
-
-          // weighting in ro[i + 1][k + 1] cell
-          value = CYL_RNG_VOL(dz2, r2, r3) / v_2;
-          vel_r.inc(r_i_shift + 1, z_k_shift + 1, ro_vel_r * value);
-          vel_phi.inc(r_i_shift + 1, z_k_shift + 1, ro_vel_phi * value);
-          vel_z.inc(r_i_shift + 1, z_k_shift + 1, ro_vel_z * value);
-          vel_full.inc(r_i_shift + 1, z_k_shift + 1, ro_vel * value);
-        }
-        else
-        {
-          r1 = P_POS_R((**i)) - 0.5 * dr;
-          r2 = (r_i + 0.5) * dr;
-          r3 = P_POS_R((**i)) + 0.5 * dr;
-          dz1 = (z_k + 0.5) * dz - (P_POS_Z((**i)) - 0.5 * dz);
-          dz2 = (P_POS_Z((**i)) + 0.5 * dz) - (z_k + 0.5) * dz;
-          v_0 = 2. * PI * dz * dr * P_POS_R((**i));
-
-          ro_vel_r = P_MASS((**i)) * p_vel_r / v_0;
-          ro_vel_phi = P_MASS((**i)) * p_vel_phi / v_0;
-          ro_vel_z = P_MASS((**i)) * p_vel_z / v_0;
-          ro_vel = P_MASS((**i)) * velocity / v_0;
-          ro_p = P_MASS((**i)) / (**ps).mass / v_0;
-
-          v_1 = CYL_VOL(dz, dr);
-          v_2 = CELL_VOLUME(r_i + 1, dr, dz);
-
-          // weighting in ro[i][k] cell
-          value = CYL_RNG_VOL(dz1, r1, r2) / v_1;
-          vel_r.inc(r_i_shift, z_k_shift, ro_vel_r * value);
-          vel_phi.inc(r_i_shift, z_k_shift, ro_vel_phi * value);
-          vel_z.inc(r_i_shift, z_k_shift, ro_vel_z * value);
-          vel_full.inc(r_i_shift, z_k_shift, ro_vel * value);
-
-          // weighting in ro[i + 1][k] cell
-          value = CYL_RNG_VOL(dz1, r2, r3) / v_2;
-          vel_r.inc(r_i_shift + 1, z_k_shift, ro_vel_r * value);
-          vel_phi.inc(r_i_shift + 1, z_k_shift, ro_vel_phi * value);
-          vel_z.inc(r_i_shift + 1, z_k_shift, ro_vel_z * value);
-          vel_full.inc(r_i_shift + 1, z_k_shift, ro_vel * value);
-
-          // weighting in ro[i][k + 1] cell
-          value = CYL_RNG_VOL(dz2, r1, r2) / v_1;
-          vel_r.inc(r_i_shift, z_k_shift + 1, ro_vel_r * value);
-          vel_phi.inc(r_i_shift, z_k_shift + 1, ro_vel_phi * value);
-          vel_z.inc(r_i_shift, z_k_shift + 1, ro_vel_z * value);
-          vel_full.inc(r_i_shift, z_k_shift + 1, ro_vel * value);
-
-          // weighting in ro[i + 1][k + 1] cell
-          value = CYL_RNG_VOL(dz2, r2, r3) / v_2;
-          vel_r.inc(r_i_shift + 1, z_k_shift + 1, ro_vel_r * value);
-          vel_phi.inc(r_i_shift + 1, z_k_shift + 1, ro_vel_phi * value);
-          vel_z.inc(r_i_shift + 1, z_k_shift + 1, ro_vel_z * value);
-          vel_full.inc(r_i_shift + 1, z_k_shift + 1, ro_vel * value);
-        }
+        weight_cylindrical<double>(geometry, &vel_full,
+                                   P_POS_R((**i)),
+                                   P_POS_Z((**i)),
+                                   p_vel_full);
       }
 }
 

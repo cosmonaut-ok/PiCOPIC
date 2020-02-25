@@ -19,6 +19,7 @@
 
 #include "geometry.hpp"
 #include "grid.hpp"
+#include "weighter.hpp"
 #include "specieP.hpp"
 
 class Density
