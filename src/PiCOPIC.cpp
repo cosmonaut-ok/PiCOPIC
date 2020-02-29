@@ -140,17 +140,26 @@ void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_glob
 
                                if (r_cell >= geometry_global->r_grid_amount)
                                {
-                                 LOG_ERR("Particle's r-position is more, than geometry r-size: "
-                                         << geometry_global->r_grid_amount
-                                         << ". Position is: ["
-                                         << P_POS_R((*o)) << ", "
-                                         << P_POS_Z((*o)) << "]. Removing");
+				 if ((**ps).id >= BEAM_ID_START)
+                                 {
+                                   LOG_DBG("Beam particle is out of simulation domain: ["
+                                           << P_POS_R((*o)) << ", "
+                                           << P_POS_Z((*o)) << "]. Removing");
+                                 }
+				 else
+				 {
+                                   LOG_ERR("Particle's r-position is more, than geometry r-size: "
+                                           << geometry_global->r_grid_amount
+                                           << ". Position is: ["
+                                           << P_POS_R((*o)) << ", "
+                                           << P_POS_Z((*o)) << "]. Removing");
+				 }
                                  ++r_c;
                                  res = true;
                                }
 
                                // remove out-of-simulation particles
-                               if (z_cell >= geometry_global->z_grid_amount)
+                               else if (z_cell >= geometry_global->z_grid_amount)
                                {
                                  if ((**ps).id >= BEAM_ID_START)
                                  {
