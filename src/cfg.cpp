@@ -94,6 +94,8 @@ Cfg::Cfg(const char *json_file_name)
 #elif defined(TEMP_CALC_WEIGHTING)
   o["temperature_calculation_algorithm"] = value("weighting");
 #endif
+
+  o["build_flags"] = value(CXXFLAGS);
   
   json_data.get<object>()["build_options"] = value(o);
   

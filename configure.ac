@@ -167,4 +167,6 @@ else
    AC_MSG_ERROR([Plasma velocity distribution type is not supported.])
 fi
 
+AC_DEFINE_UNQUOTED([CXXFLAGS], ["$CFLAGS_DEFAULT $CFLAGS_ADDITIONAL"], [define used C(XX)FLAGS])
+
 AC_OUTPUT(Makefile)
