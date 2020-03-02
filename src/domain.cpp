@@ -124,11 +124,11 @@ void Domain::push_particles ()
   }
 }
 
-void Domain::update_particles_coords_at_half()
+void Domain::update_particles_coords()
 {
   // ! update particles coordinates
   for (auto i = species_p.begin(); i != species_p.end(); i++)
-    (*i)->half_step_mover_cylindrical();
+    (*i)->mover_cylindrical();
 }
 
 void Domain::reflect()
@@ -159,13 +159,14 @@ void Domain::manage_beam()
       (**i).inject();
 }
 
-void Domain::weight_current_azimuthal()
-{
-  current->azimuthal_current_distribution();
-}
+// void Domain::weight_current_azimuthal()
+// {
+//   current->azimuthal_current_distribution();
+// }
 
 void Domain::weight_current()
 {
+  current->azimuthal_current_distribution();
   current->current_distribution();
 }
 

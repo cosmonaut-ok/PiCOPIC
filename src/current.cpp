@@ -430,17 +430,19 @@ void Current::azimuthal_current_distribution()
       int r_i_shift = r_i - geometry->bottom_r_grid_number;
       int z_k_shift = z_k - geometry->left_z_grid_number;
 
+      double pos_r = (P_POS_R((**i)) + P_POS_OLD_R((**i))) / 2;
+      double pos_z = (P_POS_Z((**i)) + P_POS_OLD_Z((**i))) / 2;;
       // in first cell other alg. of ro_v calc
-      if(P_POS_R((**i)) > dr)
+      if(pos_r > dr)
       {
-        r1 = P_POS_R((**i)) - 0.5 * dr;
+        r1 = pos_r - 0.5 * dr;
         r2 = (r_i + 0.5) * dr;
-        r3 = P_POS_R((**i)) + 0.5 * dr;
-        ro_v = P_CHARGE((**i)) / (2. * PI * dz * dr * P_POS_R((**i)));
+        r3 = pos_r + 0.5 * dr;
+        ro_v = P_CHARGE((**i)) / (2. * PI * dz * dr * pos_r);
         v_1 = CELL_VOLUME(r_i, dr, dz);
         v_2 = CELL_VOLUME(r_i + 1, dr, dz);
-        dz1 = (z_k + 0.5) * dz - (P_POS_Z((**i)) - 0.5 * dz);
-        dz2 = (P_POS_Z((**i)) + 0.5 * dz) - (z_k + 0.5) * dz;
+        dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
+        dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
 
         // weighting in j[i][k] cell
         rho = ro_v * CYL_RNG_VOL(dz1, r1, r2) / v_1;
@@ -468,12 +470,12 @@ void Current::azimuthal_current_distribution()
       }
       else
       {
-        r1 = P_POS_R((**i)) - 0.5 * dr;
+        r1 = pos_r - 0.5 * dr;
         r2 = (r_i + 0.5) * dr;
-        r3 = P_POS_R((**i)) + 0.5 * dr;
-        dz1 = (z_k + 0.5) * dz - (P_POS_Z((**i)) - 0.5 * dz);
-        dz2 = (P_POS_Z((**i)) + 0.5 * dz) - (z_k + 0.5) * dz;
-        ro_v = P_CHARGE((**i)) / (2. * PI * dz * dr * P_POS_R((**i)));
+        r3 = pos_r + 0.5 * dr;
+        dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
+        dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
+        ro_v = P_CHARGE((**i)) / (2. * PI * dz * dr * pos_r);
         v_1 = CYL_VOL(dz, dr);
         v_2 = CELL_VOLUME(r_i + 1, dr, dz);
 

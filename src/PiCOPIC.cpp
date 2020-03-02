@@ -586,26 +586,11 @@ int main(int argc, char **argv)
         // ! 3. Calculate velocity
         sim_domain->push_particles(); // +
         sim_domain->dump_particle_positions_to_old(); // +
-        sim_domain->update_particles_coords_at_half(); // + +reflect
+        sim_domain->update_particles_coords(); // + +reflect
         sim_domain->particles_back_position_to_rz(); // +
         sim_domain->reflect();
       }
     particles_runaway_collector(domains, geometry_global);
-
-#pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_domains; i++)
-      for (unsigned int j = 0; j < z_domains; j++)
-      {
-        Domain *sim_domain = domains(i, j);
-
-        // current distribution
-        sim_domain->weight_current_azimuthal();
-        sim_domain->update_particles_coords_at_half();
-        sim_domain->particles_back_position_to_rz();
-        sim_domain->reflect(); // +
-      }
-    particles_runaway_collector(domains, geometry_global);
-    current_overlay(domains, geometry_global);
 
 #pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_domains; i++)

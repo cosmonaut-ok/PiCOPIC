@@ -743,32 +743,14 @@ void SpecieP::hc_pusher()
   }
 }
 
-
-
-void SpecieP::half_step_mover_cylindrical()
+void SpecieP::mover_cylindrical()
 {
-  double half_dt = time->step / 2.;
-
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
-    // check if radius and longitude are correct
-    double pos_r = P_POS_R((**p));
-    double pos_phi = P_POS_PHI((**p));
-    double pos_z = P_POS_Z((**p));
-
-    // check if radius and longitude are correct
-    if (isnan(pos_r) ||
-        isinf(pos_r) != 0 ||
-        isnan(pos_z) ||
-        isinf(pos_z) != 0)
-      LOG_CRIT("(half_step_mover_cylindrical): radius[" << pos_r
-               << "] or longitude[" << pos_z
-               << "] is not valid number", 1);
-
-    P_POS_R((**p)) = pos_r + P_VEL_R((**p)) * half_dt;
+    P_POS_R((**p)) = P_POS_R((**p)) + P_VEL_R((**p)) * time->step;
     //! we use "fake" rotation component to correct position from xy to rz pane
-    P_POS_PHI((**p)) = pos_phi + P_VEL_PHI((**p)) * half_dt;
-    P_POS_Z((**p)) = pos_z + P_VEL_Z((**p)) * half_dt;
+    P_POS_PHI((**p)) = P_POS_PHI((**p)) + P_VEL_PHI((**p)) * time->step;
+    P_POS_Z((**p)) = P_POS_Z((**p)) + P_VEL_Z((**p)) * time->step;
   }
 }
 
