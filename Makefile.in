@@ -71,7 +71,6 @@ RC = wrc
 AR = ar
 
 CFLAGS ?= @CFLAGS_DEFAULT@
-CFLAGS += @EXPERIMENTAL_OPTION@
 CFLAGS += @CFLAGS_ADDITIONAL@
 
 CXXFLAGS = ${CFLAGS}
@@ -171,7 +170,7 @@ check-syntax:
 	$(CXX) $(LIBRARY_PATH) $(INCLUDE_PATH) $(CXXFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(PiCOPIC_CXX_SRCS)
 
 prepare:
-	$(MKDIR) -p $(BUILD_DIRS)
+	@$(MKDIR) -p $(BUILD_DIRS)
 
 doxygen:
 	for i in $(shell ls doc/*.svg); do convert $$i $$(dirname $$i)/$$(basename $$i .svg).png; done
