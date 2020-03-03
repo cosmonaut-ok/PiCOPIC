@@ -85,4 +85,4 @@ private:
 // #define PARTICLE_VOLUME(x,y) (PI * dz * dr * dr * 2.0 * i)
 
 //! get cell number by 'radius'
-#define CELL_NUMBER(position, dx) (int)ceil((position) / (dx)) - 1
+#define CELL_NUMBER(position, dx) (int)floor((position) / (dx))

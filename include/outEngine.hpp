@@ -23,7 +23,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h> /* floor */
 
 #include "grid.hpp"
 
