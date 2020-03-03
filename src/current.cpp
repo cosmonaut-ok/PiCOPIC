@@ -407,25 +407,20 @@ void Current::azimuthal_current_distribution()
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
     for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
     {
-      int r_i = 0;  // number of particle i cell
-      int z_k = 0;  // number of particle k cell
-
       double r1, r2, r3; // temp variables for calculation
       double dz1, dz2;  // temp var.: width of k and k + 1 cell
 
       double ro_v = 0; // charge density Q / V, V - volume of particle
-      double v_1 = 0; // volume of [i][k] cell
-      double v_2 = 0; // volume of [i + 1][k] cell
-      // double ro_v_2=0; // charge density in i + 1 cell
-
       double rho = 0; // charge density in cell
       double wj; // j_phi in cell
-      // double * * temp = this_j->get_j_phi();
 
       // finding number of i and k cell. example: dr = 0.5; r = 0.4; i =0
-      r_i = CELL_NUMBER(P_POS_R((**i)), dr);
-      z_k = CELL_NUMBER(P_POS_Z((**i)), dz);
+      int r_i = CELL_NUMBER(P_POS_R((**i)), dr); // number of particle i cell
+      int z_k = CELL_NUMBER(P_POS_Z((**i)), dz);
 
+      double v_1 = CELL_VOLUME(r_i, dr, dz);  // volume of [i][k] cell
+      double v_2 = CELL_VOLUME(r_i + 1, dr, dz);  // volume of [i + 1][k] cell
+      
       //! shift also to take overlaying into account
       int r_i_shift = r_i - geometry->bottom_r_grid_number;
       int z_k_shift = z_k - geometry->left_z_grid_number;
@@ -439,8 +434,6 @@ void Current::azimuthal_current_distribution()
         r2 = (r_i + 0.5) * dr;
         r3 = pos_r + 0.5 * dr;
         ro_v = P_CHARGE((**i)) / (2. * PI * dz * dr * pos_r);
-        v_1 = CELL_VOLUME(r_i, dr, dz);
-        v_2 = CELL_VOLUME(r_i + 1, dr, dz);
         dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
         dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
 
@@ -476,8 +469,6 @@ void Current::azimuthal_current_distribution()
         dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
         dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
         ro_v = P_CHARGE((**i)) / (2. * PI * dz * dr * pos_r);
-        v_1 = CYL_VOL(dz, dr);
-        v_2 = CELL_VOLUME(r_i + 1, dr, dz);
 
         // weighting in j[i][k] cell
         rho = ro_v * CYL_RNG_VOL(dz1, r1, r2) / v_1;

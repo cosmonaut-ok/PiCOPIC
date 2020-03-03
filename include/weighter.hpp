@@ -31,9 +31,7 @@ void weight_cylindrical(Geometry *geometry, Grid<T> *grid, double pos_r, double 
   T r1, r2, r3; // radiuses
   T dz1, dz2; // longitudes
 
-  T rho_w_value;
-  T v_0, v_1, v_2; // volumes
-  T value;
+  T rho_w_value, v_0, value;
 
   // finding number of i and k cell. example: dr = 0.5; r = 0.4; i =0
   unsigned int r_i = CELL_NUMBER(pos_r, dr);
@@ -41,17 +39,18 @@ void weight_cylindrical(Geometry *geometry, Grid<T> *grid, double pos_r, double 
   unsigned int r_i_shift = r_i - bottom_shift;
   unsigned int z_k_shift = z_k - left_shift;
 
+  // volumes
+  T v_1 = CELL_VOLUME(r_i, dr, dz);
+  T v_2 = CELL_VOLUME(r_i + 1, dr, dz);
+
   if (pos_r > dr)
   {
     r1 =  pos_r - 0.5 * dr;
     r2 = (r_i + 0.5) * dr;
     r3 = pos_r + 0.5 * dr;
     v_0 = 2. * PI * dz * dr * pos_r;
-    v_1 = CELL_VOLUME(r_i, dr, dz);
-    v_2 = CELL_VOLUME(r_i + 1, dr, dz);
     dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
     dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
-
     rho_w_value = weight_value / v_0;
 
     // weighting in ro[i][k] cell
@@ -79,9 +78,6 @@ void weight_cylindrical(Geometry *geometry, Grid<T> *grid, double pos_r, double 
     dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
     dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
     v_0 = PI * dz * (2. * pos_r * pos_r + dr * dr / 2.);
-    v_1 = CYL_VOL(dz, dr);
-    v_2 = CELL_VOLUME(r_i + 1, dr, dz);
-
     rho_w_value = weight_value / v_0;
 
     // weighting in ro[i][k] cell

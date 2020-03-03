@@ -228,18 +228,11 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   k_z = CELL_NUMBER(longitude - 0.5 * dz, dz);
   i_r_shift = i_r - geometry->bottom_r_grid_number;
   k_z_shift = k_z - geometry->left_z_grid_number;
-  // // TODO: workaround: sometimes it gives -1.
-  // // Just get 0 cell if it happence
-  // if (i_r < 0) i_r = 0;
-  // if (k_z < 0) k_z = 0;
 
-  if (radius > dr)
-    vol_1 = CELL_VOLUME(i_r, dr, dz);
-  else
-    vol_1 = CYL_VOL(dz, dr); // volume of first cell
-
-  r2 = (i_r + 0.5) * dr;
+  vol_1 = CELL_VOLUME(i_r, dr, dz);
   vol_2 = CELL_VOLUME(i_r+2, dr, dz);
+  r2 = (i_r + 0.5) * dr;
+
   dz1 = (k_z + 1.5) * dz - longitude;
   dz2 = longitude - (k_z + 0.5) * dz;
 
@@ -266,13 +259,10 @@ vector3d<double> FieldE::get_field(double radius, double longitude)
   // if (i_r < 0) i_r = 0;
   // if (k_z < 0) k_z = 0;
 
-  if(radius > dr)
-    vol_1 = CELL_VOLUME(i_r, dr, dz);
-  else
-    vol_1 = CYL_VOL(dz, dr); // volume of first cell
-
-  r2 = (i_r + 0.5) * dr;
+  vol_1 = CELL_VOLUME(i_r, dr, dz);
   vol_2 = CELL_VOLUME(i_r+2, dr, dz);
+  r2 = (i_r + 0.5) * dr;
+
   dz1 = (k_z+1)*dz-longitude;
   dz2 = longitude - k_z * dz;
 
