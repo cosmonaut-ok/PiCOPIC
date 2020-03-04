@@ -58,23 +58,23 @@ Cfg::Cfg(const char *json_file_name)
 #else
   o["ieee"] = value(true);
 #endif
-  
+
 #if defined(PLASMA_SPATIAL_CENTERED)
   o["plasma_spatial_distribution"] = value("centered");
 #elif defined(PLASMA_SPATIAL_FLAT)
   o["plasma_spatial_distribution"] = value("flat");
 #elif defined(PLASMA_SPATIAL_RANDOM)
-  o["plasma_spatial_distribution"] = value("random"); 
+  o["plasma_spatial_distribution"] = value("random");
 #elif defined(PLASMA_SPATIAL_REGULAR)
   o["plasma_spatial_distribution"] = value("regular");
 #endif
-  
+
 #if defined(PLASMA_VELOCITY_THERMAL)
   o["plasma_velocity_distribution"] = value("thermal");
 #elif defined(PLASMA_VELOCITY_EIGEN)
   o["plasma_velocity_distribution"] = value("eigen");
 #elif defined(PLASMA_VELOCITY_RECTANGULAR)
-  o["plasma_velocity_distribution"] = value("rectangular"); 
+  o["plasma_velocity_distribution"] = value("rectangular");
 #endif
 
 #if defined(PUSHER_BORIS_ADAPTIVE)
@@ -86,7 +86,13 @@ Cfg::Cfg(const char *json_file_name)
 #elif defined(PUSHER_HIGUERA_CARY)
   o["particles_pusher"] = value("higuera-cary");
   #elif defined(PUSHER_VAY)
-  o["particles_pusher"] = value("vay"); 
+  o["particles_pusher"] = value("vay");
+#endif
+
+#if defined(CCS_ZIGZAG)
+  o["charge_conservation"] = value("zigzag");
+#elif defined(CCS_VILLASENOR_BUNEMAN)
+  o["charge_conservation"] = value("villasenor-buneman");
 #endif
 
 #if defined(TEMP_CALC_COUNTING)
@@ -96,9 +102,9 @@ Cfg::Cfg(const char *json_file_name)
 #endif
 
   o["build_flags"] = value(CXXFLAGS);
-  
+
   json_data.get<object>()["build_options"] = value(o);
-  
+
   //! set amount of macroparticles
   macro_amount = json_data.get<object>()["macro_amount"].get<double>();
 
@@ -379,7 +385,14 @@ void Cfg::weight_macro_amount()
 #elif defined PUSHER_HIGUERA_CARY
   LOG_INFO("Using Higuera-Cary particles pusher");
 #else
-    LOG_CRIT("Undefined particles pusher used", 1);
+  LOG_CRIT("Undefined particles pusher used", 1);
+#endif
+
+  // message about charge conservation scheme, used in system
+#if defined(CCS_ZIGZAG)
+  LOG_INFO("Using ZigZag charge conservation scheme");
+#elif defined(CCS_VILLASENOR_BUNEMAN)
+  LOG_INFO("Using Villasenor-Buneman charge conservation scheme");
 #endif
 
   // align macroparticles amount to particle species
@@ -511,7 +524,7 @@ bool Cfg::method_limitations_check ()
 	       << geometry->r_size << " x " << geometry->z_size
 	       << " m.''. Should be less, than ``"
 	       <<  debye_length * full_macro_amount * debye_multiplicator
-	       << " m.''", 1);    
+	       << " m.''", 1);
     }
   }
 

@@ -18,32 +18,32 @@
 #pragma once
 
 #include <vector>
+#include <algorithm>
 
 #include "geometry.hpp"
 #include "grid3d.hpp"
 #include "timeSim.hpp"
 #include "specieP.hpp"
+#include "current.hpp"
+
+using namespace std;
 
 class SpecieP;
 class Geometry;
 
-class Current
+#define RELAY_POINT(i1, i2, x1, x2, dx)                           \
+  min( min((i1) * (dx), (i2) * (dx)) + (dx),                      \
+       max( max((i1) * (dx), (i2) * (dx)), ((x1) + (x2)) / 2.));
+
+class CurrentZigZag : public Current
 {
 public:
-  TimeSim *time;
-  Geometry *geometry;
-  Grid3D<double> current;
-  vector<SpecieP *> species_p;
+  CurrentZigZag() {};
+  CurrentZigZag(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Current(geom, t, species) {};
+  ~CurrentZigZag() {};
 
-  Current() {};
-  Current(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : geometry(geom), time(t)
-  {
-    current = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-    species_p = species;
+  void current_distribution();
 
-    current = 0;
-    current.overlay_set(0);
-  };
+private:
 
-  virtual void current_distribution() = 0;
 };

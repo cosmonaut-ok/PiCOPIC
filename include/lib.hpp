@@ -88,7 +88,7 @@ namespace lib
       for (unsigned int j = 1; j < a.y_size; j++)
         b.set(0, j, (a(0, j-1) + a(0, j)) / 2);
     }
-  };
+  }
 
   template<typename T>
   void bicubic_interpolation (T a, T b, unsigned int x_size, unsigned int y_size)
@@ -153,5 +153,5 @@ namespace lib
       b.set(i, a.y_size, 0);
       b.set(i, a.y_size, 0);
     }
-  };
+  }
 }

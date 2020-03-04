@@ -203,3 +203,6 @@ hdf5-install: hdf5
 python:
 	cd $(ROOTDIR)/lib/python/picopic; \
 	python setup.py install
+
+pack-release:
+	@tar -czpf PiCOPIC_$(RELEASE).tar.gz ./PiCOPIC ./PiCOPIC.json lib/python/picopic/ tools/ doc/app/html/ doc/app/latex/refman.pdf doc/vis/html/ doc/vis/latex/refman.pdf

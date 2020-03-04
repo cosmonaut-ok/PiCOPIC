@@ -165,9 +165,13 @@ def main():
         reader = PlainReader(path = args.properties_path, use_cache=False, verbose=False)
     elif os.path.isfile(os.path.join(args.properties_path, "data.h5")):
         reader = H5Reader(path = args.properties_path, use_cache=False, verbose=False)
+    elif os.path.isfile(args.properties_path):
+        try:
+            reader = H5Reader(path = args.properties_path, use_cache=False, verbose=False)
+        except:
+            reader = PlainReader(path = args.properties_path, use_cache=False, verbose=False)
     else:
-        reader = PlainReader(path = args.properties_path, use_cache=False, verbose=False)
-        # raise EnvironmentError("There is no corresponding data/metadata files in the path " + args.properties_path + ". Can not continue.")
+        raise EnvironmentError("There is no corresponding data/metadata files in the path " + args.properties_path + ". Can not continue.")
 
     config = reader.meta.json
     if args.bo: args.subtree = False

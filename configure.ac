@@ -58,9 +58,11 @@ AC_ARG_WITH([doc-formats], [AC_HELP_STRING([--with-doc-formats], [Set list of do
 AC_ARG_WITH([pusher], [AC_HELP_STRING([--with-pusher], [Set particles pusher (supported: boris (default), vay, higuera-cary)])], [PUSHER="$withval"], [PUSHER="boris-adaptive"])
 AC_ARG_WITH([temperature-calc], [AC_HELP_STRING([--with-temperature-calc], [Set temperature calculation algorithm (supported: counting (default), weighting])], [TEMP_CALC="$withval"], [TEMP_CALC="counting"])
 
-AC_ARG_WITH([plasma-spatial-distribution], [AC_HELP_STRING([--with-plasma-spatial-distribution], [Set plasma particles spatial distribution type (supported: flat (default), random, regular, centered (not implemented) )])], [PLASMA_SPATIAL="$withval"], [PLASMA_SPATIAL="flat"])
+AC_ARG_WITH([plasma-spatial-distribution], [AC_HELP_STRING([--with-plasma-spatial-distribution], [Set plasma particles spatial distribution type (supported: flat (default), random, regular, centered)])], [PLASMA_SPATIAL="$withval"], [PLASMA_SPATIAL="flat"])
 
 AC_ARG_WITH([plasma-velocity-distribution], [AC_HELP_STRING([--with-plasma-velocity-distribution], [Set plasma particles velocity distribution (supported: thermal (default), rectangular, eigen (singular velocities))])], [PLASMA_VELOCITY="$withval"], [PLASMA_VELOCITY="thermal"])
+
+AC_ARG_WITH([current-solver], [AC_HELP_STRING([--with-current-solver], [Set charge convervation scheme of current solver (supported: villasenor-buneman (default) and zigzag)])], [CCS="$withval"], [CCS="villasenor-buneman"])
 
 
 AC_PROG_CXXCPP
@@ -159,12 +161,21 @@ fi
 # define plasma spatial distribution type
 if test x$PLASMA_VELOCITY == xthermal; then
    AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_THERMAL], [true], [Set plasma spatial distribution type to random])
-elif x$PLASMA_VELOCITY == xrectangular; then
+elif test x$PLASMA_VELOCITY == xrectangular; then
    AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_RECTANGULAR], [true], [Set plasma spatial distribution type to regular ("flat" distribution)])
-elif x$PLASMA_VELOCITY == xeigen; then
+elif test x$PLASMA_VELOCITY == xeigen; then
    AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_EIGEN], [true], [Set plasma spatial distribution type to cell-centered])
 else
    AC_MSG_ERROR([Plasma velocity distribution type is not supported.])
+fi
+
+# define charge convervation scheme
+if test x$CCS == xvillasenor-buneman; then
+   AC_DEFINE_UNQUOTED([CCS_VILLASENOR_BUNEMAN], [true], [Set plasma charge conservation scheme to Villasenor-Buneman])
+elif test x$CCS == xzigzag; then
+   AC_DEFINE_UNQUOTED([CCS_ZIGZAG], [true], [Set plasma charge conservation scheme to ZigZag])
+else
+   AC_MSG_ERROR([Plasma charge conservation scheme is not supported.])
 fi
 
 AC_DEFINE_UNQUOTED([CXXFLAGS], ["$CFLAGS_DEFAULT $CFLAGS_ADDITIONAL"], [define used C(XX)FLAGS])

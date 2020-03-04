@@ -29,7 +29,12 @@
 #include "specieP.hpp"
 #include "fieldE.hpp"
 #include "fieldH.hpp"
-#include "current.hpp"
+
+#ifdef CCS_VILLASENOR_BUNEMAN
+#include "currentVB.hpp"
+#elif CCS_ZIGZAG
+#include "currentZigZag.hpp"
+#endif
 
 #include "densityCharge.hpp"
 #include "density.hpp"

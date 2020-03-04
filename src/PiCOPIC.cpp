@@ -41,25 +41,13 @@
 #include "math/maxwellJuttner.hpp"
 
 #include "geometry.hpp"
-
 #include "grid.hpp"
-
-// #include "particles.hpp"
-
-// #include "domain.hpp"
 #include "timeSim.hpp"
-
 #include "specieP.hpp"
 #include "beamP.hpp"
-
 #include "fieldE.hpp"
 #include "specieP.hpp"
-
 #include "dataWriter.hpp"
-
-// #include "pBunch.hpp"
-
-// #include "probePlain.hpp"
 
 using namespace std;
 
@@ -138,22 +126,22 @@ void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_glob
                                  res = true;
                                }
 
-                               if (r_cell >= geometry_global->r_grid_amount)
+                               else if (r_cell >= geometry_global->r_grid_amount)
                                {
-				 if ((**ps).id >= BEAM_ID_START)
+                                 if ((**ps).id >= BEAM_ID_START)
                                  {
                                    LOG_DBG("Beam particle is out of simulation domain: ["
                                            << P_POS_R((*o)) << ", "
                                            << P_POS_Z((*o)) << "]. Removing");
                                  }
-				 else
-				 {
+                                 else
+                                 {
                                    LOG_ERR("Particle's r-position is more, than geometry r-size: "
                                            << geometry_global->r_grid_amount
                                            << ". Position is: ["
                                            << P_POS_R((*o)) << ", "
                                            << P_POS_Z((*o)) << "]. Removing");
-				 }
+                                 }
                                  ++r_c;
                                  res = true;
                                }
@@ -598,8 +586,8 @@ int main(int argc, char **argv)
       {
         Domain *sim_domain = domains(i, j);
 
-        sim_domain->weight_current();
         sim_domain->particles_back_velocity_to_rz();
+        sim_domain->weight_current();
       }
     current_overlay(domains, geometry_global);
 

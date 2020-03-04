@@ -32,7 +32,11 @@ Domain::Domain(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry
   field_e = new FieldE(&geometry, time, species_p);
   field_h = new FieldH(&geometry, time, species_p);
 
-  current = new Current(&geometry, time, species_p);
+#ifdef CCS_VILLASENOR_BUNEMAN
+  current = new CurrentVB(&geometry, time, species_p);
+#elif CCS_ZIGZAG
+  current = new CurrentZigZag(&geometry, time, species_p);
+#endif
 
 #ifdef TEMP_CALC_COUNTING
   temperature = new TemperatureCounted(&geometry, species_p);
@@ -159,14 +163,8 @@ void Domain::manage_beam()
       (**i).inject();
 }
 
-// void Domain::weight_current_azimuthal()
-// {
-//   current->azimuthal_current_distribution();
-// }
-
 void Domain::weight_current()
 {
-  current->azimuthal_current_distribution();
   current->current_distribution();
 }
 

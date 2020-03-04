@@ -27,4 +27,4 @@ lib/python/picopic/picopic.egg-info/
 *.a
 *main
 .nbrun[0-9,a-z,A-Z]*ipynb*
-data.h5
+*.h5
