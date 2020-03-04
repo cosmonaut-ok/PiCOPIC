@@ -15,19 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "current.hpp"
+#include "currentVB.hpp"
 
-Current::Current(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : geometry(geom), time(t)
-{
-  current = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  species_p = species;
-
-  current = 0;
-  current.overlay_set(0);
-}
-
-
-void Current::simple_current_distribution(double radius_new,
+void CurrentVB::simple_current_distribution(double radius_new,
                                           double longitude_new,
                                           double radius_old,
                                           double longitude_old,
@@ -180,7 +170,7 @@ void Current::simple_current_distribution(double radius_new,
   }
 }
 
-void Current::current_distribution()
+void CurrentVB::rz_current_distribution()
 {
   current.overlay_set(0);
 
@@ -396,8 +386,7 @@ void Current::current_distribution()
     }
 }
 
-void Current::azimuthal_current_distribution()
-// void Particles::azimuthal_current_distribution(Current * this_j)
+void CurrentVB::azimuthal_current_distribution()
 {
   current.overlay_set(0);
 
@@ -420,7 +409,7 @@ void Current::azimuthal_current_distribution()
 
       double v_1 = CELL_VOLUME(r_i, dr, dz);  // volume of [i][k] cell
       double v_2 = CELL_VOLUME(r_i + 1, dr, dz);  // volume of [i + 1][k] cell
-      
+
       //! shift also to take overlaying into account
       int r_i_shift = r_i - geometry->bottom_r_grid_number;
       int z_k_shift = z_k - geometry->left_z_grid_number;
@@ -497,18 +486,11 @@ void Current::azimuthal_current_distribution()
     }
 }
 
-void Current::strict_motion_distribution(double radius_new,
+void CurrentVB::strict_motion_distribution(double radius_new,
                                          double longitude_new,
                                          double radius_old,
                                          double longitude_old,
                                          double p_charge)
-// void Particles::strict_motion_weighting(Time * time1,
-//                                         Current * this_j,
-//                                         double radius_new,
-//                                         double longitude_new,
-//                                         double radius_old,
-//                                         double longitude_old,
-//                                         int p_number)
 {
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
@@ -733,4 +715,10 @@ void Current::strict_motion_distribution(double radius_new,
     break;
     }
   }
+}
+
+void CurrentVB::current_distribution()
+{
+  azimuthal_current_distribution();
+  rz_current_distribution();
 }
