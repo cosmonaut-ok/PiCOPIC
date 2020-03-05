@@ -26,11 +26,14 @@ def langmur_freq(density):
     return w_p
 
 def debye_length(density, temperature):
+    ev_k = 1.16e4
     charge_el = -1.6e-19 # coul
     mass_el = 9.1e-31 # kg
     epsilon_0 = 8.8e-12
     boltzman_const = 1.38e-23
 
+    temperature *= ev_k # convert temperature from electronvolts to Kelvins
+    print(temperature)
     l_d_tmp = epsilon_0 * boltzman_const * temperature / (density * math.pow(charge_el, 2))
     l_d = math.sqrt(l_d_tmp)
     return l_d
