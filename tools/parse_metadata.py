@@ -31,8 +31,8 @@ def debye_length(density, temperature):
     epsilon_0 = 8.8e-12
     boltzman_const = 1.38e-23
 
-    l_d = epsilon_0 * boltzman_const * temperature / (4 * math.pi * density * math.pow(charge_el, 2))
-    l_d = math.sqrt(l_d)
+    l_d_tmp = epsilon_0 * boltzman_const * temperature / (density * math.pow(charge_el, 2))
+    l_d = math.sqrt(l_d_tmp)
     return l_d
 
 def eV2kelvin(ev):
