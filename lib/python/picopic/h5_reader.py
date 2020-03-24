@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os, sys
+import os, sys, re
 
 import json
 import h5py
@@ -31,9 +31,9 @@ class H5Reader (Reader):
     '''
     ds: dataset. All information, got from single data file
     component: data component (like 'E_z')
-    frame: frame in single dataset (determined by fpds - frame-per-dataset)
-    row: row in frame (which consists of rows and columns)
-    col: column in frame
+    rec: rec in dataset
+    row: row in dataset (which consists of rows and columns)
+    col: column in dataset
     dot: dot in frame, column, or row with coords
     '''
     def __init__(self, path, use_cache=False, verbose=False):
@@ -69,115 +69,113 @@ class H5Reader (Reader):
         self.__del__()
 
 
-    def __get_ds_range__(self, p_component, p_type, shape):
-        path = self.__get_path__(p_component, p_type, shape)
+    def __ds_range__(self, p_component, p_type, shape):
+        path = self.__path__(p_component, p_type, shape)
         frange = len(self.file[path].keys())
 
         return frange
 
 
-    def get_frame(self, p_component, shape, number):
-        ''' get frame by number. Find required dataset automatically '''
+    def rec(self, p_component, shape, number):
+        '''get rectangle-shaped dataset by number'''
         p_type = 'rec'
-        path = self.__get_path__(p_component, p_type, shape)
+        path = self.__path__(p_component, p_type, shape)
         path += "/{}".format(number)
-        size = self.__frame_size__(shape)
+        size = self.__rec_size__(shape)
         if self.__verbose__:
-            sys.stdout.write("Loading data set {}/{}:{}-{}_{}-{}/{}...".format(p_component, p_type, shape[0], shape[2], shape[1], shape[3], number))
+            sys.stdout.write("Loading data set {}/{}:{}-{}_{}-{}/{}..."
+                             .format(p_component, p_type, shape[0], shape[2], shape[1], shape[3], number))
             sys.stdout.flush()
-        # self.__validate_frame__(p_component, shape, number)
-        frame = self.file[path] # [shape[0]:shape[2],shape[1]:shape[3]]
+        realnumber = re.sub("_.*$", "", number) if type(number) == str else number
+        self.__validate_rec__(p_component, shape, number)
+        rec = self.file[path]
 
         if self.__verbose__:
             sys.stdout.write('done\n')
             sys.stdout.flush()
 
-        return frame
+        return rec
 
 
-    def get_col(self, p_component, shape, number):
-        ''' get column by number. Find required dataset automatically '''
+    def col(self, p_component, z, number): # longitude and number by time
+        '''get column by number.'''
         p_type = 'col'
-        path = self.__get_path__(p_component, p_type, shape)
+        shape = [0, 0, z, 0]
+        path = self.__path__(p_component, p_type, shape)
         path += "/{}".format(number)
+        if self.__verbose__:
+            sys.stdout.write("Loading data set {}/{}/{}..."
+                             .format(p_component, p_type, shape[2], number))
+            sys.stdout.flush()
         self.__validate_col__(p_component, shape, number)
-        col = self.file[path][shape[0]:shape[2]]
+        col = self.file[path]
+        if self.__verbose__:
+            sys.stdout.write('done\n')
 
         return col
 
 
-    def get_row(self, p_component, shape, number):
-        ''' get row by number. Find required dataset automatically '''
+    def row(self, p_component, r, number): # latitude and number by time
+        '''get row by number'''
         p_type = 'row'
-        path = self.__get_path__(p_component, p_type, shape)
+        shape = [0, 0, 0, r]
+        path = self.__path__(p_component, p_type, shape)
         path += "/{}".format(number)
+        if self.__verbose__:
+            sys.stdout.write("Loading data set {}/{}/{}..."
+                             .format(p_component, p_type, shape[2], number))
+            sys.stdout.flush()
         self.__validate_row__(p_component, shape, number)
-        row = self.file[path][shape[1]:shape[3]]
+        row = self.file[path]
+        if self.__verbose__:
+            sys.stdout.write('done\n')
 
         return row
 
 
-    def get_dot(self, p_component, shape, number):
+    def dot(self, p_component, r, z, number): # latitude, longitude and number by time
         ''' get dot by number. Find required dataset automatically '''
         p_type = 'dot'
-        path = self.__get_path__(p_component, p_type, shape)
+        shape = [0, 0, z, r]
+        path = self.__path__(p_component, p_type, shape)
         path += "/{}".format(number)
         self.__validate_dot__(p_component, shape, number)
+        if self.__verbose__:
+            sys.stdout.write("Loading data set {}/{}_{}..."
+                             .format(p_component, p_type, r, z))
+            sys.stdout.flush()
         dot = self.file[path][0]
+        if self.__verbose__:
+            sys.stdout.write('done\n')
 
         return dot
 
 
-    def get_frame_range(self, p_component, shape, from_frame=0, to_frame=None):
-        ''' get frame range. Find, using single get_frame method'''
-        fsize = self.__frame_size__(shape)
-        if to_frame == None:
-            to_frame = self.__get_ds_range__(p_component, 'rec', shape)
-        frange = to_frame - from_frame
-        frames = np.zeros((frange, fsize[0], fsize[1]))
-
-        for i in range(from_frame, to_frame):
-            self.__validate_frame__(p_component, shape, i)
-            frames[i-from_frame] = self.get_frame(p_component, shape, i)
-
-        return(frames)
-
-    def get_frame_range_col(self, p_component, number, from_frame=0, to_frame=None):
-        ''' get column range. Find, using single get_frame method'''
-        csize = self.meta.geometry_grid[0]
-        if to_frame == None:
-            to_frame = self.__get_ds_range__(p_component, 'col', [0, 0, 0, number])
-        frange = to_frame - from_frame
-        frames = np.zeros((frange, csize))
-
-        for i in range(from_frame, to_frame):
-            frames[i-from_frame] = self.get_col(p_component, [0, 0, csize, number], i)
-
-        return(frames)
+    def col_rec(self, p_component, z, rec_shape, number):
+        '''get column from rectangle'''
+        return self.rec(p_component, rec_shape, number)[:,z]
 
 
-    def get_frame_range_row(self, p_component, number, from_frame=0, to_frame=None):
-        ''' get row range. Find, using single get_frame method'''
-        rsize = self.meta.geometry_grid[1]
-        if to_frame == None:
-            to_frame = self.__get_ds_range__(p_component, 'row', [0, 0, number, 0])
-        frange = to_frame - from_frame
-        frames = np.zeros((frange, rsize))
-
-        for i in range(from_frame, to_frame):
-            frames[i-from_frame] = self.get_row(p_component, [0, 0, number, rsize], i)
-
-        return(frames)
+    def row_rec(self, p_component, r, rec_shape, number):
+        '''get row from rectangle'''
+        return self.rec(p_component, rec_shape, number)[r]
 
 
-    def get_frame_range_dot(self, p_component, row_number, col_number, from_frame=0, to_frame=None):
-        ''' get frame range. Find, using single get_frame method'''
-        if to_frame == None:
-            to_frame = self.__get_ds_range__(p_component, 'dot', [row_number, col_number, 0, 0])
-        frange = to_frame - from_frame
-        frames = np.zeros((frange))
+    def dot_rec(self, p_component, r, z, rec_shape, number):
+        '''get dot from rectangle'''
+        return(self.rec(p_component, rec_shape, number)[r,z])
 
-        for i in range(from_frame, to_frame):
-            frames[i-from_frame] = self.get_dot(p_component, [row_number, col_number, 0, 0], i)
 
-        return(frames)
+    def rec_range(self, p_component, shape, start_number=0, end_number=None):
+        '''get rectancles range'''
+        rsize = self.__rec_size__(shape)
+        if end_number == None:
+            end_number = self.__ds_range__(p_component, 'rec', shape)
+        rrange = end_number - start_number
+        recs = np.zeros((rrange, rsize[0], rsize[1]))
+
+        for i in range(start_number, end_number):
+            self.__validate_rec__(p_component, shape, i)
+            recs[i-start_number] = self.get_rec(p_component, shape, i)
+
+        return(recs)

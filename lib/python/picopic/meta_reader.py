@@ -170,11 +170,11 @@ class MetaReader:
 
 
     def get_row_by_radius(self, radius):
-        return(int(round(radius * self.geometry_grid[0] / self.geometry_size[1])))
+        return(int(round(radius * self.geometry_grid[0] / self.geometry_size[0])))
 
 
     def get_col_by_longitude(self, longitude):
-        return(int(round(longitude * self.geometry_grid[1] / self.geometry_size[0])))
+        return(int(round(longitude * self.geometry_grid[1] / self.geometry_size[1])))
 
 
     def get_radius_by_row(self, row):
