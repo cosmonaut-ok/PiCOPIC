@@ -32,10 +32,10 @@ class Reader:
     '''
     ds: dataset. All information, got from single data file
     component: data component (like 'E_z')
-    frame: frame in single dataset (determined by fpds - frame-per-dataset)
-    row: row in frame (which consists of rows and columns)
-    col: column in frame
-    dot: dot in frame, column, or row with coords
+    rec: rectangle in dataset
+    row: row in dataset (which consists of rows and columns)
+    col: column in dataset
+    dot: dot in dataset, column, or row with coords
     '''
     def __init__(self, path, config_json, use_cache=False, verbose=False):
         config_json['base_path'] = path
@@ -48,7 +48,7 @@ class Reader:
             self.__tiny_cache__ = None
 
 
-    def __get_path__(self, p_component, p_type, shape):
+    def __path__(self, p_component, p_type, shape):
         if p_type == 'rec':
             path = "/{}/{}/{}-{}_{}-{}".format(p_component, p_type, shape[0], shape[2], shape[1], shape[3])
         elif p_type == 'col':
@@ -56,27 +56,27 @@ class Reader:
         elif p_type == 'row':
             path = "/{}/{}/{}".format(p_component, p_type, shape[2])
         elif p_type == 'dot':
-            path = "/{}/{}/{}_{}".format(p_component, p_type, shape[0], shape[1])
+            path = "/{}/{}/{}_{}".format(p_component, p_type, shape[3], shape[2])
         else:
             raise TypeError("Incorrect data type {}. Must be rec/col/row/dot".format(p_type))
 
         return path
 
 
-    def __frame_size__(self, shape):
+    def __rec_size__(self, shape):
         '''
-        return frame size by shape
+        return rec size by shape
         '''
         return [shape[2] - shape[0], shape[3] - shape[1]]
 
 
-    def __get_ds_range__(self, p_component, p_type, shape):
+    def __ds_range__(self, p_component, p_type, shape):
         raise NotImplementedError
 
 
 #### validators
     def __validate_ds__(self, p_component, p_type, shape, number):
-        drange = self.__get_ds_range__(p_component, p_type, shape)
+        drange = self.__ds_range__(p_component, p_type, shape)
         if number < 0:
             raise IndexError('Dataset should not be less, than 0. The value was: {}'
                              .format(number))
@@ -87,13 +87,13 @@ class Reader:
             return True
 
 
-    def __validate_frame__(self, p_component, shape, number):
-        frange = self.__get_ds_range__(p_component, 'rec', shape)
+    def __validate_rec__(self, p_component, shape, number):
+        frange = self.__ds_range__(p_component, 'rec', shape)
         if number < 0:
-            raise IndexError('Frame should not be less, than 0. The value was: {}'
+            raise IndexError('Rec should not be less, than 0. The value was: {}'
                              .format(number))
         elif frange <= number:
-            raise IndexError('Frame should be less, than {}. The value was: {}'
+            raise IndexError('Rec should be less, than {}. The value was: {}'
                              .format(frange - 1, number))
         else:
 
@@ -126,14 +126,14 @@ class Reader:
             return True
 
 
-    def __validate_frame_range__(self, p_component, shape, from_frame, to_frame):
-        if to_frame < from_frame:
-            raise IndexError('from_frame should be less or equal, than to_frame. The values was: {} and {}'
-                            .format(from_frame, to_frame))
+    def __validate_rec_range__(self, p_component, shape, from_rec, to_rec):
+        if to_rec < from_rec:
+            raise IndexError('from_rec should be less or equal, than to_rec. The values was: {} and {}'
+                            .format(from_rec, to_rec))
         else:
 
-            return(self.__validate_frame__(p_component, shape, to_frame)
-                   and self.__validate_frame__(p_component, shape, to_frame))
+            return(self.__validate_rec__(p_component, shape, to_rec)
+                   and self.__validate_rec__(p_component, shape, to_rec))
 
 
     def __validate_row_range__(self, p_component, shape, from_row, to_row):
@@ -165,77 +165,141 @@ class Reader:
             return (self.__validate_dot__(p_component, shape, from_dot)
                     and self.__validate_dot__(p_component, shape, to_dot))
 
+    ################################################################################
 
-    def get_frame(self, p_component, shape, number):
-        ''' get frame by number. Find required dataset automatically '''
+    def rec(self, p_component, shape, number):
+        '''get rec by number'''
         raise NotImplementedError
 
 
-    def get_col(self, p_component, shape, number):
-        ''' get column by number. Find required dataset automatically '''
+    def col(self, p_component, z, number): # longitude and number by time
+        '''get rec by number'''
         raise NotImplementedError
 
 
-    def get_row(self, p_component, shape, number):
-        ''' get row by number. Find required dataset automatically '''
+    def row(self, p_component, r, number): # latitude and number by time
+        '''get rec by number'''
         raise NotImplementedError
 
 
-    def get_dot(self, p_component, shape, number):
-        ''' get dot by number. Find required dataset automatically '''
+    def dot(self, p_component, r, z, number): # latitude, longitude and number by time
+        '''get rec by number'''
         raise NotImplementedError
 
 
-    def get_frame_range(self, p_component, shape, from_frame=0, to_frame=None):
-        ''' get frame range. Find, using single get_frame method'''
-        fsize = self.__frame_size__(shape)
-        if to_frame == None:
-            to_frame = self.__get_ds_range__(p_component, 'rec', shape)
-        frange = to_frame - from_frame
-        frames = np.zeros((frange, fsize[0], fsize[1]))
+    def rec_range(self, p_component, shape, start_number=0, end_number=None):
+        '''get rec range by numbers'''
+        raise NotImplementedError
 
-        for i in range(from_frame, to_frame):
-            self.__validate_frame__(p_component, shape, i)
-            frames[i-from_frame] = self.get_frame(p_component, shape, i)
 
-        return(frames)
+    def col_range(self, p_component, z, start_number=0, end_number=None):
+        '''get col range by numbers'''
+        raise NotImplementedError
 
-    def get_frame_range_col(self, p_component, number, from_frame=0, to_frame=None):
-        ''' get column range. Find, using single get_frame method'''
+
+    def row_range(self, p_component, r, start_number=0, end_number=None):
+        '''get row range by numbers'''
+        raise NotImplementedError
+
+
+    def dot_range(self, p_component, r, z, start_number=0, end_number=None):
+        '''get dot range by numbers'''
+        raise NotImplementedError
+
+
+    def col_rec(self, p_component, z, rec_shape, number):
+        '''get dot range from rec range'''
+        raise NotImplementedError
+
+
+    def row_rec(self, p_component, r, rec_shape, number):
+        '''get dot range from rec range'''
+        raise NotImplementedError
+
+
+    def dot_rec(self, p_component, r, z, rec_shape, number):
+        '''get dot range from rec range'''
+        raise NotImplementedError
+
+
+    def col_range(self, p_component, z, start_number=0, end_number=None):
+        '''get column range'''
         csize = self.meta.geometry_grid[0]
-        if to_frame == None:
-            to_frame = self.__get_ds_range__(p_component, 'col', [0, 0, 0, number])
-        frange = to_frame - from_frame
-        frames = np.zeros((frange, csize))
+        if end_number == None:
+            end_number = self.__ds_range__(p_component, 'col', [0, 0, 0, z])
+        crange = start_number - end_number
+        cols = np.zeros((crange, csize))
 
-        for i in range(from_frame, to_frame):
-            frames[i-from_frame] = self.get_col(p_component, [0, 0, csize, number], i)
+        for i in range(start_number, end_number):
+            cols[i-start_number] = self.col(p_component, [0, 0, csize, z], i)
 
-        return(frames)
+        return(cols)
 
 
-    def get_frame_range_row(self, p_component, number, from_frame=0, to_frame=None):
-        ''' get row range. Find, using single get_frame method'''
+    def row_range(self, p_component, r, start_number=0, end_number=None):
+        '''get row range'''
         rsize = self.meta.geometry_grid[1]
-        if to_frame == None:
-            to_frame = self.__get_ds_range__(p_component, 'row', [0, 0, number, 0])
-        frange = to_frame - from_frame
-        frames = np.zeros((frange, rsize))
+        if end_number == None:
+            end_number = self.__ds_range__(p_component, 'row', [0, 0, r, 0])
+        rrange = end_number - start_number
+        rows = np.zeros((rrange, rsize))
 
-        for i in range(from_frame, to_frame):
-            frames[i-from_frame] = self.get_row(p_component, [0, 0, number, rsize], i)
+        for i in range(start_number, end_number):
+            rows[i-start_number] = self.row(p_component, r, i)
 
-        return(frames)
+        return(rows)
 
 
-    def get_frame_range_dot(self, p_component, row_number, col_number, from_frame=0, to_frame=None):
-        ''' get frame range. Find, using single get_frame method'''
-        if to_frame == None:
-            to_frame = self.__get_ds_range__(p_component, 'dot', [row_number, col_number, 0, 0])
-        frange = to_frame - from_frame
-        frames = np.zeros((frange))
+    def dot_range(self, p_component, r, z, start_number=0, end_number=None):
+        '''get dot from rectangle range, using "rec" method'''
+        if end_number == None:
+            end_number = self.__ds_range__(p_component, 'dot', [0, 0, r, z])
+        drange = end_number - start_number
+        dots = np.zeros((drange))
 
-        for i in range(from_frame, to_frame):
-            frames[i-from_frame] = self.get_dot(p_component, [row_number, col_number, 0, 0], i)
+        for i in range(start_number, end_number):
+            dots[i-start_number] = self.dot(p_component, r, z, i)
 
-        return(frames)
+        return(dots)
+
+
+    def col_rec_range(self, p_component, z, rec_shape, start_number=0, end_number=None):
+        '''get column range from rec range'''
+        rsize = self.meta.geometry_grid[0]
+        if end_number == None:
+            end_number = self.__ds_range__(p_component, 'rec', shape)
+        crange = end_number - start_number
+        recs = np.zeros((crange, rsize))
+        for i in range(start_number, end_number):
+            self.__validate_rec__(p_component, rec_shape, i)
+            recs[i-start_number] = self.col_rec(p_component, z, rec_shape, i)
+
+        return(recs)
+
+
+    def row_rec_range(self, p_component, r, rec_shape, start_number=0, end_number=None):
+        '''get row range from rec range'''
+        rsize = self.meta.geometry_grid[1]
+        if end_number == None:
+            end_number = self.__ds_range__(p_component, 'rec', shape)
+        rrange = end_number - start_number
+        recs = np.zeros((rrange, rsize))
+        for i in range(start_number, end_number):
+            self.__validate_rec__(p_component, rec_shape, i)
+            recs[i-start_number] = self.row_rec(p_component, r, rec_shape, i)
+
+        return(recs)
+
+
+    def dot_rec_range(self, p_component, r, z, rec_shape, start_number=0, end_number=None):
+        '''get dot range from rec range'''
+        dsize = self.meta.geometry_grid[1]
+        if end_number == None:
+            end_number = self.__ds_range__(p_component, 'rec', shape)
+        drange = end_number - start_number
+        recs = np.zeros((drange))
+        for i in range(start_number, end_number):
+            self.__validate_rec__(p_component, rec_shape, i)
+            recs[i-start_number] = self.dot_rec(p_component, r, z, rec_shape, i)
+
+        return(recs)
