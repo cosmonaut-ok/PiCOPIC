@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os,sys
+import os,sys,math
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lib/python"))
 
 import argparse
@@ -29,7 +29,7 @@ def run(config_path, clim_e_r, clim_e_z, clim_t, clim_rho, video_file=None, spec
 
 
     # calculate/update video file path
-    video_file = os.path.join(config_path, 'E_t_rho__movie.avi') if not video_file else video_file
+    video_file = os.path.join(config_path, 'E_t_rho_movie.avi') if not video_file else video_file
 
     # define reader (plain reader used)
     autoselect = True
@@ -50,7 +50,8 @@ def run(config_path, clim_e_r, clim_e_z, clim_t, clim_rho, video_file=None, spec
     if not clim_t: clim_t = [0, 1]
     if not clim_rho: clim_rho = [0, (reader.meta.species[0].density[0] + reader.meta.species[0].density[1])]
 
-    if not frame_size: frame_size = [0, 0, reader.meta.geometry_grid[0], reader.meta.geometry_grid[1]]
+    geom_pml = [math.floor(reader.meta.geometry_grid[0] * reader.meta.geometry_pml[2]), math.floor(reader.meta.geometry_grid[1] * reader.meta.geometry_pml[1])]
+    if not frame_size: frame_size = [0, 0, reader.meta.geometry_grid[0] - geom_pml[0], reader.meta.geometry_grid[1] - geom_pml[1]]
     frame_src_size=[-1, -1, -1, -1]
     
     # detect probe shape
@@ -63,8 +64,10 @@ def run(config_path, clim_e_r, clim_e_z, clim_t, clim_rho, video_file=None, spec
             if (probe.shape == 'rec') and (probe.size[0] <= frame_size[0]) and (probe.size[1] <= frame_size[1]) and(probe.size[2] >= frame_size[2]) and(probe.size[3] >= frame_size[3]):
                 frame_src_size = probe.size
 
+
     r_scale = (frame_size[2] - frame_size[0]) / reader.meta.geometry_grid[0]
     z_scale = (frame_size[3] - frame_size[1]) / reader.meta.geometry_grid[1]
+
     # define plot builder
     plot = PlotBuilder(frame_size[3] - frame_size[1],
                        frame_size[2] - frame_size[0],
@@ -79,6 +82,7 @@ def run(config_path, clim_e_r, clim_e_z, clim_t, clim_rho, video_file=None, spec
                        y_ticklabel_end=reader.meta.geometry_size[0] * r_scale,
                        tickbox=True, grid=use_grid, is_invert_y_axe=False,
                        aspect='equal', image_interpolation=plot_image_interpolation,
+                       number_y_ticks=5,
                        guess_number_ticks = 20)
 
 
@@ -152,6 +156,7 @@ def run(config_path, clim_e_r, clim_e_z, clim_t, clim_rho, video_file=None, spec
 
                 if view: plot.redraw()
                 if not dry_run: writer.grab_frame()
+                # data_r = data_z = data_t = data_rho = None
                 print('DONE')
 
 
