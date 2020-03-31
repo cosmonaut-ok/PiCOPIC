@@ -49,10 +49,10 @@ def run(config_path, clim_e_r, clim_e_z, clim_t, clim_rho, video_file=None, spec
     if not clim_e_z: clim_e_z = [-clim_estimation, clim_estimation]
     for i in reader.meta.species:
         if i.name == specie_t and not clim_t:
-            clim_t = [i.temperature / 2, i.temperature * 2]
+            clim_t = [i.temperature / 2, i.temperature * 1.5]
         if i.name == specie_rho and not clim_rho:
             rho_mass_med = (i.density[0] + i.density[1]) / 2 * i.mass
-            clim_rho = [rho_mass_med / 2, rho_mass_med * 2]
+            clim_rho = [rho_mass_med / 2, rho_mass_med * 1.5]
 
     geom_pml = [math.floor(reader.meta.geometry_grid[0] * reader.meta.geometry_pml[2]), math.floor(reader.meta.geometry_grid[1] * reader.meta.geometry_pml[1])]
     if not frame_size: frame_size = [0, 0, reader.meta.geometry_grid[0] - geom_pml[0], reader.meta.geometry_grid[1] - geom_pml[1]]
