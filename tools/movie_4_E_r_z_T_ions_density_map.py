@@ -47,13 +47,17 @@ def run(config_path, clim_e_r, clim_e_z, clim_t, clim_rho, video_file=None, spec
 
     if not clim_e_r: clim_e_r = [-clim_estimation, clim_estimation]
     if not clim_e_z: clim_e_z = [-clim_estimation, clim_estimation]
-    if not clim_t: clim_t = [0, 1]
-    if not clim_rho: clim_rho = [0, (reader.meta.species[0].density[0] + reader.meta.species[0].density[1])]
+    for i in reader.meta.species:
+        if i.name == specie_t and not clim_t:
+            clim_t = [i.temperature / 2, i.temperature * 2]
+        if i.name == specie_rho and not clim_rho:
+            rho_mass_med = (i.density[0] + i.density[1]) / 2 * i.mass
+            clim_rho = [rho_mass_med / 2, rho_mass_med * 2]
 
     geom_pml = [math.floor(reader.meta.geometry_grid[0] * reader.meta.geometry_pml[2]), math.floor(reader.meta.geometry_grid[1] * reader.meta.geometry_pml[1])]
     if not frame_size: frame_size = [0, 0, reader.meta.geometry_grid[0] - geom_pml[0], reader.meta.geometry_grid[1] - geom_pml[1]]
     frame_src_size=[-1, -1, -1, -1]
-    
+
     # detect probe shape
     for probe in reader.meta.probes:
         if (probe.shape == 'rec') and (probe.size[0] == frame_size[0]) and (probe.size[1] == frame_size[1]) and(probe.size[2] == frame_size[2]) and(probe.size[3] == frame_size[3]):
