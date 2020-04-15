@@ -15,6 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _MAXWELL_JUTTNER_HPP_
+#define _MAXWELL_JUTTNER_HPP_
+
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
@@ -32,3 +35,5 @@ namespace math::maxwell_juttner
 {
   vector<double> maxwellJuttner(unsigned int npoints, double temperature);
 }
+
+#endif // end of _MAXWELL_JUTTNER_HPP_

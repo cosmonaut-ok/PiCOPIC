@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _BEAM_P_HPP_
+#define _BEAM_P_HPP_
 
 #include "math/rand.hpp"
 #include "specieP.hpp"
@@ -61,3 +62,5 @@ public:
   void fullyfill_spatial_distribution() {};
   void velocity_distribution () {};
 };
+
+#endif // end of _BEAM_P_HPP_

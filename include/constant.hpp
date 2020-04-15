@@ -15,7 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _CONSTANT_HPP_
+#define _CONSTANT_HPP_
+
 #include <ctime>
 
 // WARNING!
@@ -41,3 +43,4 @@ namespace constant
   // Smaller values should be rounded to zero
   const double MNZL = 1e-15; // Minimal Non-Zeroing Limit
 }
+#endif // end of _CONSTANT_HPP_

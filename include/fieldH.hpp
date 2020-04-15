@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _FIELD_H_HPP_
+#define _FIELD_H_HPP_
 
 #include "field.hpp"
 #include "fieldE.hpp"
@@ -50,3 +51,5 @@ public:
   // double *get_1d_field_phi();
   // double *get_1d_field_z();
 };
+
+#endif // end of _FIELD_H_HPP_

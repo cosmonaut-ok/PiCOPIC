@@ -15,6 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _OUT_ENGINE_HDF5_HPP_
+#define _OUT_ENGINE_HDF5_HPP_
+
 #include <sys/resource.h>
 
 #include "lib.hpp"
@@ -40,3 +43,5 @@ public:
 private:
   string datafile_name;
 };
+
+#endif // end of _OUT_ENGINE_HDF5_HPP_

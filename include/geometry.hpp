@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _GEOMETRY_HPP_
+#define _GEOMETRY_HPP_
 
 #include <cmath>
 #include "constant.hpp"
@@ -86,3 +87,5 @@ private:
 
 //! get cell number by 'radius'
 #define CELL_NUMBER(position, dx) (int)floor((position) / (dx))
+
+#endif // end of _GEOMETRY_HPP_

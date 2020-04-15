@@ -15,6 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _RAND_HPP_
+#define _RAND_HPP_
+
 #include <algorithm>
 #include <cmath>
 #include <ctime>
@@ -38,3 +41,5 @@ namespace math::random
   double normal();
   double random_reverse(double vel, int power);
 }
+
+#endif // end of _RAND_HPP_

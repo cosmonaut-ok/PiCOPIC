@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _LIB_HPP_
+#define _LIB_HPP_
 
 #include <sstream>
 #include <iostream>
@@ -154,4 +155,6 @@ namespace lib
       b.set(i, a.y_size, 0);
     }
   }
-}
+};
+
+#endif // end of _LIB_HPP_

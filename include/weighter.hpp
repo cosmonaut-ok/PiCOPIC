@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _WEIGHTER_HPP_
+#define _WEIGHTER_HPP_
 
 #include "geometry.hpp"
 #include "grid.hpp"
@@ -127,3 +128,5 @@ void weight_cylindrical(Geometry *geometry, Grid<T> *grid, double pos_r, double 
     grid->inc(r_i_shift + 1, z_k_shift + 1, rho_w_value * value);
   }
 }
+
+#endif // end of _WEIGHTER_HPP_

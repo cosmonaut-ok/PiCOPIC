@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _DENSITY_CHARGE_
+#define _DENSITY_CHARGE_
 
 #include "geometry.hpp"
 #include "grid.hpp"
@@ -35,3 +36,4 @@ public:
 
   void calc_density_cylindrical(string specie);
 };
+#endif // end of _DENSITY_CHARGE_

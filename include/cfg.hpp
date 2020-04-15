@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _CFG_HPP_
+#define _CFG_HPP_
 
 #include <exception>
 #include <omp.h>
@@ -192,3 +193,4 @@ private:
   void weight_macro_amount();
   bool method_limitations_check();
 };
+#endif // end of _CFG_HPP_

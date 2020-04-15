@@ -15,6 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _OUT_ENGINE_PLAIN_HPP_
+#define _OUT_ENGINE_PLAIN_HPP_
+
 #include "lib.hpp"
 #include "outEngine.hpp"
 
@@ -36,3 +39,4 @@ public:
 private:
   string metadata_file;
 };
+#endif // end of _OUT_ENGINE_PLAIN_HPP_

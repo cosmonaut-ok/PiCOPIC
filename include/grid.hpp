@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _GRID_HPP_
+#define _GRID_HPP_
 
 #include "msg.hpp"
 
@@ -212,3 +213,4 @@ public:
     return grid;
   }
 };
+#endif // end of _GRID_HPP_

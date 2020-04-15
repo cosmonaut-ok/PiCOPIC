@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _TEMPERATURE_COUNTED_HPP_
+#define _TEMPERATURE_COUNTED_HPP_
 
 #include "constant.hpp"
 #include "geometry.hpp"
@@ -40,3 +41,4 @@ public:
 private:
   void weight_temperature_cylindrical(string specie);
 };
+#endif // end of _TEMPERATURE_COUNTED_HPP_

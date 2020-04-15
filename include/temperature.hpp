@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _TEMPERATURE_HPP_
+#define _TEMPERATURE_HPP_
 
 #include <vector>
 
@@ -52,3 +53,5 @@ public:
 
   virtual void calc_temperature_cylindrical(string specie) = 0;
 };
+
+#endif // end of _TEMPERATURE_HPP_

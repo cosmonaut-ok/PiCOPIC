@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _VECTOR_3D_HPP_
+#define _VECTOR_3D_HPP_
 
 #include <sstream>
 #include <iostream>
@@ -323,3 +324,5 @@ vector3d& operator- (T rhs)&
     return *this;
   };
 };
+
+#endif // end of _VECTOR_3D_HPP_

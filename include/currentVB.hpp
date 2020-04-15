@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _CURRENT_VB_HPP_
+#define _CURRENT_VB_HPP_
 
 #include <vector>
 
@@ -67,3 +68,5 @@ private:
                                    double longitude_old,
                                    double p_charge);
 };
+
+#endif // end of _CURRENT_VB_HPP_

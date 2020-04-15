@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _TIME_SIM_HPP_
+#define _TIME_SIM_HPP_
 
 struct TimeSim {
   double start;
@@ -24,3 +25,4 @@ struct TimeSim {
   double current;
   unsigned int print_header_counter;
 };
+#endif // end of _TIME_SIM_HPP_

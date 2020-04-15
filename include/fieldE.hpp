@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _FIELD_E_HPP_
+#define _FIELD_E_HPP_
 
 #include <fstream>
 #include "math/vector3d.hpp"
@@ -47,19 +48,5 @@ public:
   void calc_field_cylindrical();
   
   vector3d<double> get_field(double radius, double longitude);
-
-  // void calc_field(HField *h_field1, Time *time1, Current *current1);
-  // void poisson_equation2(Geometry *geom1, ChargeDensity *ro1);
-  // void cosine_ftansfrom(double **fi_ro, int lenght_n, int k);
-  // void set_homogeneous_efield(double E_r, double E_phi, double E_z);
-  // void set_fi_on_z();
-  // void boundary_conditions();
-  // double* get_field(double radius, double longitude);
-  // bool test_poisson_equation(ChargeDensity *rho);
-  // void tridiagonal_solve(const double *a,
-  //                        const double *b,
-  //                        double *c,
-  //                        double *d,
-  //                        double *x,
-  //                        int n);
 };
+#endif // end of _FIELD_E_HPP_

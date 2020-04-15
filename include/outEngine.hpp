@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _OUT_ENGINE_HPP_
+#define _OUT_ENGINE_HPP_
 
 #include <fstream>
 #include <iostream>
@@ -63,3 +64,5 @@ public:
   virtual void write_1d_vector(string a_name, vector<double> data) = 0;
   virtual void write_metadata(string metadata) = 0;
 };
+
+#endif // end of _OUT_ENGINE_HPP_

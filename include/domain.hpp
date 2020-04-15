@@ -15,6 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _DOMAIN_HPP_
+#define _DOMAIN_HPP_
+
 #include <vector>
 
 #include <algorithm>
@@ -92,3 +95,4 @@ public:
   void manage_beam();
   void dump_particle_positions_to_old();
 };
+#endif // end of _DOMAIN_HPP_

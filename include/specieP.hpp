@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _SPECIE_P_HPP_
+#define _SPECIE_P_HPP_
 
 #include "constant.hpp"
 #include "lib.hpp"
@@ -220,3 +221,5 @@ protected:
   void eigen_velocity_distribution ();
   void eigen_directed_velocity_distribution (unsigned int dir); // 0,1,2 are for r, phi, z
 };
+
+#endif // end of _SPECIE_P_HPP_

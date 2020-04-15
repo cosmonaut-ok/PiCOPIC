@@ -15,6 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+// #ifndef _MSG_HPP_
+// #define _MSG_HPP_
+
 #include <iostream>
 #include <iomanip> // std::setw
 
@@ -41,3 +44,5 @@
 #define LOG_ERR(message) std::cerr << "ERROR: " << message << "." << std::endl;
 
 #define LOG_CRIT(message, exitcode) { std::cerr << "ERROR: " << message << ". Can not continue. Exiting." << std::endl; exit(exitcode); }
+
+// #endif // end of _MSG_HPP_

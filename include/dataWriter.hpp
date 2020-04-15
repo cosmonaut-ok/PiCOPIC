@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef _DATA_WRITER_HPP_
+#define _DATA_WRITER_HPP_
 
 #include <string>
 #include <sstream>
@@ -77,3 +78,4 @@ public:
   void merge_particle_domains(string parameter, unsigned int component, string specie);
   void go();
 };
+#endif // end of _DATA_WRITER_HPP_
