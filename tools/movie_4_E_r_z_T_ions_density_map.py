@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os,sys
+import os,sys,math
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lib/python"))
 
 import argparse
@@ -13,8 +13,8 @@ from picopic.h5_reader import H5Reader
 from picopic.plain_reader import PlainReader
 
 
-def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
-        time_range=None, cmap=None, frame_step=1, frame_size=None, dry_run=False, view=False, use_grid=False):
+def run(config_path, clim_e_r, clim_e_z, clim_t, clim_rho, video_file=None, specie_t='electrons', specie_rho='electrons',
+        time_range=None, cmap=None, frame_step=1, frame_size=None, dry_run=False, view=False, use_grid=False, plot_image_interpolation='bicubic'):
 
     ##  configuration options
     x_axis_label = r'$\mathit{Z (m)}$'
@@ -24,10 +24,12 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
 
     e_r_plot_name = r'$\mathbf{Electrical\enspace Field\enspace Radial\enspace Component}\enspace(E_r)$'
     e_z_plot_name = r'$\mathbf{Electrical\enspace Field\enspace Longitudal\enspace Component}\enspace(E_z)$'
-    rho_beam_plot_name = r'$\mathbf{Temperature\enspace T\enspace (eV)}$'
+    t_plot_name = r'$\mathbf{Temperature\enspace Component}\enspace(T)$'
+    rho_plot_name = r'$\mathbf{Density\enspace Component}\enspace(\rho)$'
+
 
     # calculate/update video file path
-    video_file = os.path.join(config_path, 'field_movie.avi') if not video_file else video_file
+    video_file = os.path.join(config_path, 'E_t_rho_movie.avi') if not video_file else video_file
 
     # define reader (plain reader used)
     autoselect = True
@@ -41,16 +43,21 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
     else:
         raise EnvironmentError("There is no corresponding data/metadata files in the path " + config_path + ". Can not continue.")
 
-    clim_rho_beam = [0, 2.5] # 0-2.5:0-5e-10, 0-5:5e-10-1e-9, 0-40:1e-9-1.5e-9, 0-100:1.5e-9-2e-9, 0-200:2e-9-2.5e-9, 0-400:2.5e-9-3e-9 # [-(cfg.bunch_density * el_charge * rho_beam_scale), 0]
     clim_estimation = reader.meta.get_clim_estimation()
 
     if not clim_e_r: clim_e_r = [-clim_estimation, clim_estimation]
     if not clim_e_z: clim_e_z = [-clim_estimation, clim_estimation]
-    if not rho_beam_scale: rho_beam_scale = 1
+    for i in reader.meta.species:
+        if i.name == specie_t and not clim_t:
+            clim_t = [i.temperature / 2, i.temperature * 1.5]
+        if i.name == specie_rho and not clim_rho:
+            rho_mass_med = (i.density[0] + i.density[1]) / 2 * i.mass
+            clim_rho = [rho_mass_med / 2, rho_mass_med * 1.5]
 
-    if not frame_size: frame_size = [0, 0, reader.meta.geometry_grid[0], reader.meta.geometry_grid[1]]
+    geom_pml = [math.floor(reader.meta.geometry_grid[0] * reader.meta.geometry_pml[2]), math.floor(reader.meta.geometry_grid[1] * reader.meta.geometry_pml[1])]
+    if not frame_size: frame_size = [0, 0, reader.meta.geometry_grid[0] - geom_pml[0], reader.meta.geometry_grid[1] - geom_pml[1]]
     frame_src_size=[-1, -1, -1, -1]
-    
+
     # detect probe shape
     for probe in reader.meta.probes:
         if (probe.shape == 'rec') and (probe.size[0] == frame_size[0]) and (probe.size[1] == frame_size[1]) and(probe.size[2] == frame_size[2]) and(probe.size[3] == frame_size[3]):
@@ -61,14 +68,16 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
             if (probe.shape == 'rec') and (probe.size[0] <= frame_size[0]) and (probe.size[1] <= frame_size[1]) and(probe.size[2] >= frame_size[2]) and(probe.size[3] >= frame_size[3]):
                 frame_src_size = probe.size
 
+
     r_scale = (frame_size[2] - frame_size[0]) / reader.meta.geometry_grid[0]
     z_scale = (frame_size[3] - frame_size[1]) / reader.meta.geometry_grid[1]
+
     # define plot builder
     plot = PlotBuilder(frame_size[3] - frame_size[1],
                        frame_size[2] - frame_size[0],
                        fig_color=reader.meta.figure_color,
                        fig_width=reader.meta.figure_width,
-                       fig_height=reader.meta.figure_height,
+                       fig_height=reader.meta.figure_height * 1.2,
                        fig_dpi=reader.meta.figure_dpi,
                        font_family=reader.meta.figure_font_family,
                        font_name=reader.meta.figure_font_name,
@@ -77,13 +86,15 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
                        y_ticklabel_end=reader.meta.geometry_size[0] * r_scale,
                        tickbox=True, grid=use_grid, is_invert_y_axe=False,
                        aspect='equal', image_interpolation=plot_image_interpolation,
+                       number_y_ticks=5,
                        guess_number_ticks = 20)
 
 
     # add subplots
-    plot.add_subplot_cartesian_2d(e_r_plot_name, 312, x_axe_label=x_axis_label, y_axe_label=y_axis_label)
-    plot.add_subplot_cartesian_2d(e_z_plot_name, 311, x_axe_label=x_axis_label, y_axe_label=y_axis_label)
-    plot.add_subplot_cartesian_2d(rho_beam_plot_name, 313, x_axe_label=x_axis_label, y_axe_label=y_axis_label)
+    plot.add_subplot_cartesian_2d(e_z_plot_name, 411, x_axe_label=x_axis_label, y_axe_label=y_axis_label)
+    plot.add_subplot_cartesian_2d(e_r_plot_name, 412, x_axe_label=x_axis_label, y_axe_label=y_axis_label)
+    plot.add_subplot_cartesian_2d(t_plot_name, 413, x_axe_label=x_axis_label, y_axe_label=y_axis_label)
+    plot.add_subplot_cartesian_2d(rho_plot_name, 414, x_axe_label=x_axis_label, y_axe_label=y_axis_label)
 
     # add initial image with zeros and colorbar
     initial_image = np.zeros([frame_size[2] - frame_size[0], frame_size[3] - frame_size[1]])
@@ -94,8 +105,11 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
     plot.add_image(e_z_plot_name, initial_image, cmap=cmap, clim=clim_e_z)
     plot.add_colorbar(e_z_plot_name, ticks=clim_e_z, title=cbar_axis_label)
 
-    plot.add_image(rho_beam_plot_name, initial_image, cmap="{}_r".format(cmap), clim=clim_rho_beam)
-    plot.add_colorbar(rho_beam_plot_name, ticks=clim_rho_beam, title=cbar_bunch_density_axis_label)
+    plot.add_image(t_plot_name, initial_image, cmap=cmap, clim=clim_t)
+    plot.add_colorbar(t_plot_name, ticks=clim_t, title=cbar_axis_label)
+
+    plot.add_image(rho_plot_name, initial_image, cmap=cmap, clim=clim_rho)
+    plot.add_colorbar(rho_plot_name, ticks=clim_rho, title=cbar_axis_label)
 
     if view: plot.show()
 
@@ -131,19 +145,22 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
             if i % frame_step == 0:
                 sys.stdout.write('Loading dataset ' + str(i) + '... ')
                 sys.stdout.flush()
-                data_r = reader.get_frame('E_r', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
-                data_z = reader.get_frame('E_z', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
-                data_beam = reader.get_frame('temperature/electrons', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_r = reader.rec('E_r', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_z = reader.rec('E_z', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_t = reader.rec("temperature/{}".format(specie_t), frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_rho = reader.rec('density/{}'.format(specie_rho), frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
 
                 # add timestamp to each frame
                 timestamp = reader.meta.get_timestamp_by_frame_number(i, dump_interval)
                 fig.suptitle("Time: {:.2e} s".format(timestamp), x=.85, y=.95)
                 plot.add_image(e_r_plot_name, data_r, cmap=cmap, clim=clim_e_r)
                 plot.add_image(e_z_plot_name, data_z, cmap=cmap, clim=clim_e_z)
-                plot.add_image(rho_beam_plot_name, data_beam, cmap="{}_r".format(cmap), clim=clim_rho_beam)
+                plot.add_image(t_plot_name, data_t, cmap=cmap, clim=clim_t)
+                plot.add_image(rho_plot_name, data_rho, cmap=cmap, clim=clim_rho)
 
                 if view: plot.redraw()
                 if not dry_run: writer.grab_frame()
+                # data_r = data_z = data_t = data_rho = None
                 print('DONE')
 
 
@@ -167,11 +184,6 @@ def main():
                         Reference: https://matplotlib.org/examples/color/colormaps_reference.html''' % 'gray',
                         default=None)
 
-    parser.add_argument('--beam-scale-factor', type=float,
-                        help='''Beam density setting automatically, but you can set scale factor to sets,
-                        where initial bunch density should be placed in color range''',
-                        default=1)
-
     parser.add_argument('--frame-size', type=str,
                         help='Size of movie images frame. Format: "bottom_r:bottom_z:top_r:top_z"', default=None)
 
@@ -184,6 +196,18 @@ def main():
 
     parser.add_argument('--clim-e-z', type=str,
                         help='Color limit range for Electrical field radial component', default=None)
+
+    parser.add_argument('--clim-t', type=str,
+                        help='Color limit range for Temperature', default=None)
+
+    parser.add_argument('--clim-rho', type=str,
+                        help='Color limit range for Density', default=None)
+
+    parser.add_argument('--specie-t', type=str,
+                        help='Particles specie for temperature component', default='electrons')
+
+    parser.add_argument('--specie-rho', type=str,
+                        help='Particles specie for density component', default='electrons')
 
     parser.add_argument('--dry-run', action='store_true', help='Do not write anything. Just for debug', default=False)
 
@@ -202,11 +226,16 @@ def main():
 
     clim_e_r = list(map(float, args.clim_e_r.split(':'))) if args.clim_e_r else None
     clim_e_z = list(map(float, args.clim_e_z.split(':'))) if args.clim_e_r else None
+    clim_t = list(map(float, args.clim_t.split(':'))) if args.clim_t else None
+    clim_rho = list(map(float, args.clim_rho.split(':'))) if args.clim_rho else None
     frame_size = list(map(int, args.frame_size.split(':'))) if args.frame_size else None
     run(args.data_path,
         clim_e_r=clim_e_r,
         clim_e_z=clim_e_z,
-        rho_beam_scale=args.beam_scale_factor,
+        clim_t=clim_t,
+        clim_rho=clim_rho,
+        specie_t=args.specie_t,
+        specie_rho=args.specie_rho,
         video_file=args.video_file,
         time_range=time_range,
         frame_size=frame_size,

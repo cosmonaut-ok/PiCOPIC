@@ -2,7 +2,7 @@ from setuptools import setup
 # from distutils.core import setup
 
 setup(name='picopic',
-      version='0.0.1',
+      version='0.1.0',
       description='Data analysis tools for PiCOPIC project',
       author='Alexander Vynnyk',
       author_email='alexander.vynnyk@gmail.com',

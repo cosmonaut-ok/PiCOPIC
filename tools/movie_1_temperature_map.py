@@ -93,7 +93,7 @@ def run(config_path, specie, clim, video_file=None, time_range=None, cmap=None, 
         end_frame = reader.meta.get_frame_number_by_timestamp(reader.meta.time[1], dump_interval)
     else:
         if time_range[0] > time_range[1]: raise ValueError("End time should not be less, than start time. The values were: {}, {}".format(time_range[0], time_range[1]))
-        if time_range[1] > reader.meta.end_time: raise IndexError("End time is out of simulation range {}. The value was {}".format(reader.meta.end_time, time_range[1]))
+        if time_range[1] > reader.meta.time[1]: raise IndexError("End time is out of simulation range {}. The value was {}".format(reader.meta.end_time, time_range[1]))
 
         start_frame = reader.meta.get_frame_number_by_timestamp(time_range[0], dump_interval)
         end_frame = reader.meta.get_frame_number_by_timestamp(time_range[1], dump_interval)
@@ -114,7 +114,7 @@ def run(config_path, specie, clim, video_file=None, time_range=None, cmap=None, 
             if i % frame_step == 0:
                 sys.stdout.write('Loading dataset ' + str(i) + '... ')
                 sys.stdout.flush()
-                data = reader.get_frame("temperature/{}".format(specie), frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data = reader.rec("temperature/{}".format(specie), frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
                 
                 # add timestamp to each frame
                 timestamp = reader.meta.get_timestamp_by_frame_number(i, dump_interval)
