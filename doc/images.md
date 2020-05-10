@@ -19,3 +19,6 @@
 
 @image latex weighting_temperature.png
 
+# Domain overlaying scheme
+
+@image latex overlaying.png
