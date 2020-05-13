@@ -34,7 +34,7 @@ void Density::calc_density_cylindrical(string specie)
         weight_cylindrical<double>(geometry, &density,
                                    P_POS_R((**i)),
                                    P_POS_Z((**i)),
-                                   P_MASS((**i)) / EL_MASS); // amount of particle in macroparticle
+                                   P_MASS((**i)) / (**ps).mass); // amount of particle in macroparticle
 
 #if defined DENSITY_POSTPROC_BILINEAR
   Grid<double> density_src = density;
