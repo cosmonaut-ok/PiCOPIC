@@ -45,7 +45,7 @@ def run(config_path, specie, clim, video_file=None, time_range=None, cmap=None, 
 
     # TODO: estimate clim
     # if not clim: clim = [0,2]
-    clim_1 = [0,1e16]
+    clim_1 = [0,1e15]
     clim_2 = [4e19,3.5e20]
     clim_3 = [5e16,1.5e17]
     clim_4 = [0,25]
@@ -80,7 +80,7 @@ def run(config_path, specie, clim, video_file=None, time_range=None, cmap=None, 
                        y_ticklabel_end=reader.meta.geometry_size[0] * r_scale,
                        tickbox=True, grid=use_grid, is_invert_y_axe=False,
                        aspect='equal', image_interpolation=plot_image_interpolation,
-                       guess_number_ticks = 20)
+                       number_y_ticks=3, guess_number_ticks=20)
 
     # plt.rcParams['axes.titlesize'] = 10
     # plt.rcParams["axes.titlepad"] = 3
