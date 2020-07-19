@@ -576,6 +576,10 @@ int main(int argc, char **argv)
         sim_domain->dump_particle_positions_to_old(); // +
         sim_domain->update_particles_coords(); // + +reflect
         sim_domain->particles_back_position_to_rz(); // +
+
+#ifdef COLLISIONS
+          sim_domain->collide(); // collide before reflect
+#endif
         sim_domain->reflect();
       }
     particles_runaway_collector(domains, geometry_global);

@@ -48,6 +48,10 @@
 #include "temperatureWeighted.hpp"
 #endif
 
+#ifdef COLLISIONS
+#include "collisions.hpp"
+#endif
+
 using namespace std;
 
 class Domain
@@ -61,6 +65,9 @@ public:
   Temperature *temperature;
   Density *density;
   DensityCharge *charge;
+#ifdef COLLISIONS
+  Collisions *collisions;
+#endif
 
   // Temperature temperature;
   // DensityP density_particles;
@@ -94,5 +101,6 @@ public:
   void reflect();
   void manage_beam();
   void dump_particle_positions_to_old();
+  void collide();
 };
 #endif // end of _DOMAIN_HPP_

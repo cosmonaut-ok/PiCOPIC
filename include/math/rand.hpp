@@ -38,7 +38,8 @@ namespace math::random
   double uniform();
   double uniform1();
   double uniform2();
-  double normal();
+  double uniform_angle();
+  double normal(double stddev);
   double random_reverse(double vel, int power);
 }
 
