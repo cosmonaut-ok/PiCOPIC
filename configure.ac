@@ -21,7 +21,6 @@ AC_SUBST(LEGACY_OPTION)
 AC_SUBST(IEEE)
 AC_SUBST(DEBUG)
 AC_SUBST(SINGLETHREAD)
-AC_SUBST(HDF5)
 AC_SUBST(CFLAGS_DEFAULT)
 AC_SUBST(CFLAGS_ADDITIONAL)
 AC_SUBST(LDFLAGS_ADDITIONAL)
@@ -31,6 +30,7 @@ AC_SUBST(PUSHER)
 AC_SUBST(OMP_DYNAMIC)
 AC_SUBST(DEBUG_OPTION)
 AC_SUBST(PROFILER)
+AC_SUBST(HDF5)
 AC_SUBST(HDF5_URL)
 AC_SUBST(HDF5_VERSION)
 
@@ -64,6 +64,7 @@ AC_ARG_WITH([plasma-velocity-distribution], [AC_HELP_STRING([--with-plasma-veloc
 
 AC_ARG_WITH([current-solver], [AC_HELP_STRING([--with-current-solver], [Set charge convervation scheme of current solver (supported: villasenor-buneman (default) and zigzag)])], [CCS="$withval"], [CCS="villasenor-buneman"])
 
+AC_ARG_ENABLE([collisions], [AC_HELP_STRING([--enable-collisions], [Enable DSMC coulomb collisions. See 10.1002/ctpp.201700121 (WARNING! This is an experimental unfinished feature. This switch is only for development purposes.)])], [COLLISIONS="$enableval"], [COLLISIONS=no])
 
 AC_PROG_CXXCPP
 AC_LANG(C++)
@@ -120,7 +121,7 @@ else
 fi
 
 AC_DEFINE([REL_LIMIT], [5e7], [Relativistit calculations limit (for boris-adaptive pusher)])
-   
+
 # define a pusher
 if test x$PUSHER == xboris-adaptive; then
    AC_DEFINE_UNQUOTED([PUSHER_BORIS_ADAPTIVE], [true], [Performance debug option])
@@ -176,6 +177,11 @@ elif test x$CCS == xzigzag; then
    AC_DEFINE_UNQUOTED([CCS_ZIGZAG], [true], [Set plasma charge conservation scheme to ZigZag])
 else
    AC_MSG_ERROR([Plasma charge conservation scheme is not supported.])
+fi
+
+if test x$COLLISIONS = xyes; then
+   AC_DEFINE_UNQUOTED([USE_COLLISIONS], [true], [Enable DSMC coulomb collisions])
+   AC_MSG_WARN([Coulomb DSMC collisions is an unfinished experimental feature. Currently it is ONLY for development purposes. Ensure, you know what you do by enabling it.])
 fi
 
 AC_DEFINE_UNQUOTED([CXXFLAGS], ["$CFLAGS_DEFAULT $CFLAGS_ADDITIONAL"], [define used C(XX)FLAGS])

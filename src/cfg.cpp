@@ -395,6 +395,11 @@ void Cfg::weight_macro_amount()
   LOG_INFO("Using Villasenor-Buneman charge conservation scheme");
 #endif
 
+  // message about coulomb colisions
+#ifdef COLLISIONS
+  LOG_INFO("Simulating with DSMC Coulomb collisions (10.1002/ctpp.201700121)");
+#endif
+
   // align macroparticles amount to particle species
   // with respect to normalization
 #if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)

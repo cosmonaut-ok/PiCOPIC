@@ -42,6 +42,12 @@ namespace math::random
     return uniform_distribution2(gen);
   }
 
+  std::uniform_real_distribution<double> uniform_distribution_angle(0., 2*constant::PI);
+  double uniform_angle()
+  {
+    return uniform_distribution_angle(gen);
+  }
+
   double normal(double stddev)
   {
     std::normal_distribution<double> normal_distribution(0., stddev);

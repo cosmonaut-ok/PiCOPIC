@@ -44,6 +44,10 @@ Domain::Domain(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry
   temperature = new TemperatureWeighted(&geometry, species_p);
 #endif
 
+#ifdef COLLISIONS
+  collisions = new Collisions(&geometry, time, species_p);
+#endif
+
   density = new Density(&geometry, species_p);
   charge = new DensityCharge(&geometry, species_p);
 
@@ -173,3 +177,16 @@ void Domain::dump_particle_positions_to_old()
   for (auto i = species_p.begin(); i != species_p.end(); i++)
     (**i).dump_position_to_old();
 }
+
+#ifdef COLLISIONS
+void Domain::collide()
+{
+  // MSG("COLLIDE");
+  collisions->clear();
+  collisions->sort_to_cells();
+  collisions->random_sort();
+  collisions->collide();
+  // collisions->collide();
+  // collisions->collide();
+}
+#endif
