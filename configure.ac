@@ -180,7 +180,7 @@ else
 fi
 
 if test x$COLLISIONS = xyes; then
-   AC_DEFINE_UNQUOTED([USE_COLLISIONS], [true], [Enable DSMC coulomb collisions])
+   AC_DEFINE_UNQUOTED([COLLISIONS], [true], [Enable DSMC coulomb collisions])
    AC_MSG_WARN([Coulomb DSMC collisions is an unfinished experimental feature. Currently it is ONLY for development purposes. Ensure, you know what you do by enabling it.])
 fi
 
