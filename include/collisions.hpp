@@ -18,6 +18,19 @@
 #ifndef _COLLISIONS_HPP_
 #define _COLLISIONS_HPP_
 
+#include <vector>
+#include <algorithm>    // std::min, std::random_shuffle
+#include <typeinfo>
+#include <ctime>        // std::time
+#include <cstdlib>      // std::rand, std::srand
+#include <math.h>       // floor, asin
+
+#include <string>
+
+#include "lib.hpp"
+#include "geometry.hpp"
+#include "specieP.hpp"
+
 #include "specieP.hpp"
 
 class Collisions
@@ -31,13 +44,26 @@ public:
   void sort_to_cells();
   void clear();
   void random_sort();
-  void collide_single(int i, int j, vector<double> &p1, vector<double> &p2);
-  void collide();
+  void collide_single(int i, int j, double m_real_a, double m_real_b,
+                      vector<double> &p1, vector<double> &p2);
+
+  void run ();
 
 protected:
+  double m_real_el;
+  double m_real_ion;
   vector <SpecieP *> species_p;
   Grid < vector< vector<double> * > > map_el2cell;
   Grid < vector< vector<double> * > > map_ion2cell;
+
+  Grid < double > energy_tot_el;
+  Grid < double > mass_tot_el;
+  Grid3D < double > moment_tot_el;
+
+  Grid < double > energy_tot_ion;
+  Grid < double > mass_tot_ion;
+  Grid3D < double > moment_tot_ion;
+
   Geometry* geometry;
   TimeSim *time;
 
@@ -45,6 +71,10 @@ protected:
   double get_ion_density(int i, int j);
   double geometry_cell_volume(int i);
 
+  void collect_weighted_params_tot_grid();
+  void correct_velocities();
+
+  void collide();
 };
 
 #endif // end of _COLLISIONS_HPP_
