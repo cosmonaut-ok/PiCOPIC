@@ -181,12 +181,11 @@ void Domain::dump_particle_positions_to_old()
 #ifdef COLLISIONS
 void Domain::collide()
 {
+  collisions->run();
   // MSG("COLLIDE");
-  collisions->clear();
-  collisions->sort_to_cells();
-  collisions->random_sort();
-  collisions->collide();
-  // collisions->collide();
+  // collisions->clear();
+  // collisions->sort_to_cells();
+  // collisions->random_sort();
   // collisions->collide();
 }
 #endif

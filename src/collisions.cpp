@@ -17,31 +17,8 @@
 
 #include "collisions.hpp"
 
-#include <vector>
-#include <algorithm>    // std::min, std::random_shuffle
-#include <typeinfo>
-#include <ctime>        // std::time
-#include <cstdlib>      // std::rand, std::srand
-#include <math.h>       // floor, asin
-
-// #include <random>
-// #include <iostream>
-// #include <stdexcept>
-// #include <algorithm>
-
-// using std::mt19937_64;
-// using std::random_device;
-// using std::uniform_int_distribution;
-// using std::vector;
-// using std::cout;
-// using std::cerr;
-// using std::endl;
-// using std::out_of_range;
-#include <string>
-
-#include "lib.hpp"
-#include "geometry.hpp"
-#include "specieP.hpp"
+// say: TA77   - Takizuka, Abe; 1977; DOI: 10.1016/0021-9991(77)90099-7
+//      TITU18 - Tanaka et al.; 2018; DOI: 10.1002/ctpp.201700121
 
 using namespace std;
 
@@ -50,9 +27,20 @@ Collisions::Collisions (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> 
   species_p = _species_p;
   geometry = _geometry;
 
+  m_real_el = EL_MASS;
+  m_real_ion = EL_MASS * 1836;
+
   //! TA77: make dummies to place particles there
   map_el2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
   map_ion2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+
+  energy_tot_el = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  mass_tot_el = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  moment_tot_el = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+
+  energy_tot_ion = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  mass_tot_ion = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  moment_tot_ion = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
 }
 
 //! TA77: clear
@@ -64,6 +52,14 @@ void Collisions::clear()
       map_el2cell(i, j).clear();
       map_ion2cell(i, j).clear();
     }
+
+  mass_tot_ion = 0;
+  moment_tot_ion = 0;
+  energy_tot_ion = 0;
+
+  mass_tot_el = 0;
+  moment_tot_el = 0;
+  energy_tot_el = 0;
 }
 
 //! TA77: 5. group particles to cells
@@ -105,21 +101,51 @@ void Collisions::random_sort ()
     }
 }
 
-void Collisions::collide_single(int i, int j, vector<double> &pa, vector<double> &pb)
+void Collisions::collide_single(int i, int j, double m_real_a, double m_real_b,
+                                vector<double> &pa, vector<double> &pb)
 {
   // get required parameters
-  // ion - b; electron - a
-  double vr_a = P_VEL_R(pa);
-  double vphi_a = P_VEL_PHI(pa);
-  double vz_a = P_VEL_Z(pa);
-  double charge_a = P_CHARGE(pa);
-  double mass_a = P_MASS(pa);
+  double vr_a, vphi_a, vz_a, charge_a, mass_a, vr_b, vphi_b, vz_b,
+    charge_b, mass_b;
 
-  double vr_b = P_VEL_R(pb);
-  double vphi_b = P_VEL_PHI(pb);
-  double vz_b = P_VEL_Z(pb);
-  double charge_b = P_CHARGE(pb);
-  double mass_b = P_MASS(pb);
+  bool swap = false;
+
+  // TITU18: find weight ratio
+  double w_ratio = 1; // P_MASS(pa) * m_real_b / (P_MASS(pb) * m_real_a);
+
+  // a-particle should be lighter, than b-particle
+  if (w_ratio <= 1)
+  {
+    vr_a = P_VEL_R(pa);
+    vphi_a = P_VEL_PHI(pa);
+    vz_a = P_VEL_Z(pa);
+    charge_a = P_CHARGE(pa);
+    mass_a = P_MASS(pa);
+
+    vr_b = P_VEL_R(pb);
+    vphi_b = P_VEL_PHI(pb);
+    vz_b = P_VEL_Z(pb);
+    charge_b = P_CHARGE(pb);
+    mass_b = P_MASS(pb);
+  }
+  else
+  {
+    vr_a = P_VEL_R(pb);
+    vphi_a = P_VEL_PHI(pb);
+    vz_a = P_VEL_Z(pb);
+    charge_a = P_CHARGE(pb);
+    mass_a = P_MASS(pb);
+
+    vr_b = P_VEL_R(pa);
+    vphi_b = P_VEL_PHI(pa);
+    vz_b = P_VEL_Z(pa);
+    charge_b = P_CHARGE(pa);
+    mass_b = P_MASS(pa);
+
+    // swap particles when b-particle is lighter, than a-particle
+    w_ratio = 1 / w_ratio;
+    swap = true;
+  }
 
   double density_el = get_el_density(i, j);
   double density_ion = get_ion_density(i, j);
@@ -137,34 +163,53 @@ void Collisions::collide_single(int i, int j, vector<double> &pa, vector<double>
   double u_p = lib::sq_rt(pow(ux, 2) + pow(uy, 2));
 
   // TA77: calculate scattering angles Theta and Phi
-  double n_lowest = 1e17;
-  double lambda = 10;
   // TA77 sub: find delta
-  // find variance of delta
-  double variance_d = pow(charge_a, 2) * pow(charge_b, 2) * n_lowest * lambda
-    / (8 * constant::PI * pow(EPSILON0, 2) * m_ab * pow(u, 3));
-  // find standard deviation of delta
+  //// find variance of delta
+  double variance_d = pow(charge_a, 2) * pow(charge_b, 2) * density_lowest
+    * lambda_coulomb / (8 * constant::PI * pow(EPSILON0, 2) * m_ab * pow(u, 3));
+  //// find standard deviation of delta
   double std_dev_d = lib::sq_rt(variance_d);
-  // find delta
+  //// find delta
   double delta = math::random::normal(std_dev_d);
 
-  double Theta_angle = 2 * atan(delta);
+  // TA77: find Theta angle
+  double sin_Theta = 2 * delta / (1 + pow(delta, 2));
+  double cos_Theta = 1 - 2 * pow(delta, 2) / (1 + pow(delta, 2));
+
+  // TITU18: find Theta_2 angle
+  double sin_Theta2 = lib::sq_rt(
+    w_ratio * pow(sin_Theta, 2)
+    + w_ratio * ( 1 - w_ratio ) * pow(( 1 - cos_Theta), 2));
+  double cos_Theta2 = 1 - w_ratio * (1 - cos_Theta);
+  // TITU18: sign of the sinus of Theta_angle
+  // should be the same as sinus of Theta2_angle
+  if (sin_Theta2 * sin_Theta < 0)
+    sin_Theta2 = -sin_Theta2;
+
+  // TA77: find Phi angle
   double Phi_angle = math::random::uniform_angle();
-
-  // MSG(Theta_angle << " " << Phi_angle);
-
-  // TA77: calculate delta u components
-  double d_ux, d_uy, d_uz;
-  double sin_Theta = sin(Theta_angle);
-  double cos_Theta = cos(Theta_angle);
   double sin_Phi = sin(Phi_angle);
   double cos_Phi = cos(Phi_angle);
+
+  // TITU18: find Phi_2 angle
+  //// find dzeta for Phi_2 angle
+  double dzeta = math::random::uniform();
+  double Phi2_angle = Phi_angle + 2 * constant::PI * ( 1 - lib::sq_rt(w_ratio)) * (1 - dzeta);
+  double sin_Phi2 = sin(Phi2_angle);
+  double cos_Phi2 = cos(Phi2_angle);
+
+  // TA77: calculate delta u components
+  double d_ux, d_uy, d_uz, d_ux2, d_uy2, d_uz2;
   // simplify calculations
   if (u_p == 0)
   {
     d_ux = u * sin_Theta * cos_Phi;
     d_uy = u * sin_Theta * sin_Phi;
     d_uz = -u * (1 - cos_Theta);
+
+    d_ux2 = u * sin_Theta2 * cos_Phi2;
+    d_uy2 = u * sin_Theta2 * sin_Phi2;
+    d_uz2 = -u * (1 - cos_Theta2);
   }
   else
   {
@@ -178,33 +223,50 @@ void Collisions::collide_single(int i, int j, vector<double> &pa, vector<double>
 
     d_uz = u_p * sin_Theta * cos_Phi
       - uz * (1 - cos_Theta);
+
+    ////
+
+    d_ux2 = (ux / u_p) * uz * sin_Theta2 * cos_Phi2
+      - (uy / u_p) * u * sin_Theta2 * sin_Phi2
+      - ux * (1 - cos_Theta2);
+
+    d_uy2 = (uy / u_p) * uz * sin_Theta2 * cos_Phi2
+      + (ux / u_p) * u * sin_Theta2 * sin_Phi2
+      - uy * (1 - cos_Theta2);
+
+    d_uz2 = u_p * sin_Theta2 * cos_Phi2
+      - uz * (1 - cos_Theta2);
   }
 
   double vr_a_new = vr_a + m_ab/mass_a * d_ux;
   double vphi_a_new = vphi_a + m_ab/mass_a * d_uy;
   double vz_a_new = vz_a + m_ab/mass_a * d_uz;
 
-  double vr_b_new = vr_b + m_ab/mass_b * d_ux;
-  double vphi_b_new = vphi_b + m_ab/mass_b * d_uy;
-  double vz_b_new = vz_b + m_ab/mass_b * d_uz;
+  double vr_b_new = vr_b + m_ab/mass_b * d_ux2;
+  double vphi_b_new = vphi_b + m_ab/mass_b * d_uy2;
+  double vz_b_new = vz_b + m_ab/mass_b * d_uz2;
 
-  // MSG("R_a:   " << vr_a << "=>" << vr_a_new);
-  // MSG("PHI_a: " << vphi_a << "=>" << vphi_a_new);
-  // MSG("Z_a:   " << vz_a << "=>" << vz_a_new);
-  // MSG("R_b:   " << vr_b << "=>" << vr_b_new);
-  // MSG("PHI_b: " << vphi_b << "=>" << vphi_b_new);
-  // MSG("Z_b:   " << vz_b << "=>" << vz_b_new);
+  // set new velocity components
+  if (swap)
+  {
+    P_VEL_R(pa) = vr_b_new;
+    P_VEL_PHI(pa) = vphi_b_new;
+    P_VEL_Z(pa) = vz_b_new;
 
-  // exit(1);
+    P_VEL_R(pb) = vr_a_new;
+    P_VEL_PHI(pb) = vphi_a_new;
+    P_VEL_Z(pb) = vz_a_new;
+  }
+  else
+  {
+    P_VEL_R(pa) = vr_a_new;
+    P_VEL_PHI(pa) = vphi_a_new;
+    P_VEL_Z(pa) = vz_a_new;
 
-  // TA77: set new velocity components
-  P_VEL_R(pa) = vr_a_new;
-  P_VEL_PHI(pa) = vphi_a_new;
-  P_VEL_Z(pa) = vz_a_new;
-
-  P_VEL_R(pb) = vr_b_new;
-  P_VEL_PHI(pb) = vphi_b_new;
-  P_VEL_Z(pb) = vz_b_new;
+    P_VEL_R(pb) = vr_b_new;
+    P_VEL_PHI(pb) = vphi_b_new;
+    P_VEL_Z(pb) = vz_b_new;
+  }
 
   if (vr_a_new > LIGHT_VEL || vphi_a_new > LIGHT_VEL || vz_a_new > LIGHT_VEL
       || vr_b_new > LIGHT_VEL || vphi_b_new > LIGHT_VEL || vz_b_new > LIGHT_VEL)
@@ -229,13 +291,13 @@ void Collisions::collide ()
       // ions
       if (vec_size_ions % 2 == 0)
         for (unsigned int k = 0; k < vec_size_ions; k = k + 2)
-          collide_single(i, j,
+          collide_single(i, j, m_real_ion, m_real_ion,
                          (*map_ion2cell(i, j)[k]),
                          (*map_ion2cell(i, j)[k+1]));
       // electrons
       if (vec_size_electrons % 2 == 0)
         for (unsigned int k = 0; k < vec_size_electrons; k = k + 2)
-          collide_single(i, j,
+          collide_single(i, j, m_real_el, m_real_el,
                          (*map_el2cell(i, j)[k]),
                          (*map_el2cell(i, j)[k+1]));
 
@@ -246,19 +308,19 @@ void Collisions::collide ()
         if (vec_size_ions >= 3)
         {
           // first 3 collisions in special way
-          collide_single(i, j,
+          collide_single(i, j, m_real_ion, m_real_ion,
                          (*map_ion2cell(i, j)[0]),
                          (*map_ion2cell(i, j)[1]));
-          collide_single(i, j,
+          collide_single(i, j, m_real_ion, m_real_ion,
                          (*map_ion2cell(i, j)[1]),
                          (*map_ion2cell(i, j)[2]));
-          collide_single(i, j,
+          collide_single(i, j, m_real_ion, m_real_ion,
                          (*map_ion2cell(i, j)[2]),
                          (*map_ion2cell(i, j)[0]));
         }
         if (vec_size_ions >= 5)
           for (unsigned int k = 3; k < vec_size_ions; k = k + 2)
-            collide_single(i, j,
+            collide_single(i, j, m_real_ion, m_real_ion,
                            (*map_ion2cell(i, j)[k]),
                            (*map_ion2cell(i, j)[k+1]));
       }
@@ -269,19 +331,19 @@ void Collisions::collide ()
         if (vec_size_electrons >= 3)
         {
           // first 3 collisions in special way
-          collide_single(i, j,
+          collide_single(i, j, m_real_el, m_real_el,
                          (*map_el2cell(i, j)[0]),
                          (*map_el2cell(i, j)[1]));
-          collide_single(i, j,
+          collide_single(i, j, m_real_el, m_real_el,
                          (*map_el2cell(i, j)[1]),
                          (*map_el2cell(i, j)[2]));
-          collide_single(i, j,
+          collide_single(i, j, m_real_el, m_real_el,
                          (*map_el2cell(i, j)[2]),
                          (*map_el2cell(i, j)[0]));
         }
         if (vec_size_electrons >= 5)
           for (unsigned int k = 3; k < vec_size_electrons; k = k + 2)
-            collide_single(i, j,
+            collide_single(i, j, m_real_el, m_real_el,
                            (*map_el2cell(i, j)[k]),
                            (*map_el2cell(i, j)[k+1]));
       }
@@ -289,7 +351,7 @@ void Collisions::collide ()
       // TA77: case 2a. electrons-ions
       if (vec_size_ions == vec_size_electrons)
         for (unsigned int k = 0; k < vec_size_electrons; ++k)
-          collide_single(i, j,
+          collide_single(i, j, m_real_el, m_real_ion,
                          (*map_el2cell(i, j)[k]),
                          (*map_ion2cell(i, j)[k]));
 
@@ -303,13 +365,13 @@ void Collisions::collide ()
         int els_1st_group = c_r * vec_size_electrons;
 
         int ions_2nd_group = c_i * (1 - c_r) * vec_size_electrons;
-        int els_2nd_group = (1 - c_r) * vec_size_electrons;
+        // int els_2nd_group = (1 - c_r) * vec_size_electrons;
 
         // TA77: case 2b, 1st group, ions
         for (unsigned int fgi = 0; fgi < ions_1st_group; ++fgi)
         {
           unsigned int fge = floor(float(fgi) / float(c_i+1));
-          collide_single(i, j,
+          collide_single(i, j, m_real_el, m_real_ion,
                          (*map_el2cell(i, j)[fge]),
                          (*map_ion2cell(i, j)[fgi]));
         }
@@ -317,7 +379,7 @@ void Collisions::collide ()
         for (unsigned int fgi = 0; fgi < ions_2nd_group; ++fgi)
         {
           unsigned int fge = floor(float(fgi) / float(c_i));
-          collide_single(i, j,
+          collide_single(i, j, m_real_el, m_real_ion,
                          (*map_el2cell(i, j)[fge+els_1st_group]),
                          (*map_ion2cell(i, j)[fgi+ions_1st_group]));
         }
@@ -332,14 +394,14 @@ void Collisions::collide ()
         int ions_1st_group = c_r * vec_size_ions;
 
         int els_2nd_group = c_i * (1 - c_r) * vec_size_ions;
-        int ions_2nd_group = (1 - c_r) * vec_size_ions;
+        // int ions_2nd_group = (1 - c_r) * vec_size_ions;
 
         // TA77: case 2b, 1st group, electrons
         for (unsigned int fge = 0; fge < els_1st_group; ++fge)
         {
           unsigned int fgi = floor(float(fge) / float(c_i+1));
           // MSG("els 1st:  FGE " << fge << " FGI " << fgi << " VSI " << vec_size_ions << " VSE " << vec_size_electrons);
-          collide_single(i, j,
+          collide_single(i, j, m_real_el, m_real_ion,
                          (*map_el2cell(i, j)[fge]),
                          (*map_ion2cell(i, j)[fgi]));
         }
@@ -348,7 +410,7 @@ void Collisions::collide ()
         {
           unsigned int fgi = floor(float(fge) / float(c_i));
           // MSG("els 2nd:  FGE " << fge << " FGI " << fgi << " VSI " << vec_size_ions << " VSE " << vec_size_electrons);
-          collide_single(i, j,
+          collide_single(i, j, m_real_el, m_real_ion,
                          (*map_el2cell(i, j)[fge+els_1st_group]),
                          (*map_ion2cell(i, j)[fgi+ions_1st_group]));
         }
@@ -359,27 +421,27 @@ void Collisions::collide ()
 double Collisions::get_el_density(int i, int j)
 {
   int len = map_el2cell(i, j).size();
-  double sum_mass;
+  double sum_mass = 0;
   double cell_volume = geometry_cell_volume(i);
 
   // summary electron density in the cell
   for (unsigned int p = 0; p < len; ++p)
     sum_mass += P_MASS((*map_el2cell(i, j)[p]));
 
-  return sum_mass / cell_volume;
+  return sum_mass / cell_volume / m_real_el;
 }
 
 double Collisions::get_ion_density(int i, int j)
 {
   int len = map_ion2cell(i, j).size();
-  double sum_mass;
+  double sum_mass = 0;
   double cell_volume = geometry_cell_volume(i);
 
   // summary electron density in the cell
   for (unsigned int p = 0; p < len; ++p)
     sum_mass += P_MASS((*map_ion2cell(i, j)[p]));
 
-  return sum_mass / cell_volume;
+  return sum_mass / cell_volume / m_real_ion;
 }
 
 double Collisions::geometry_cell_volume(int i)
@@ -390,4 +452,216 @@ double Collisions::geometry_cell_volume(int i)
 
   return CELL_VOLUME(i+shift, dr, dz);
 
+}
+
+void Collisions::correct_velocities()
+{
+  // TITU18: correct velocities
+  for (int i = 0; i < geometry->r_grid_amount; ++i)
+    for (int j = 0; j < geometry->z_grid_amount; ++j)
+    {
+      unsigned int vec_size_ions = map_ion2cell(i, j).size();
+      unsigned int vec_size_electrons = map_el2cell(i, j).size();
+
+      // TITU18: calculate delta V
+      //// calculate summary moment components and total energy for t+delta_t
+      double moment_new_r_ion = 0, moment_new_phi_ion = 0, moment_new_z_ion = 0,
+        moment_new_r_el = 0, moment_new_phi_el = 0, moment_new_z_el = 0,
+        E_tot_ion_new = 0, E_tot_el_new = 0;
+
+      for (unsigned int k = 0; k < vec_size_ions; ++k)
+      {
+        double vr = P_VEL_R((*map_ion2cell(i, j)[k]));
+        double vphi = P_VEL_PHI((*map_ion2cell(i, j)[k]));
+        double vz = P_VEL_Z((*map_ion2cell(i, j)[k]));
+        double v_sq = vr*vr + vphi*vphi + vz*vz;
+
+        double mass = P_MASS((*map_ion2cell(i, j)[k]));
+        double weight = mass / m_real_ion;
+        double weighted_m = weight * mass;
+
+        moment_new_r_ion += weighted_m * vr;
+        moment_new_phi_ion += weighted_m * vphi;
+        moment_new_z_ion += weighted_m * vz;
+        E_tot_ion_new += weighted_m * v_sq / 2;
+      }
+
+      for (unsigned int k = 0; k < vec_size_electrons; ++k)
+      {
+        double vr = P_VEL_R((*map_el2cell(i, j)[k]));
+        double vphi = P_VEL_PHI((*map_el2cell(i, j)[k]));
+        double vz = P_VEL_Z((*map_el2cell(i, j)[k]));
+        double v_sq = vr*vr + vphi*vphi + vz*vz;
+
+        double mass = P_MASS((*map_el2cell(i, j)[k]));
+        double weight = mass / m_real_el;
+        double weighted_m = weight * mass;
+
+        moment_new_r_el += weighted_m * vr;
+        moment_new_phi_el += weighted_m * vphi;
+        moment_new_z_el += weighted_m * vz;
+        E_tot_el_new += weighted_m * v_sq / 2;
+      }
+
+      //// calculate delta V components and delta E total
+      double delta_V_r_ion = (moment_new_r_ion - moment_tot_ion[0](i, j)) / mass_tot_ion(i, j);
+      double delta_V_phi_ion = (moment_new_phi_ion - moment_tot_ion[1](i, j)) / mass_tot_ion(i, j);
+      double delta_V_z_ion = (moment_new_z_ion - moment_tot_ion[2](i, j)) / mass_tot_ion(i, j);
+      double delta_V_r_el = (moment_new_r_el - moment_tot_el[0](i, j)) / mass_tot_el(i, j);
+      double delta_V_phi_el = (moment_new_phi_el - moment_tot_el[1](i, j)) / mass_tot_el(i, j);
+      double delta_V_z_el = (moment_new_z_el - moment_tot_el[2](i, j)) / mass_tot_el(i, j);
+
+      //// calculate V_0 components
+      double V_0_r_ion = moment_tot_ion[0](i, j) / mass_tot_ion(i, j);
+      double V_0_phi_ion = moment_tot_ion[1](i, j) / mass_tot_ion(i, j);
+      double V_0_z_ion = moment_tot_ion[2](i, j) / mass_tot_ion(i, j);
+      double V_0_r_el = moment_tot_el[0](i, j) / mass_tot_el(i, j);
+      double V_0_phi_el = moment_tot_el[1](i, j) / mass_tot_el(i, j);
+      double V_0_z_el = moment_tot_el[2](i, j) / mass_tot_el(i, j);
+      //// calculate delta E total
+      double delta_E_tot_ion = E_tot_ion_new - energy_tot_ion(i, j);
+      double delta_E_tot_el = E_tot_el_new - energy_tot_el(i, j);
+      //// link E total to local vars
+      double E_tot_ion = energy_tot_ion(i, j);
+      double E_tot_el = energy_tot_el(i, j);
+      double V_0_sq_ion = V_0_r_ion*V_0_r_ion + V_0_phi_ion*V_0_phi_ion + V_0_z_ion*V_0_z_ion;
+      double delta_V_sq_ion = delta_V_r_ion*delta_V_r_ion
+        + delta_V_phi_ion*delta_V_phi_ion
+        + delta_V_z_ion*delta_V_z_ion;
+      double V_0_sq_el = V_0_r_el*V_0_r_el + V_0_phi_el*V_0_phi_el + V_0_z_el*V_0_z_el;
+      double delta_V_sq_el = delta_V_r_el*delta_V_r_el
+        + delta_V_phi_el*delta_V_phi_el
+        + delta_V_z_el*delta_V_z_el;
+      /// calculate alpha
+      double alpha_ion =
+        ( E_tot_ion - mass_tot_ion(i, j) * V_0_sq_ion / 2 )
+        / ( E_tot_ion
+            + delta_E_tot_ion
+            - mass_tot_ion(i, j)
+            * ( pow(V_0_r_ion + delta_V_r_ion, 2)
+                + pow(V_0_phi_ion + delta_V_phi_ion, 2)
+                + pow(V_0_z_ion + delta_V_z_ion, 2)
+              )
+            / 2
+          );
+      double alpha_el =
+        ( E_tot_el - mass_tot_el(i, j) * V_0_sq_el / 2 )
+        / ( E_tot_el
+            + delta_E_tot_el
+            - mass_tot_el(i, j)
+            * ( pow(V_0_r_el + delta_V_r_el, 2)
+                + pow(V_0_phi_el + delta_V_phi_el, 2)
+                + pow(V_0_z_el + delta_V_z_el, 2)
+              )
+            / 2
+          );
+
+      // FIXME: quick and dirty workadound
+      // caused negative values under squared root
+      // and zeros
+      if (alpha_ion < 0) alpha_ion = -alpha_ion;
+      if (alpha_el < 0) alpha_el = -alpha_el;
+      if (alpha_ion == 0) alpha_ion = 1;
+      if (alpha_el == 0) alpha_el = 1;
+
+      alpha_ion = lib::sq_rt(alpha_ion);
+      alpha_el = lib::sq_rt(alpha_el);
+
+      // correct ion velocity
+      for (unsigned int k = 0; k < vec_size_ions; ++k)
+      {
+        double vr = P_VEL_R((*map_ion2cell(i, j)[k]));
+        double vphi = P_VEL_PHI((*map_ion2cell(i, j)[k]));
+        double vz = P_VEL_Z((*map_ion2cell(i, j)[k]));
+
+        double vr_corr = V_0_r_ion + alpha_ion * (vr - V_0_r_ion - delta_V_r_ion);
+        double vphi_corr = V_0_phi_ion + alpha_ion * (vphi - V_0_phi_ion - delta_V_phi_ion);
+        double vz_corr = V_0_z_ion + alpha_ion * (vz - V_0_z_ion - delta_V_z_ion);
+
+        P_VEL_R((*map_ion2cell(i, j)[k])) = vr_corr;
+        P_VEL_PHI((*map_ion2cell(i, j)[k])) = vphi_corr;
+        P_VEL_Z((*map_ion2cell(i, j)[k])) = vz_corr;
+      }
+
+      // correct electron velocity
+      for (unsigned int k = 0; k < vec_size_electrons; ++k)
+      {
+        double vr = P_VEL_R((*map_el2cell(i, j)[k]));
+        double vphi = P_VEL_PHI((*map_el2cell(i, j)[k]));
+        double vz = P_VEL_Z((*map_el2cell(i, j)[k]));
+
+        double vr_corr = V_0_r_el + alpha_el * (vr - V_0_r_el - delta_V_r_el);
+        double vphi_corr = V_0_phi_el + alpha_el * (vphi - V_0_phi_el - delta_V_phi_el);
+        double vz_corr = V_0_z_el + alpha_el * (vz - V_0_z_el - delta_V_z_el);
+
+        P_VEL_R((*map_el2cell(i, j)[k])) = vr_corr;
+        P_VEL_PHI((*map_el2cell(i, j)[k])) = vphi_corr;
+        P_VEL_Z((*map_el2cell(i, j)[k])) = vz_corr;
+      }
+    }
+
+}
+
+void Collisions::collect_weighted_params_tot_grid()
+{
+  for (int i = 0; i < geometry->r_grid_amount; ++i)
+    for (int j = 0; j < geometry->z_grid_amount; ++j)
+    {
+      unsigned int vec_size_ions = map_ion2cell(i, j).size();
+      unsigned int vec_size_electrons = map_el2cell(i, j).size();
+
+      // ion weighting
+      for (unsigned int k = 0; k < vec_size_ions; ++k)
+      {
+        double vr = P_VEL_R((*map_ion2cell(i, j)[k]));
+        double vphi = P_VEL_PHI((*map_ion2cell(i, j)[k]));
+        double vz = P_VEL_Z((*map_ion2cell(i, j)[k]));
+        double v_sq = vr*vr + vphi*vphi + vz*vz;
+
+        double mass = P_MASS((*map_ion2cell(i, j)[k]));
+        double weight = mass / m_real_ion;
+        double weighted_m = weight * mass;
+
+        // increase sum of moment
+        moment_tot_ion[0].inc(i, j, weighted_m * vr);
+        moment_tot_ion[1].inc(i, j, weighted_m * vphi);
+        moment_tot_ion[2].inc(i, j, weighted_m * vz);
+        // increase sum os mass
+        mass_tot_ion.inc(i, j, weighted_m);
+        // increase sum of moment
+        energy_tot_ion.inc(i, j, weighted_m * v_sq / 2);
+      }
+
+      // electron weighting
+      for (unsigned int k = 0; k < vec_size_electrons; ++k)
+      {
+        double vr = P_VEL_R((*map_el2cell(i, j)[k]));
+        double vphi = P_VEL_PHI((*map_el2cell(i, j)[k]));
+        double vz = P_VEL_Z((*map_el2cell(i, j)[k]));
+        double v_sq = vr*vr + vphi*vphi + vz*vz;
+
+        double mass = P_MASS((*map_el2cell(i, j)[k]));
+        double weight = mass / m_real_el;
+        double weighted_m = weight * mass;
+
+        // increase sum of moment
+        moment_tot_el[0].inc(i, j, weighted_m * vr);
+        moment_tot_el[1].inc(i, j, weighted_m * vphi);
+        moment_tot_el[2].inc(i, j, weighted_m * vz);
+        // increase sum os mass
+        mass_tot_el.inc(i, j, weighted_m);
+        // increase sum of moment
+        energy_tot_el.inc(i, j, weighted_m * v_sq / 2);
+      }
+    }
+}
+
+void Collisions::run ()
+{
+  clear();
+  sort_to_cells();
+  random_sort();
+  collect_weighted_params_tot_grid();
+  collide();
+  correct_velocities();
 }
