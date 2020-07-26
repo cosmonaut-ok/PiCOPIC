@@ -159,6 +159,9 @@ void Collisions::collide_single(int i, int j, double m_real_a, double m_real_b,
   double uz = vz_a - vz_b;
   double u = lib::sq_rt(pow(ux, 2) + pow(uy, 2) + pow(uz, 2));
 
+  // if ``u'' (relative velocity) is zero, particles can not collide
+  if (u == 0) return;
+
   // TA77: calculate u perpendicular
   double u_p = lib::sq_rt(pow(ux, 2) + pow(uy, 2));
 
@@ -245,6 +248,37 @@ void Collisions::collide_single(int i, int j, double m_real_a, double m_real_b,
   double vr_b_new = vr_b + m_ab/mass_b * d_ux2;
   double vphi_b_new = vphi_b + m_ab/mass_b * d_uy2;
   double vz_b_new = vz_b + m_ab/mass_b * d_uz2;
+
+
+  if ( !isnormal(vr_a_new)
+       || !isnormal(vphi_a_new)
+       || !isnormal(vz_a_new)
+       || !isnormal(vr_b_new)
+       || !isnormal(vphi_b_new)
+       || !isnormal(vz_b_new)
+    )
+  {
+    LOG_ERR("Something went wrong during collide. Velocities a :"
+            << vr_a_new << ","
+            << vphi_a_new << ","
+            << vz_a_new << ","
+            << vr_b_new << ","
+            << vphi_b_new << ","
+            << vz_b_new << ";"
+            << "Sinuses: "
+            << sin_Theta << ","
+            << sin_Theta2 << ","
+            << sin_Phi << ","
+            << sin_Phi2 << ";"
+            << "Cosinuses: "
+            << cos_Theta << ","
+            << cos_Theta2 << ","
+            << cos_Phi << ","
+            << cos_Phi2 << ";"
+            << "Variance of delta: "
+            << m_ab << " "
+            << pow(u, 3));
+  }
 
   // set new velocity components
   if (swap)
@@ -556,47 +590,56 @@ void Collisions::correct_velocities()
             / 2
           );
 
-      // FIXME: quick and dirty workadound
-      // caused negative values under squared root
-      // and zeros
-      if (alpha_ion < 0) alpha_ion = -alpha_ion;
-      if (alpha_el < 0) alpha_el = -alpha_el;
-      if (alpha_ion == 0) alpha_ion = 1;
-      if (alpha_el == 0) alpha_el = 1;
-
-      alpha_ion = lib::sq_rt(alpha_ion);
-      alpha_el = lib::sq_rt(alpha_el);
-
       // correct ion velocity
-      for (unsigned int k = 0; k < vec_size_ions; ++k)
+      if (isnormal(alpha_ion)) // FIXME: sometimes E_tot_ion = mass_tot_ion(i, j) * V_0_sq_ion / 2
       {
-        double vr = P_VEL_R((*map_ion2cell(i, j)[k]));
-        double vphi = P_VEL_PHI((*map_ion2cell(i, j)[k]));
-        double vz = P_VEL_Z((*map_ion2cell(i, j)[k]));
+        // FIXME: quick and dirty workadound
+        // caused negative values under squared root
+        // and zeros
+        if (alpha_ion < 0) alpha_ion = -alpha_ion;
+        if (alpha_ion == 0) alpha_ion = 1;
+        alpha_ion = lib::sq_rt(alpha_ion);
 
-        double vr_corr = V_0_r_ion + alpha_ion * (vr - V_0_r_ion - delta_V_r_ion);
-        double vphi_corr = V_0_phi_ion + alpha_ion * (vphi - V_0_phi_ion - delta_V_phi_ion);
-        double vz_corr = V_0_z_ion + alpha_ion * (vz - V_0_z_ion - delta_V_z_ion);
+        for (unsigned int k = 0; k < vec_size_ions; ++k)
+        {
+          double vr = P_VEL_R((*map_ion2cell(i, j)[k]));
+          double vphi = P_VEL_PHI((*map_ion2cell(i, j)[k]));
+          double vz = P_VEL_Z((*map_ion2cell(i, j)[k]));
 
-        P_VEL_R((*map_ion2cell(i, j)[k])) = vr_corr;
-        P_VEL_PHI((*map_ion2cell(i, j)[k])) = vphi_corr;
-        P_VEL_Z((*map_ion2cell(i, j)[k])) = vz_corr;
+          double vr_corr = V_0_r_ion + alpha_ion * (vr - V_0_r_ion - delta_V_r_ion);
+          double vphi_corr = V_0_phi_ion + alpha_ion * (vphi - V_0_phi_ion - delta_V_phi_ion);
+          double vz_corr = V_0_z_ion + alpha_ion * (vz - V_0_z_ion - delta_V_z_ion);
+
+          P_VEL_R((*map_ion2cell(i, j)[k])) = vr_corr;
+          P_VEL_PHI((*map_ion2cell(i, j)[k])) = vphi_corr;
+          P_VEL_Z((*map_ion2cell(i, j)[k])) = vz_corr;
+        }
       }
 
       // correct electron velocity
-      for (unsigned int k = 0; k < vec_size_electrons; ++k)
+      if (isnormal(alpha_el)) // FIXME: sometimes E_tot_el = mass_tot_el(i, j) * V_0_sq_el / 2
       {
-        double vr = P_VEL_R((*map_el2cell(i, j)[k]));
-        double vphi = P_VEL_PHI((*map_el2cell(i, j)[k]));
-        double vz = P_VEL_Z((*map_el2cell(i, j)[k]));
+        // FIXME: quick and dirty workadound
+        // caused negative values under squared root
+        // and zeros
+        if (alpha_el < 0) alpha_el = -alpha_el;
+        if (alpha_el == 0) alpha_el = 1;
+        alpha_el = lib::sq_rt(alpha_el);
 
-        double vr_corr = V_0_r_el + alpha_el * (vr - V_0_r_el - delta_V_r_el);
-        double vphi_corr = V_0_phi_el + alpha_el * (vphi - V_0_phi_el - delta_V_phi_el);
-        double vz_corr = V_0_z_el + alpha_el * (vz - V_0_z_el - delta_V_z_el);
+        for (unsigned int k = 0; k < vec_size_electrons; ++k)
+        {
+          double vr = P_VEL_R((*map_el2cell(i, j)[k]));
+          double vphi = P_VEL_PHI((*map_el2cell(i, j)[k]));
+          double vz = P_VEL_Z((*map_el2cell(i, j)[k]));
 
-        P_VEL_R((*map_el2cell(i, j)[k])) = vr_corr;
-        P_VEL_PHI((*map_el2cell(i, j)[k])) = vphi_corr;
-        P_VEL_Z((*map_el2cell(i, j)[k])) = vz_corr;
+          double vr_corr = V_0_r_el + alpha_el * (vr - V_0_r_el - delta_V_r_el);
+          double vphi_corr = V_0_phi_el + alpha_el * (vphi - V_0_phi_el - delta_V_phi_el);
+          double vz_corr = V_0_z_el + alpha_el * (vz - V_0_z_el - delta_V_z_el);
+
+          P_VEL_R((*map_el2cell(i, j)[k])) = vr_corr;
+          P_VEL_PHI((*map_el2cell(i, j)[k])) = vphi_corr;
+          P_VEL_Z((*map_el2cell(i, j)[k])) = vz_corr;
+        }
       }
     }
 
