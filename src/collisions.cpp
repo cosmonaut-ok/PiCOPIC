@@ -111,7 +111,7 @@ void Collisions::collide_single(int i, int j, double m_real_a, double m_real_b,
   bool swap = false;
 
   // TITU18: find weight ratio
-  double w_ratio = 1; // P_MASS(pa) * m_real_b / (P_MASS(pb) * m_real_a);
+  double w_ratio = P_MASS(pa) * m_real_b / (P_MASS(pb) * m_real_a);
 
   // a-particle should be lighter, than b-particle
   if (w_ratio <= 1)
