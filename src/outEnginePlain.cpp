@@ -29,7 +29,7 @@ OutEnginePlain::OutEnginePlain (string a_path, string a_subpath, unsigned int a_
   metadata_file = "metadata.json";
 
   if (compress)
-    LOG_WARN("compression is not supported by plaintext output engine");
+    LOG_S(WARNING) << "compression is not supported by plaintext output engine";
 }
 
 void OutEnginePlain::write_rec(string a_name, Grid<double> data)
@@ -72,7 +72,7 @@ void OutEnginePlain::write_vec(string a_name, Grid<double> data)
       out_val << data(i, size[3]) << " ";
   }
   else
-    LOG_CRIT("Incorrect shape for vector output", 1);
+    LOG_S(FATAL) << "Incorrect shape for vector output";
 
   out_val.close();
 }

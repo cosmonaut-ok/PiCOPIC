@@ -18,7 +18,8 @@
 #ifndef _GRID_HPP_
 #define _GRID_HPP_
 
-#include "msg.hpp"
+#include "defines.hpp"
+#include "loguru.hpp"
 
 template <class T>
 class Grid
@@ -104,7 +105,7 @@ public:
         }
     else
     {
-      LOG_CRIT("overlay_x: X sizes of left and right grid are not equal. Can not overlay", 1);
+      LOG_S(FATAL) << "overlay_x: X sizes of left and right grid are not equal. Can not overlay";
     }
   };
 
@@ -122,7 +123,7 @@ public:
         }
     else
     {
-      LOG_CRIT("overlay_y: Y sizes of bottom and top grid are not equal. Can not overlay", 1);
+      LOG_S(FATAL) << "overlay_y: Y sizes of bottom and top grid are not equal. Can not overlay";
     }
   };
 
@@ -140,7 +141,7 @@ public:
         }
     else
     {
-      LOG_CRIT("overlay_xy: X or Y sizes of bottom-left and top-right grid are not equal. Can not overlay", 1);
+      LOG_S(FATAL) << "overlay_xy: X or Y sizes of bottom-left and top-right grid are not equal. Can not overlay";
     }
   };
 
@@ -152,7 +153,7 @@ public:
         for (unsigned int j = 0; j < y_real_size; ++j)
           grid[i][j] = rhs.grid[i][j];
     else
-      LOG_CRIT("overlay_xy: X or Y sizes of bottom-left and top-right grid are not equal. Can not overlay", 1);
+      LOG_S(FATAL) << "overlay_xy: X or Y sizes of bottom-left and top-right grid are not equal. Can not overlay";
   };
 
   // operators overloading

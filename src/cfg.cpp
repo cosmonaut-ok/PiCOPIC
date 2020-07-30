@@ -41,9 +41,20 @@ Cfg::Cfg(const char *json_file_name)
   ss >> v;
   string err = get_last_error();
   if(!err.empty())
-    LOG_CRIT(err, 1);
+    LOG_S(FATAL) << err;
 
   json_data = v;
+
+  //! set logfile
+  log_file = (char*)json_data.get<object>()["log_file"].get<string>().c_str();
+  // set log level, file etc
+#ifndef DEBUG
+  loguru::add_file(log_file, loguru::Truncate, loguru::Verbosity_MAX);
+  loguru::g_stderr_verbosity = loguru::Verbosity_MAX;
+#else
+  loguru::add_file(log_file, loguru::Truncate, loguru::Verbosity_INFO);
+  loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
+#endif
 
   //! update json with additional items
   //! to inform about build options
@@ -221,27 +232,27 @@ void Cfg::init_probes ()
       p_p.z_start = -1;
     }
     else
-      LOG_CRIT("Unknown probe shape ``" << p_shape << "''", 1);
+      LOG_S(FATAL) << "Unknown probe shape ``" << p_shape << "''";
 
     p_p.schedule = (int)o["schedule"].get<double>();
 
     if (p_p.r_start > p_p.r_end || p_p.z_start > p_p.z_end)
     {
-      LOG_CRIT("Incorrect probe's " << p_p.component << "/" << p_shape << " shape: ["
+      LOG_S(FATAL) << "Incorrect probe's " << p_p.component << "/" << p_shape << " shape: ["
                << p_p.r_start << "," << p_p.r_end << ","
-               << p_p.z_start << "," << p_p.z_end << "]", 1);
+               << p_p.z_start << "," << p_p.z_end << "]";
     }
     else if (p_p.r_end > geometry->r_grid_amount)
     {
-      LOG_CRIT("Probe's " << p_p.component << "/" << p_shape << " radius is out of simulation domain: "
+      LOG_S(FATAL) << "Probe's " << p_p.component << "/" << p_shape << " radius is out of simulation domain: "
                << p_p.r_end << ". Must be less, than "
-               << geometry->r_grid_amount, 1);
+               << geometry->r_grid_amount;
     }
     else if (p_p.z_end > geometry->z_grid_amount)
     {
-      LOG_CRIT("Probe's " << p_p.component << "/" << p_shape << " longitude is out of simulation domain: "
+      LOG_S(FATAL) << "Probe's " << p_p.component << "/" << p_shape << " longitude is out of simulation domain: "
                << p_p.z_end << ". Must be less, than "
-               << geometry->z_grid_amount, 1);
+		   << geometry->z_grid_amount;
     }
     else
       probes.push_back(p_p);
@@ -320,7 +331,7 @@ void Cfg::init_geometry ()
 
   //
 #ifdef SINGLETHREAD
-  LOG_INFO("Singlethread mode. Reducing domains amount to 1");
+  LOG_S(INFO) << "Singlethread mode. Reducing domains amount to 1";
   geometry->domains_by_r = 1;
   geometry->domains_by_z = 1;
 #else
@@ -375,41 +386,41 @@ void Cfg::weight_macro_amount()
 
   // message about pusher, used in system
 #ifdef PUSHER_BORIS_CLASSIC
-  LOG_INFO("Using classic Boris particles pusher");
+  LOG_S(INFO) << "Using classic Boris particles pusher";
 #elif defined PUSHER_BORIS_ADAPTIVE
-  LOG_INFO("Using adaptive Boris particles pusher");
+  LOG_S(INFO) << "Using adaptive Boris particles pusher";
 #elif defined PUSHER_BORIS_RELATIVISTIC
-  LOG_INFO("Using fully relativistic Boris particles pusher");
+  LOG_S(INFO) << "Using fully relativistic Boris particles pusher";
 #elif defined PUSHER_VAY
-  LOG_INFO("Using Vay particles pusher");
+  LOG_S(INFO) << "Using Vay particles pusher";
 #elif defined PUSHER_HIGUERA_CARY
-  LOG_INFO("Using Higuera-Cary particles pusher");
+  LOG_S(INFO) << "Using Higuera-Cary particles pusher";
 #else
-  LOG_CRIT("Undefined particles pusher used", 1);
+  LOG_S(FATAL) << "Undefined particles pusher used";
 #endif
 
   // message about charge conservation scheme, used in system
 #if defined(CCS_ZIGZAG)
-  LOG_INFO("Using ZigZag charge conservation scheme");
+  LOG_S(INFO) << "Using ZigZag charge conservation scheme";
 #elif defined(CCS_VILLASENOR_BUNEMAN)
-  LOG_INFO("Using Villasenor-Buneman charge conservation scheme");
+  LOG_S(INFO) << "Using Villasenor-Buneman charge conservation scheme";
 #endif
 
   // message about coulomb colisions
 #ifdef COLLISIONS
-  LOG_INFO("Simulating with DSMC Coulomb collisions (10.1002/ctpp.201700121)");
+  LOG_S(INFO) << "Simulating with DSMC Coulomb collisions (10.1002/ctpp.201700121)";
 #endif
 
   // align macroparticles amount to particle species
   // with respect to normalization
 #if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)
-  LOG_INFO("Using amount-dependent plama macroparticles spatial distribution");
-  LOG_INFO("Amount of plasma macroparticles could be changed to satisfy spatial distribution requirement");
+  LOG_S(INFO) << "Using amount-dependent plama macroparticles spatial distribution";
+  LOG_S(INFO) << "Amount of plasma macroparticles could be changed to satisfy spatial distribution requirement";
 #endif
   for (auto p_s = particle_species.begin(); p_s != particle_species.end(); ++p_s)
   {
     (*p_s).macro_amount = (unsigned int)(geometry->r_grid_amount * geometry->z_grid_amount * norm);
-    LOG_INFO("Macro amount for ``" << (*p_s).name << "'' speice is " << (*p_s).macro_amount);
+    LOG_S(INFO) << "Macro amount for ``" << (*p_s).name << "'' speice is " << (*p_s).macro_amount;
   }
 
   // align macroparticles amount to particle beams
@@ -420,7 +431,7 @@ void Cfg::weight_macro_amount()
     double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->z_cell_size;
 
     (*b).macro_amount = (unsigned int)(beam_r_grid_size * beam_z_grid_size * norm * beam_macro_ratio);
-    LOG_INFO("Macro amount for ``" << (*b).name << "'' beam is " << (*b).macro_amount);
+    LOG_S(INFO) << "Macro amount for ``" << (*b).name << "'' beam is " << (*b).macro_amount;
   }
 }
 
@@ -433,22 +444,22 @@ bool Cfg::method_limitations_check ()
   // grid limitations
   if ((fmod(geometry->domains_by_r, 2) != 0 && geometry->domains_by_r != 1) || (fmod(geometry->domains_by_z, 2) != 0 && geometry->domains_by_z != 1))
     {
-      LOG_CRIT("Amount of domains should be multiple of 2, or 1", 1);
+      LOG_S(FATAL) << "Amount of domains should be multiple of 2, or 1";
     }
 
   // if (geometry->r_grid_amount / geometry->domains_by_r < MIN_DOMAIN_GRID_AMOUNT)
   //   {
-  //     LOG_CRIT("Too small domain size by r. Must be ``" << MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
+  //     LOG_S(FATAL) << "Too small domain size by r. Must be ``" << MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
   //   }
 
   // if (geometry->z_grid_amount / geometry->domains_by_z < MIN_DOMAIN_GRID_AMOUNT)
   //   {
-  //     LOG_CRIT("Too small domain size by z. Must be ``" << MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
+  //     LOG_S(FATAL) << "Too small domain size by z. Must be ``" << MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
   //   }
 
   // if (geometry->r_grid_amount / geometry->domains_by_r * geometry->z_grid_amount / geometry->domains_by_z < MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT)
   //   {
-  //     LOG_CRIT("Too small domain size. Must be ``" << MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
+  //     LOG_S(FATAL) << "Too small domain size. Must be ``" << MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
   //   }
 
 // try to figure out, where is electrons
@@ -469,7 +480,7 @@ bool Cfg::method_limitations_check ()
 
   if (electron_density == 0)
   {
-    LOG_CRIT("There is no electrons present in system", 1);
+    LOG_S(FATAL) << "There is no electrons present in system";
   }
 
   double plasma_freq = sqrt(electron_density * EL_CHARGE * EL_CHARGE / (EL_MASS * EPSILON0));
@@ -485,11 +496,11 @@ bool Cfg::method_limitations_check ()
 
   if (time->step > max_time)
   {
-    LOG_CRIT("Too large time step: ``"
+    LOG_S(FATAL) << "Too large time step: ``"
              << time->step
              << " s.''. Should be less, than ``"
              << max_time
-             << " s.''", 1);
+             << " s.''";
   }
 
   // cell size d{r,z} < \lambda debye
@@ -503,33 +514,33 @@ bool Cfg::method_limitations_check ()
     if (geometry->r_cell_size > debye_length * debye_multiplicator
 	|| geometry->z_cell_size > debye_length * debye_multiplicator)
     {
-      LOG_CRIT("Too large grid size: ``"
+      LOG_S(FATAL) << "Too large grid size: ``"
 	       << geometry->r_cell_size << " x " << geometry->z_cell_size
 	       << " m.''. Should be less, than ``"
 	       << debye_length * debye_multiplicator
-	       << " m.''", 1);
+		   << " m.''";
     }
 
     // \f$ L >> R_{debye} \f$
     if (geometry->r_size < debye_length * debye_multiplicator
 	|| geometry->z_size < debye_length * debye_multiplicator)
     {
-      LOG_CRIT("Too small system size: ``"
+      LOG_S(FATAL) << "Too small system size: ``"
 	       << geometry->r_size << " x " << geometry->z_size
 	       << " m.''. Should be more, than ``"
 	       <<  debye_length * debye_multiplicator
-	       << " m.''", 1);
+		   << " m.''";
     }
 
     // \f$ L << N_{particles} * R_{debye} \f$
     if (geometry->r_size > debye_length * full_macro_amount * debye_multiplicator
 	|| geometry->z_size > debye_length * full_macro_amount * debye_multiplicator)
     {
-      LOG_CRIT("Too large system size: ``"
+      LOG_S(FATAL) << "Too large system size: ``"
 	       << geometry->r_size << " x " << geometry->z_size
 	       << " m.''. Should be less, than ``"
 	       <<  debye_length * full_macro_amount * debye_multiplicator
-	       << " m.''", 1);
+	       << " m.''";
     }
   }
 
@@ -537,11 +548,11 @@ bool Cfg::method_limitations_check ()
 
   if (geometry->r_grid_amount * geometry->r_grid_amount * grid_multiplicator > full_macro_amount)
   {
-    LOG_WARN("Too small summary number of macroparticles: ``"
+    LOG_S(WARNING) << "Too small summary number of macroparticles: ``"
              << full_macro_amount
              << "''. Should be more, than ``"
              <<  geometry->r_grid_amount * geometry->r_grid_amount * grid_multiplicator
-             << "''. You could get not relevant results");
+             << "''. You could get not relevant results";
   }
 
   return true;

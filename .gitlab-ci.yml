@@ -17,9 +17,10 @@ build:
   tags:
     - plasma
   script:
+    - apk add linux-headers build-base libexecinfo-dev
     - ./autogen.sh
     - ./configure --enable-debug --enable-fixme
-    - make build
+    - make build LIBRARIES=execinfo
 
 test:
   stage: test
@@ -28,7 +29,8 @@ test:
   tags:
     - plasma
   script:
-    - make test
+    - apk add linux-headers build-base libexecinfo-dev
+    - make test LIBRARIES=execinfo
 
 doc:
   stage: postbuild

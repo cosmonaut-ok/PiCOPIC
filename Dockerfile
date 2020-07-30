@@ -2,7 +2,7 @@ FROM python:alpine
 
 WORKDIR /tmp
 
-RUN apk add alpine-sdk imagemagick libtool wget autoconf automake doxygen python3 python3-dev py3-pip freetype-dev
+RUN apk add alpine-sdk imagemagick libtool wget autoconf automake doxygen python3 python3-dev py3-pip freetype-dev linux-headers build-base libexecinfo-dev
 RUN ln -s /usr/bin/pip3 /usr/bin/pip
 RUN ln -sf /usr/bin/pip3 /usr/local/bin/pip
 RUN ln -s /usr/bin/python3 /usr/bin/python

@@ -41,7 +41,7 @@ SpecieP::SpecieP (unsigned int p_id,
 /// to satisfy conditions of regular/centered
 /// spatial distributions
 #if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)
-  LOG_DBG("Correcting domain plasma particles macro amount to satisfy spatial distribution");
+  LOG_S(MAX) << "Correcting domain plasma particles macro amount to satisfy spatial distribution";
   double r_size = geometry->r_size;
   double z_size = geometry->z_size;
   double dr = geometry->r_cell_size;
@@ -330,7 +330,7 @@ void SpecieP::velocity_distribution ()
 #elif PLASMA_VELOCITY_EIGEN
   eigen_velocity_distribution();
 #else
-  LOG_CRIT("Plasma velocity distribution type unknown", 1);
+  LOG_S(FATAL) << "Plasma velocity distribution type unknown";
 #endif
 }
 
@@ -433,7 +433,7 @@ void SpecieP::eigen_directed_velocity_distribution (unsigned int dir)
       P_VEL_Z((**p)) = therm_vel;
     break;
   default:
-    LOG_CRIT("Incorrect switch of rectangular directed velocity component: " << dir, 1);
+    LOG_S(FATAL) << "Incorrect switch of rectangular directed velocity component: " << dir;
     break;
   }
 }
@@ -469,9 +469,9 @@ void SpecieP::boris_pusher()
         isinf(pos_r) != 0 ||
         isnan(pos_z) ||
         isinf(pos_z) != 0)
-      LOG_CRIT("(boris_pusher): radius[" << pos_r
+      LOG_S(FATAL) << "(boris_pusher): radius[" << pos_r
                << "] or longitude[" << pos_z
-               << "] is not valid number. Can not continue.", 1);
+               << "] is not valid number. Can not continue.";
 
     e = field_e->get_field(pos_r, pos_z);
     b = field_h->get_field(pos_r, pos_z);
@@ -568,8 +568,6 @@ void SpecieP::vay_pusher()
   // !
   // ! Vay pusher
   // !
-  // LOG_CRIT("Vay pusher not implemented", 1)
-
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
     vector3d<double> velocity(P_VEL_R((**p)), P_VEL_PHI((**p)), P_VEL_Z((**p)));

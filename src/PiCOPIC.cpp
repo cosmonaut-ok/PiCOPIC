@@ -119,9 +119,9 @@ void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_glob
 
                                if (r_cell < 0 || z_cell < 0)
                                {
-                                 LOG_ERR("Particle's position is less, than 0. Position is: ["
+                                 LOG_S(ERROR) << "Particle's position is less, than 0. Position is: ["
                                          << P_POS_R((*o)) << ", "
-                                         << P_POS_Z((*o)) << "]. Removing");
+                                         << P_POS_Z((*o)) << "]. Removing";
                                  ++r_c;
                                  res = true;
                                }
@@ -130,17 +130,17 @@ void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_glob
                                {
                                  if ((**ps).id >= BEAM_ID_START)
                                  {
-                                   LOG_DBG("Beam particle is out of simulation domain: ["
+                                   LOG_S(MAX) << "Beam particle is out of simulation domain: ["
                                            << P_POS_R((*o)) << ", "
-                                           << P_POS_Z((*o)) << "]. Removing");
+                                           << P_POS_Z((*o)) << "]. Removing";
                                  }
                                  else
                                  {
-                                   LOG_ERR("Particle's r-position is more, than geometry r-size: "
+                                   LOG_S(ERROR) << "Particle's r-position is more, than geometry r-size: "
                                            << geometry_global->r_grid_amount
                                            << ". Position is: ["
                                            << P_POS_R((*o)) << ", "
-                                           << P_POS_Z((*o)) << "]. Removing");
+                                           << P_POS_Z((*o)) << "]. Removing";
                                  }
                                  ++r_c;
                                  res = true;
@@ -151,17 +151,17 @@ void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_glob
                                {
                                  if ((**ps).id >= BEAM_ID_START)
                                  {
-                                   LOG_DBG("Beam particle is out of simulation domain: ["
+                                   LOG_S(MAX) << "Beam particle is out of simulation domain: ["
                                            << P_POS_R((*o)) << ", "
-                                           << P_POS_Z((*o)) << "]. Removing");
+                                           << P_POS_Z((*o)) << "]. Removing";
                                  }
                                  else
                                  {
-                                   LOG_ERR("Particle's z-position is more, than geometry z-size: "
+                                   LOG_S(ERROR) << "Particle's z-position is more, than geometry z-size: "
                                            << geometry_global->z_grid_amount
                                            << ". Position is: ["
                                            << P_POS_R((*o)) << ", "
-                                           << P_POS_Z((*o)) << "]. Removing");
+                                           << P_POS_Z((*o)) << "]. Removing";
                                  }
                                  ++r_c;
                                  res = true;
@@ -176,12 +176,12 @@ void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_glob
                                  for (auto pd = dst_domain->species_p.begin(); pd != dst_domain->species_p.end(); ++pd)
                                    if ((**pd).id == (**ps).id)
                                    {
-                                     LOG_DBG("Particle with specie "
+                                     LOG_S(MAX) << "Particle with specie "
                                              << (**ps).id
                                              << " jump from domain "
                                              << i << "," << j
                                              << " to domain "
-                                             << i_dst << "," << j_dst);
+                                             << i_dst << "," << j_dst;
                                      (**pd).particles.push_back(o);
                                    }
 
@@ -195,11 +195,11 @@ void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_glob
     }
   if (j_c > 0)
   {
-    LOG_DBG("Amount of particles to jump between domains: " << j_c);
+    LOG_S(MAX) << "Amount of particles to jump between domains: " << j_c;
   }
   if (r_c > 0)
   {
-    LOG_DBG("Amount of particles to remove: " << r_c);
+    LOG_S(MAX) << "Amount of particles to remove: " << r_c;
   }
 }
 
@@ -316,41 +316,42 @@ void field_e_overlay (Grid<Domain*> domains, Geometry *geometry_global)
 
 int main(int argc, char **argv)
 {
+  loguru::init(argc, argv);
 
 #ifdef _OPENMP
 #ifdef OPENMP_DYNAMIC_THREADS
   omp_set_dynamic(1); // Explicitly enable dynamic teams
-  LOG_DBG("Number of Calculation Processors Changing Dynamically");
+  LOG_S(MAX) << "Number of Calculation Processors Changing Dynamically";
 #else
   int cores = omp_get_num_procs();
-  LOG_DBG("Number of Calculation Processors: " << cores);
+  LOG_S(MAX) << "Number of Calculation Processors: " << cores;
   omp_set_dynamic(0); // Explicitly disable dynamic teams
   omp_set_num_threads(cores); // Use 4 threads for all consecutive parallel regions
 #endif
 #else
-  LOG_DBG("There is no Openmp Here");
+  LOG_S(MAX) << "There is no Openmp Here";
 #endif
 
   ////!
   ////! Program begin
   ////!
-  LOG_INFO("Initialization");
+  LOG_S(INFO) << "Initialization";
 
   // string cfgname;
   string cfgname = parse_argv_get_config(argc, argv);
 
-  LOG_DBG("Reading Configuration File ``" << cfgname << "''");
+  LOG_S(MAX) << "Reading Configuration File ``" << cfgname << "''";
   Cfg cfg = Cfg(cfgname.c_str());
 
   Geometry* geometry_global = cfg.geometry;
 
   TimeSim* sim_time_clock = cfg.time;
 
-  LOG_DBG("Initializing Geometry, Particle Species and Simulation Domains");
+  LOG_S(MAX) << "Initializing Geometry, Particle Species and Simulation Domains";
 
   Grid<Domain*> domains (geometry_global->domains_by_r, geometry_global->domains_by_z, 0);
 
-  LOG_DBG("Initializing Data Paths");
+  LOG_S(MAX) << "Initializing Data Paths";
 
   vector<DataWriter> data_writers;
 
@@ -476,13 +477,13 @@ int main(int argc, char **argv)
         }
       else
       {
-        LOG_WARN("There is no particle beams");
+        LOG_S(WARNING) << "There is no particle beams";
       }
       Domain *sim_domain = new Domain(*geom_domain, species_p, sim_time_clock);
       domains.set(i, j, sim_domain);
     };
 
-  LOG_INFO("Preparation to calculation");
+  LOG_S(INFO) << "Preparation to calculation";
 
 #pragma omp parallel for collapse(2)
   for (unsigned int i=0; i < r_domains; i++)
@@ -493,7 +494,7 @@ int main(int argc, char **argv)
       sim_domain->distribute(); // spatial and velocity distribution
     }
 
-  LOG_DBG("Initializing Boundary Conditions (TBD)");
+  LOG_S(MAX) << "Initializing Boundary Conditions (TBD)";
   // TODO: this is legacy PDP3 code. Need to update it
 //   void LoadInitParam::init_boundary ()
 // {
@@ -517,7 +518,7 @@ int main(int argc, char **argv)
 // }
 
   //! Main calculation loop
-  LOG_INFO("Launching calculation");
+  LOG_S(INFO) << "Launching calculation";
 
   // need to set p_id_counter to zero, because bunches are injecting dynamically
   // and we need mark it
@@ -547,7 +548,7 @@ int main(int argc, char **argv)
     //! efield->calc_field
     //! == efield overlay ==
 
-    LOG_DBG("Run calculation loop for timestamp: " << sim_time_clock->current);
+    LOG_S(MAX) << "Run calculation loop for timestamp: " << sim_time_clock->current;
 
 #pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_domains; i++)
@@ -617,12 +618,12 @@ int main(int argc, char **argv)
   }
 
   // this is only to finish pretty pringing of data_writers output
-  if (! DEBUG)
+  if (!DEBUG)
   {
     MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
   }
 
-  LOG_INFO("SIMULATION COMPLETE");
+  LOG_S(INFO) << "SIMULATION COMPLETE";
 
   return 0;
 }

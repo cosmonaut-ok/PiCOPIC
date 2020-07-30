@@ -145,7 +145,7 @@ void BeamP::inject()
         && geometry->left_z_grid_number == 0 // print message only for domain 0,0
         && geometry->bottom_r_grid_number == 0)
     {
-      LOG_DBG("Bunch #" << current_bunch_number << " of beam ``" << name << "'' has been injected");
+      LOG_S(MAX) << "Bunch #" << current_bunch_number << " of beam ``" << name << "'' has been injected";
       ++current_bunch_number;
     }
   }

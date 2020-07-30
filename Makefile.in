@@ -30,7 +30,7 @@ PiCOPIC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp)
 PiCOPIC_LDFLAGS          = @LDFLAGS_ADDITIONAL@
 PiCOPIC_ARFLAGS          =
 PiCOPIC_LIBRARY_PATH     =
-PiCOPIC_LIBRARIES        =
+PiCOPIC_LIBRARIES        = $(LIBRARIES)
 
 ### picojson sources and settings
 picojson_SUBDIR := $(ROOTDIR)/lib/picojson
@@ -39,12 +39,14 @@ SUBDIRS += $(picojson_SUBDIR)
 # PiCOPIC_LIBRARIES += picojson
 # LDFLAGS += -L$(picojson_SUBDIR)
 
-### tinyvec3d sources and settings
-# tinyvec3d_SUBDIR := $(ROOTDIR)lib/tinyvec3d
-# INCLUDE_PATH += -I$(tinyvec3d_SUBDIR)
-# SUBDIRS += $(tinyvec3d_SUBDIR)
-# PiCOPIC_LIBRARIES += tinyvec3d
-# LDFLAGS += -L$(tinyvec3d_SUBDIR)
+### loguru sources and settings
+loguru_SUBDIR := $(ROOTDIR)/lib/loguru
+INCLUDE_PATH += -I$(loguru_SUBDIR)
+# SUBDIRS += $(loguru_SUBDIR)
+LDFLAGS += -L$(loguru_SUBDIR)
+PiCOPIC_LIBRARIES += pthread
+PiCOPIC_LIBRARIES += dl
+loguru_DEFINES := -DLOGURU_WITH_STREAMS=1
 
 ### link hdf5 library
 ifeq (@HDF5_OPTION@, true)
@@ -56,6 +58,7 @@ PiCOPIC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngineHDF5.cpp, $(PiCOPIC_CXX_SRCS_
 endif
 
 PiCOPIC_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PiCOPIC_CXX_SRCS))
+PiCOPIC_OBJS += $(loguru_SUBDIR)/loguru.o
 
 LDFLAGS += $(PiCOPIC_LDFLAGS)
 
@@ -93,17 +96,12 @@ $(DOXYGEN_FORMATS): doxygen
 .SUFFIXES: .cpp .cxx
 DEFINCL = $(INCLUDE_PATH) $(DEFINES) $(OPTIONS)
 
-# obj/%.c.o:
-# 	$(CC) -c $(CFLAGS) $(CEXTRA) $(DEFINCL) -o $@ $<
-
-# obj/%.cpp.o:
-# 	$(CXX) -c $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) -o $@ $<
-
-# obj/%.cxx.o:
-# 	$(CXX) -c $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) -o $@ $<
-
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) -o $@ $<
+
+### rule for loguru subdir
+$(loguru_SUBDIR)/%.o: $(loguru_SUBDIR)/%.cpp
+	$(CXX) -c $(CXXFLAGS) $(CXXEXTRA) $(loguru_DEFINES) -o $@ $<
 
 # Rules for cleaning
 CLEAN_FILES  = y.tab.c y.tab.h lex.yy.c core *.orig *.rej \

@@ -69,13 +69,13 @@ namespace lib
     beta = sq_velocity / LIGHT_VEL_POW_2;
 
     if (beta > 1) // it's VERY BAD! Beta should not be more, than 1
-      LOG_CRIT("(get_gamma): Lorentz factor aka gamma is complex. Velocity is: " << sq_rt(sq_velocity), 1);
+      LOG_S(FATAL) << "(get_gamma): Lorentz factor aka gamma is complex. Velocity is: " << sq_rt(sq_velocity);
 
     gamma = 1 / sq_rt(1.0 - beta);
 
     if (isinf(gamma) == 1)
     { // avoid infinity values
-      LOG_WARN("(get_gamma): gamma (Lorenz factor) girects to infinity for velocity" << sq_rt(sq_velocity));
+      LOG_S(WARNING) << "(get_gamma): gamma (Lorenz factor) girects to infinity for velocity" << sq_rt(sq_velocity);
       return 1e100; // just return some very big value
     }
     else
@@ -151,7 +151,7 @@ namespace lib
   bool make_directory(const std::string& path)
   {
 #ifdef DEBUG
-    LOG_DBG("Creating directory " << path);
+    LOG_S(MAX) << "Creating directory " << path;
 #endif
 
 #ifdef _WIN32
@@ -214,7 +214,7 @@ namespace lib
 
     //check to see that the file was opened correctly:
     if (!ifile.is_open())
-      LOG_CRIT("Can not open file ", -1);
+      LOG_S(FATAL) << "Can not open file ";
 
     double num = 0.0;
     //keep storing values from the text file so long as data exists:

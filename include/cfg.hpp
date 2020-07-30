@@ -29,6 +29,7 @@
 
 #include "defines.hpp"
 #include "picojson.h"
+#include "loguru.hpp"
 
 // enable openmp optional
 #ifdef _OPENMP
@@ -100,6 +101,8 @@ public:
   string cfg2str();
 
 public:
+  char *log_file;
+
   bool use_hdf5 = false;
 
   double macro_amount; // amount of macroparticles in system

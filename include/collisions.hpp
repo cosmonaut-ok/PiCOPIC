@@ -27,6 +27,8 @@
 
 #include <string>
 
+#include "defines.hpp"
+#include "loguru.hpp"
 #include "lib.hpp"
 #include "geometry.hpp"
 #include "specieP.hpp"

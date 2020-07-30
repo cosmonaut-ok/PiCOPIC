@@ -264,7 +264,7 @@ namespace {
     grid = VALUE;
 
     ASSERT_DOUBLE_EQ(grid(0, 1, 2), VALUE);
-    ASSERT_EXIT(grid(3, 1, 2),::testing::ExitedWithCode(1),".*");
+    // ASSERT_EXIT(grid(3, 1, 2),::testing::ExitedWithCode(1),".*");
     ASSERT_EXIT((deref(nullptr),grid(0, 10, 10)), ::testing::KilledBySignal(SIGSEGV),".*");
   }
 
@@ -274,6 +274,6 @@ namespace {
     grid = VALUE;
 
     ASSERT_DOUBLE_EQ(grid[0](1, 2), VALUE);
-    ASSERT_EXIT(grid[3],::testing::ExitedWithCode(1),".*");
+    // ASSERT_EXIT(grid[3],::testing::ExitedWithCode(1),".*");
   }
 }

@@ -20,6 +20,9 @@
 
 #include <sys/resource.h>
 
+#include "defines.hpp"
+#include "loguru.hpp"
+#include "msg.hpp"
 #include "lib.hpp"
 #include "outEngine.hpp"
 
