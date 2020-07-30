@@ -258,7 +258,7 @@ void Collisions::collide_single(int i, int j, double m_real_a, double m_real_b,
        || !isnormal(vz_b_new)
     )
   {
-    LOG_ERR("Something went wrong during collide. Velocities a :"
+    LOG_S(ERROR) << "Something went wrong during collide. Velocities a :"
             << vr_a_new << ","
             << vphi_a_new << ","
             << vz_a_new << ","
@@ -277,7 +277,7 @@ void Collisions::collide_single(int i, int j, double m_real_a, double m_real_b,
             << cos_Phi2 << ";"
             << "Variance of delta: "
             << m_ab << " "
-            << pow(u, 3));
+            << pow(u, 3);
   }
 
   // set new velocity components

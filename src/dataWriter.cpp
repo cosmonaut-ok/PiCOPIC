@@ -48,7 +48,7 @@ DataWriter::DataWriter(string a_path, string a_component,
   if (a_shape < 4)
     shape = a_shape;
   else
-    LOG_CRIT("Unknown DataWriter shape: " << a_shape, 1);
+    LOG_S(FATAL) << "Unknown DataWriter shape: " << a_shape;
 
   for (unsigned int i = 0; i < 4; i++)
     size[i] = a_size[i];
@@ -150,7 +150,7 @@ void DataWriter::go()
 
     if (component.compare("position") == 0 || component.compare("velocity") == 0)
     {
-      LOG_DBG("Launch 1d-vector-shaped writer " << component << " at step " << dump_step);
+      LOG_S(MAX) << "Launch 1d-vector-shaped writer " << component << " at step " << dump_step;
       for (unsigned int i=0; i < 3; ++i)
       {
         string dump_step_name = dump_step + "_" + to_string(i);
@@ -168,7 +168,7 @@ void DataWriter::go()
     else if (component.compare("p_mass") == 0
              || component.compare("p_charge") == 0)
     {
-      LOG_DBG("Launch 1d-vector-shaped writer " << component << " at step " << dump_step);
+      LOG_S(MAX) << "Launch 1d-vector-shaped writer " << component << " at step " << dump_step;
       string dump_step_name = dump_step;
       out_data_plain.resize(0);
       merge_particle_domains(component, 0, specie);
@@ -188,25 +188,25 @@ void DataWriter::go()
       switch(shape)
       {
       case 0:
-        LOG_DBG("Launch rectangle-shaped writer " << component << " at step " << dump_step);
+        LOG_S(MAX) << "Launch rectangle-shaped writer " << component << " at step " << dump_step;
         engine.write_rec(dump_step, out_data);
         shape_name = "rec";
         component_name = component + ":" + to_string(size[0]) + "-"  + to_string(size[2]) + "x"  + to_string(size[1]) + "-"  + to_string(size[3]);
         break;
       case 1:
-        LOG_DBG("Launch column-shaped writer " << component << " at step " << dump_step);
+        LOG_S(MAX) << "Launch column-shaped writer " << component << " at step " << dump_step;
         engine.write_vec(dump_step, out_data);
         shape_name = "col";
         component_name = component + ":" + to_string(size[3]);
         break;
       case 2:
-        LOG_DBG("Launch row-shaped writer " << component << " at step " << dump_step);
+        LOG_S(MAX) << "Launch row-shaped writer " << component << " at step " << dump_step;
         engine.write_vec(dump_step, out_data);
         shape_name = "row";
         component_name = component + ":" + to_string(size[2]);
         break;
       case 3:
-        LOG_DBG("Launch dot-shaped writer " << component << " at step " << dump_step);
+        LOG_S(MAX) << "Launch dot-shaped writer " << component << " at step " << dump_step;
         engine.write_dot(dump_step, out_data);
         shape_name = "dot";
         component_name = component + ":" + to_string(size[2]) + "x"  + to_string(size[3]);
@@ -317,7 +317,7 @@ void DataWriter::merge_domains(string component, string specie)
       else if (component.compare("charge") == 0)
         value = sim_domain->charge->density;
       else
-        LOG_ERR("Unknown DataWriter component ``" << component << "''");
+        LOG_S(ERROR) << "Unknown DataWriter component ``" << component << "''";
 
       for (unsigned int i = 0; i < value.x_size; ++i) // shifting to avoid overlay domains
         for (unsigned int j = 0; j < value.y_size; ++j)
@@ -398,7 +398,7 @@ void DataWriter::merge_particle_domains(string parameter,
               else if (parameter.compare("p_mass") == 0)
                 out_data_plain.push_back((*pp[p])[component+10]); // positions(3), positions_old(3), velocity(3)
               else
-                LOG_CRIT("Unknown DataWriter component ``" << parameter << "''", 1);
+                LOG_S(FATAL) << "Unknown DataWriter component ``" << parameter << "''";
             }
           }
         }

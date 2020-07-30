@@ -43,10 +43,11 @@
 #include <direct.h> // _mkdir
 #endif
 
+#include "defines.hpp"
+#include "loguru.hpp"
+
 #include "grid.hpp"
 #include "constant.hpp"
-#include "defines.hpp"
-#include "msg.hpp"
 
 using namespace std;
 

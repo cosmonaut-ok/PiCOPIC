@@ -1,6 +1,7 @@
 {
   "macro_amount": 5e6,
   "beam_plasma_macro_size_ratio": 2,
+  "log_file": "./PiCOPIC.log",
   "geometry": {
     "size": {
       "radius": 0.075,

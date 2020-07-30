@@ -18,7 +18,8 @@
 #ifndef _GRID_3D_HPP_
 #define _GRID_3D_HPP_
 
-#include "msg.hpp"
+#include "defines.hpp"
+#include "loguru.hpp"
 #include "grid.hpp"
 
 template<class T>
@@ -81,7 +82,7 @@ public:
     if (index == 0) return r_component;
     if (index == 1) return phi_component;
     if (index == 2) return z_component;
-    LOG_CRIT("Grid3D: Out of index", 1);
+    LOG_S(FATAL) << "Grid3D: Out of index";
   };
 
   T& operator() (unsigned int x, unsigned int y, unsigned int z)
@@ -89,7 +90,7 @@ public:
     if (x == 0) return r_component(y, z);
     if (x == 1) return phi_component(y, z);
     if (x == 2) return z_component(y, z);
-    LOG_CRIT("Grid3D: Out of index", 1);
+    LOG_S(FATAL) << "Grid3D: Out of index";
   };
 };
 #endif // end of _GRID_3D_HPP_

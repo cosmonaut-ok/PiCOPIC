@@ -28,3 +28,4 @@ lib/python/picopic/picopic.egg-info/
 *main
 .nbrun[0-9,a-z,A-Z]*ipynb*
 *.h5
+PiCOPIC.log

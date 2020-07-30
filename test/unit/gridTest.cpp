@@ -1,6 +1,8 @@
+#define LOGURU_WITH_STREAMS 1
+
 #include <gtest/gtest.h>
 #include "grid.hpp"
-
+  
 namespace {
   int deref(int * pint)
   {

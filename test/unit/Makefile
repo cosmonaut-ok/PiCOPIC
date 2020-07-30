@@ -23,13 +23,17 @@ USER_INC_DIR = ../../include
 # Flags passed to the preprocessor.
 # Set Google Test's header directory as a system directory, such that
 # the compiler doesn't generate warnings in Google Test headers.
-CPPFLAGS += -isystem $(GTEST_DIR)/include -I$(USER_INC_DIR) -I$(USER_SRC_DIR) -I../../lib/picojson -fopenmp
+CPPFLAGS += -isystem $(GTEST_DIR)/include -I$(USER_INC_DIR) -I$(USER_SRC_DIR) -I../../lib/picojson -I../../lib/loguru -DLOGURU_WITH_STREAMS=1 -DLOGURU_CATCH_SIGABRT=0 -fopenmp
 
 # Flags passed to the C++ compiler.
 CXXFLAGS += -g -Wall -Wextra -pthread
 
 # Linker flags
-LDFLAGS += -L$(USER_SRC_DIR) -L../../lib/picojson
+LDFLAGS += -L$(USER_SRC_DIR) -L../../lib/picojson -L../../lib/loguru
+LIBRARIES =
+LIBRARIES += dl
+LIBRARIES += pthread
+LIBRARIES += $(PiCOPIC_LIBRARIES)
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
@@ -42,6 +46,7 @@ SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
 # USER_SRC_FILES := $(wildcard $(USER_SRC_DIR)/*.cpp)
 
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
+OBJ_FILES += ../../lib/loguru/loguru.o
 # USER_OBJ_FILES := $(patsubst $(USER_SRC_DIR)/%.cpp,$(USER_SRC_DIR)/%.o,$(USER_SRC_FILES))
 
 # All Google Test headers.  Usually you shouldn't change this
@@ -60,11 +65,11 @@ clean:
 # compiles fast and for ordinary users its source rarely changes.
 gtest-all.o : $(GTEST_SRCS_)
 	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
-            $(GTEST_DIR)/src/gtest-all.cc
+		$(GTEST_DIR)/src/gtest-all.cc
 
 gtest_main.o : $(GTEST_SRCS_)
 	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
-            $(GTEST_DIR)/src/gtest_main.cc
+		$(GTEST_DIR)/src/gtest_main.cc
 
 gtest.a : gtest-all.o
 	$(AR) $(ARFLAGS) $@ $^
@@ -75,11 +80,8 @@ gtest_main.a : gtest-all.o gtest_main.o
 $(OBJ_DIR)/%.o: $(SRC_FILES)/%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
-# $(USER_OBJ_DIR)/%.o: $(USER_SRC_FILES)/%.cpp
-# 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
-
 main: $(OBJ_FILES) $(USER_OBJ_FILES) gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LIBRARIES:%=-l%)
 
 test: main
 	./main

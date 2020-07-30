@@ -127,7 +127,7 @@ void Domain::push_particles ()
 #elif defined PUSHER_HIGUERA_CARY
     (*i)->hc_pusher();
 #else
-    LOG_CRIT("Undefined particles pusher used", 1);
+    LOG_S(FATAL) << "Undefined particles pusher used";
 #endif
   }
 }

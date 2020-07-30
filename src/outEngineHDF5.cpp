@@ -58,19 +58,19 @@ OutEngineHDF5::OutEngineHDF5 (string a_path, string a_subpath, unsigned int a_sh
     group_name += (*i);
     try
     {
-      LOG_DBG("Creating group " << group_name);
+      LOG_S(MAX) << "Creating group " << group_name;
       file.createGroup(group_name.c_str());
     }
     catch (const FileIException&)
     {
-      LOG_DBG("Group " << group_name << " already exists. Skipping");
+      LOG_S(MAX) << "Group " << group_name << " already exists. Skipping";
     }
   }
 
   file.close();
 
   if (compress)
-    LOG_WARN("compression is not supported by plaintext output engine");
+    LOG_S(WARNING) << "compression is not supported by plaintext output engine";
 }
 
 void OutEngineHDF5::write_rec(string a_name, Grid<double> data)
@@ -157,7 +157,7 @@ try
     else if (size[0] == -1 && size[2] == -1 && size[1] == -1)
       fdim[0] = data.x_size;
     else
-      LOG_CRIT("Incorrect shape for vector output", 1);
+      LOG_S(FATAL) << "Incorrect shape for vector output";
 
     // Create dataspace for the dataset in the file.
 
