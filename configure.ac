@@ -56,7 +56,8 @@ AC_ARG_ENABLE([hdf5], [AC_HELP_STRING([--disable-hdf5], [Build application with 
 
 AC_ARG_WITH([doc-formats], [AC_HELP_STRING([--with-doc-formats], [Set list of documentation formats to be generated])], [DOXYGEN_FORMATS="$withval"], [DOXYGEN_FORMATS="latex html rtf"])
 AC_ARG_WITH([pusher], [AC_HELP_STRING([--with-pusher], [Set particles pusher (supported: boris (default), vay, higuera-cary)])], [PUSHER="$withval"], [PUSHER="boris-adaptive"])
-AC_ARG_WITH([temperature-calc], [AC_HELP_STRING([--with-temperature-calc], [Set temperature calculation algorithm (supported: counting (default), weighting])], [TEMP_CALC="$withval"], [TEMP_CALC="counting"])
+AC_ARG_WITH([temperature-calc], [AC_HELP_STRING([--with-temperature-calc], [Set temperature calculation algorithm. Supported: counting (default), weighting])], [TEMP_CALC="$withval"], [TEMP_CALC="counting"])
+AC_ARG_WITH([density-calc], [AC_HELP_STRING([--with-density-calc], [Set density calculation algorithm. Supported: counting (default), weighting])], [DENSITY_CALC="$withval"], [DENSITY_CALC="counting"])
 
 AC_ARG_WITH([plasma-spatial-distribution], [AC_HELP_STRING([--with-plasma-spatial-distribution], [Set plasma particles spatial distribution type (supported: flat (default), random, regular, centered)])], [PLASMA_SPATIAL="$withval"], [PLASMA_SPATIAL="flat"])
 
@@ -143,7 +144,16 @@ if test x$TEMP_CALC == xweighting; then
 elif test x$TEMP_CALC == xcounting; then
    AC_DEFINE_UNQUOTED([TEMP_CALC_COUNTING], [true], [Performance debug option])
 else
-   AC_MSG_ERROR([Temperature weighting algorithm is not supported.])
+   AC_MSG_ERROR([Temperature calculation algorithm is not supported.])
+fi
+
+# define a temperature claculation algorithm
+if test x$DENSITY_CALC == xweighting; then
+   AC_DEFINE_UNQUOTED([DENSITY_CALC_WEIGHTING], [true], [Performance debug option])
+elif test x$DENSITY_CALC == xcounting; then
+   AC_DEFINE_UNQUOTED([DENSITY_CALC_COUNTING], [true], [Performance debug option])
+else
+   AC_MSG_ERROR([Density calculation algorithm is not supported.])
 fi
 
 # define plasma spatial distribution type

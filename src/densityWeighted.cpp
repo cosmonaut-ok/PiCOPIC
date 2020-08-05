@@ -15,32 +15,20 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _TEMPERATURE_WEIGHTED_HPP_
-#define _TEMPERATURE_WEIGHTED_HPP_
-
-#include "constant.hpp"
-#include "geometry.hpp"
-#include "grid.hpp"
-#include "weighter.hpp"
-#include "specieP.hpp"
 #include "densityWeighted.hpp"
-#include "temperature.hpp"
 
-class TemperatureWeighted : public Temperature
+void DensityWeighted::calc_density_cylindrical(string specie)
 {
-public:
-  DensityWeighted density;
+  for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
+    if (specie.compare((**ps).name) == 0)
+      for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
+        weight_cylindrical<double>(geometry, &density,
+                                   P_POS_R((**i)),
+                                   P_POS_Z((**i)),
+                                   P_MASS((**i)) / (**ps).mass); // amount of particle in macroparticle
 
-  TemperatureWeighted (void) {};
-  TemperatureWeighted (Geometry *geom, vector<SpecieP *> species) : Temperature(geom, species)
-  {
-    density = DensityWeighted (geometry, species);
-  };
-  ~TemperatureWeighted () {};
-
-  void calc_temperature_cylindrical(string specie);
-
-private:
-  void weight_temperature_cylindrical(string specie);
-};
-#endif // end of _TEMPERATURE_WEIGHTED_HPP_
+#if defined DENSITY_POSTPROC_BILINEAR
+  Grid<double> density_src = density;
+  lib::bilinear_interpolation<Grid<double>>(density_src, density);
+#endif
+}
