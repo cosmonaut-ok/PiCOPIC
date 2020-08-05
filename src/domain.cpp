@@ -48,7 +48,12 @@ Domain::Domain(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry
   collisions = new Collisions(&geometry, time, species_p);
 #endif
 
-  density = new Density(&geometry, species_p);
+#ifdef DENSITY_CALC_COUNTING
+  density = new DensityCounted(&geometry, species_p);
+#elif DENSITY_CALC_WEIGHTING
+  density = new DensityWeighted(&geometry, species_p);
+#endif
+
   charge = new DensityCharge(&geometry, species_p);
 
   // ! Linking classes:

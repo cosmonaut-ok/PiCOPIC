@@ -15,32 +15,23 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _TEMPERATURE_WEIGHTED_HPP_
-#define _TEMPERATURE_WEIGHTED_HPP_
+#ifndef _DENSITY_WEIGHTED_HPP_
+#define _DENSITY_WEIGHTED_HPP_
 
-#include "constant.hpp"
 #include "geometry.hpp"
 #include "grid.hpp"
 #include "weighter.hpp"
+#include "density.hpp"
 #include "specieP.hpp"
-#include "densityWeighted.hpp"
-#include "temperature.hpp"
 
-class TemperatureWeighted : public Temperature
+class DensityWeighted : public Density
 {
 public:
-  DensityWeighted density;
+  DensityWeighted () {};
+  DensityWeighted (Geometry *geom, vector<SpecieP *> species) : Density(geom, species) {};
+  ~DensityWeighted () {};
 
-  TemperatureWeighted (void) {};
-  TemperatureWeighted (Geometry *geom, vector<SpecieP *> species) : Temperature(geom, species)
-  {
-    density = DensityWeighted (geometry, species);
-  };
-  ~TemperatureWeighted () {};
-
-  void calc_temperature_cylindrical(string specie);
-
-private:
-  void weight_temperature_cylindrical(string specie);
+  void calc_density_cylindrical(string specie);
 };
-#endif // end of _TEMPERATURE_WEIGHTED_HPP_
+
+#endif // end of _DENSITY_WEIGHTED_HPP_

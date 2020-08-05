@@ -40,7 +40,12 @@
 #endif
 
 #include "densityCharge.hpp"
-#include "density.hpp"
+
+#ifdef DENSITY_CALC_COUNTING
+#include "densityCounted.hpp"
+#elif DENSITY_CALC_WEIGHTING
+#include "densityWeighted.hpp"
+#endif
 
 #ifdef TEMP_CALC_COUNTING
 #include "temperatureCounted.hpp"

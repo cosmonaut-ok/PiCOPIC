@@ -112,6 +112,12 @@ Cfg::Cfg(const char *json_file_name)
   o["temperature_calculation_algorithm"] = value("weighting");
 #endif
 
+#if defined(DENSITY_CALC_COUNTING)
+  o["density_calculation_algorithm"] = value("counting");
+#elif defined(DENSITY_CALC_WEIGHTING)
+  o["density_calculation_algorithm"] = value("weighting");
+#endif
+
   o["build_flags"] = value(CXXFLAGS);
 
   json_data.get<object>()["build_options"] = value(o);

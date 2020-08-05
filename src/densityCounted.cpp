@@ -15,18 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "density.hpp"
+#include "densityCounted.hpp"
 
-Density::Density(Geometry *geom, vector<SpecieP *> species) : geometry(geom)
-{
-  density = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  species_p = species;
-
-  density = 0;
-  density.overlay_set(0);
-}
-
-void Density::calc_density_cylindrical(string specie)
+void DensityCounted::calc_density_cylindrical(string specie)
 {
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
     if (specie.compare((**ps).name) == 0)
