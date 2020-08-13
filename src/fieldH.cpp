@@ -86,7 +86,7 @@ void FieldH::calc_field_cylindrical()
 vector3d<double> FieldH::get_field(double radius, double longitude)
 //! function for magnetic field weighting
 {
-  vector3d<double> cmp(0., 0., 0.);
+  vector3d<double> cmp;
   int i_r = 0; // number of particle i cell
   int k_z = 0; // number of particle k cell
   int i_r_shift = 0;

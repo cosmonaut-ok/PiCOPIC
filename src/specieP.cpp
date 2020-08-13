@@ -456,10 +456,10 @@ void SpecieP::boris_pusher()
     double gamma = 1;
 #endif
 
-    vector3d<double> e(0, 0, 0);
-    vector3d<double> b(0, 0, 0);
+    vector3d<double> e;
+    vector3d<double> b;
     vector3d<double> velocity(P_VEL_R((**p)), P_VEL_PHI((**p)), P_VEL_Z((**p)));
-    vector3d<double> vtmp(0, 0, 0);
+    vector3d<double> vtmp;
 
     double pos_r = P_POS_R((**p));
     double pos_z = P_POS_Z((**p));
@@ -571,8 +571,8 @@ void SpecieP::vay_pusher()
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
     vector3d<double> velocity(P_VEL_R((**p)), P_VEL_PHI((**p)), P_VEL_Z((**p)));
-    vector3d<double> uplocity(0, 0, 0); // u prime
-    vector3d<double> psm(0, 0, 0); // pxsm, pysm, pzsm
+    vector3d<double> uplocity; // u prime
+    vector3d<double> psm; // pxsm, pysm, pzsm
 
     double charge = P_CHARGE((**p));
     double mass = P_MASS((**p));
@@ -659,10 +659,10 @@ void SpecieP::hc_pusher()
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
     vector3d<double> velocity(P_VEL_R((**p)), P_VEL_PHI((**p)), P_VEL_Z((**p)));
-    vector3d<double> uplocity(0, 0, 0); // u prime
-    vector3d<double> psm(0, 0, 0); // pxsm, pysm, pzsm
-    vector3d<double> um(0, 0, 0); // pxsm, pysm, pzsm
-    vector3d<double> up(0, 0, 0); // pxsm, pysm, pzsm
+    vector3d<double> uplocity; // u prime
+    vector3d<double> psm; // pxsm, pysm, pzsm
+    vector3d<double> um; // pxsm, pysm, pzsm
+    vector3d<double> up; // pxsm, pysm, pzsm
 
     double charge = P_CHARGE((**p));
     double mass = P_MASS((**p));
@@ -675,8 +675,8 @@ void SpecieP::hc_pusher()
 
     vector3d<double> e = field_e->get_field(pos_r, pos_z);
     vector3d<double> b = field_h->get_field(pos_r, pos_z);
-    vector3d<double> b2(0, 0, 0);
-    vector3d<double> b_cross(0, 0, 0);
+    vector3d<double> b2;
+    vector3d<double> b_cross;
 
     double gamma, sq_vel, s, us2, alpha, B2;
 

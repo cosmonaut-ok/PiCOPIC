@@ -177,7 +177,7 @@ void FieldE::calc_field_cylindrical()
 vector3d<double> FieldE::get_field(double radius, double longitude)
 //! function for electric field weighting
 {
-  vector3d<double> cmp(0., 0., 0.);
+  vector3d<double> cmp;
 
   int i_r = 0; // number of particle i cell
   int k_z = 0; // number of particle k cell

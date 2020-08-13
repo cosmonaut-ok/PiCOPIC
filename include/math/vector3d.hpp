@@ -32,6 +32,13 @@ class vector3d
   std::vector<T> vec3d{0, 0, 0};
 
 public:
+  vector3d() // create zero-vector, if other is not given
+  {
+    vec3d[0] = 0;
+    vec3d[1] = 0;
+    vec3d[2] = 0;
+  };
+
   vector3d(T x0, T x1, T x2)
   {
     vec3d[0] = x0;
