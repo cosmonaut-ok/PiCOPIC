@@ -24,10 +24,6 @@ using namespace std;
 
 CollisionsTanaka::CollisionsTanaka (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p) : Collisions ( _geometry, _time, _species_p)
 {
-  //! TA77: make dummies to place particles there
-  // map_el2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  // map_ion2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-
 }
 
 void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_real_b,
@@ -79,7 +75,6 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   double density_el = get_el_density(i, j);
   double density_ion = get_ion_density(i, j);
   double density_lowest = min(density_el, density_ion);
-  double lambda_coulomb = 10; // TODO: clarify and/or set it as a constant
   double m_ab = mass_a * mass_b / (mass_a + mass_b);
 
   // relative velocity
@@ -87,6 +82,11 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   double uy = vphi_a - vphi_b;
   double uz = vz_a - vz_b;
   double u = lib::sq_rt(pow(ux, 2) + pow(uy, 2) + pow(uz, 2));
+  
+  // get densities and electron temperature
+  double temperature_el = get_el_temperature(i, j);
+  double debye = phys::plasma::debye_length(density_el, temperature_el);
+  double lambda_coulomb = phys::plasma::coulomb_logarithm (mass_a, mass_b, debye, u);
 
   // if ``u'' (relative velocity) is zero, particles can not collide
   if (u == 0) return;

@@ -25,7 +25,7 @@ RELEASE               = @RELEASE@
 PiCOPIC_MODULE           = PiCOPIC
 PiCOPIC_C_SRCS           =
 
-PiCOPIC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp)
+PiCOPIC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp) $(wildcard $(SRCDIR)/phys/*.cpp)
 
 PiCOPIC_LDFLAGS          = @LDFLAGS_ADDITIONAL@
 PiCOPIC_ARFLAGS          =
@@ -107,7 +107,7 @@ $(loguru_SUBDIR)/%.o: $(loguru_SUBDIR)/%.cpp
 CLEAN_FILES  = y.tab.c y.tab.h lex.yy.c core *.orig *.rej \
                \\\#*\\\# *~ *% .\\\#*
 
-BUILD_DIRS = $(OBJDIR) $(OBJDIR)/math $(TARGETDIR)
+BUILD_DIRS = $(OBJDIR) $(OBJDIR)/math $(OBJDIR)/phys $(TARGETDIR)
 space :=
 space +=
 comma :=,

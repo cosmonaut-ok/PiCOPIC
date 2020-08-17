@@ -19,6 +19,7 @@
 #define _SPECIE_P_HPP_
 
 #include "constant.hpp"
+#include "phys/rel.hpp"
 #include "lib.hpp"
 #include "msg.hpp"
 #include "grid.hpp"

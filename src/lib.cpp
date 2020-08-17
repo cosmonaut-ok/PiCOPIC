@@ -59,39 +59,6 @@ namespace lib
     return b;
   }
 
-  double get_gamma (double sq_velocity)
-  {
-    //! get_gamma takes squared velocity,
-    //! only because of some features of code
-    //! and optimisation issues
-    double gamma, beta;
-
-    beta = sq_velocity / LIGHT_VEL_POW_2;
-
-    if (beta > 1) // it's VERY BAD! Beta should not be more, than 1
-      LOG_S(FATAL) << "(get_gamma): Lorentz factor aka gamma is complex. Velocity is: " << sq_rt(sq_velocity);
-
-    gamma = 1 / sq_rt(1.0 - beta);
-
-    if (isinf(gamma) == 1)
-    { // avoid infinity values
-      LOG_S(WARNING) << "(get_gamma): gamma (Lorenz factor) girects to infinity for velocity" << sq_rt(sq_velocity);
-      return 1e100; // just return some very big value
-    }
-    else
-      return gamma;
-  }
-
-  double get_gamma_inv (double sq_velocity)
-  {
-    //! get_gamma_inv takes squared velocity,
-    //! only because of some features of code
-    //! and optimisation issues
-    double gamma = pow(1.0 + sq_velocity / LIGHT_VEL_POW_2, -0.5);
-
-    return gamma;
-  }
-
   char* get_simulation_duration()
   // get the time, spent since simulation launched (in "d h m s" format)
   {
@@ -130,30 +97,6 @@ namespace lib
       sprintf(the_time, "%.0fs", time_sec);
 
     return the_time;
-  }
-
-  double get_debye_length (double density, double temperature)
-  {
-    // sqrt ( epsilon_0 * k_boltzmann / q_el^2 ) is 7400,
-    // when density in m-3 and temperature in eV
-    double const1 = 7400;
-    if (density <= 0) LOG_S(FATAL) << "(get_debye_length): density must be positive. Actucal value is: ``" << density << "''";
-    return ( const1 * lib::sq_rt ( temperature / density ) );
-  }
-
-  double get_plasma_frequency (double density)
-  {
-    // const1 is sqrt ( q_e^2 / ( m_e * epsilon_0 ) )
-    double const1 = 56.3803;
-    return ( const1 * lib::sq_rt ( density ) );
-  }
-
-  double get_coulomb_log ( double mass, double velocity,
-                           double density, double temperature )
-  {
-    double debye_length = get_debye_length ( density, temperature );
-
-    return ( debye_length * mass * velocity / constant::PLANK_BAR_CONST );
   }
 
 // Make directory and check if it exists

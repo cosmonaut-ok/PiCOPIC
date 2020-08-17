@@ -195,3 +195,12 @@ void Collisions::collect_weighted_params_tot_grid ()
   // density.calc_density_cylindrical("electrons");
   // density.calc_density_cylindrical("ions");
 }
+
+void Collisions::run ()
+{
+  clear();
+  sort_to_cells();
+  random_sort();
+  collect_weighted_params_tot_grid();
+  collide();
+}

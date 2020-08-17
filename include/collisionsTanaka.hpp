@@ -28,6 +28,7 @@
 #include <string>
 
 #include "lib.hpp"
+#include "phys/plasma.hpp"
 #include "geometry.hpp"
 #include "specieP.hpp"
 

@@ -360,9 +360,9 @@ void SpecieP::thermal_velocity_distribution ()
 
     // take into account relativistic factor
     // maxwellJuttner procedure returns relativistic momentums
-    P_VEL_R((**p)) *= lib::get_gamma_inv(P_VEL_R((**p)) * P_VEL_R((**p)));
-    P_VEL_PHI((**p)) *= lib::get_gamma_inv(P_VEL_PHI((**p)) * P_VEL_PHI((**p)));
-    P_VEL_Z((**p)) *= lib::get_gamma_inv(P_VEL_Z((**p)) * P_VEL_Z((**p)));
+    P_VEL_R((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_R((**p)) * P_VEL_R((**p)));
+    P_VEL_PHI((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_PHI((**p)) * P_VEL_PHI((**p)));
+    P_VEL_Z((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_Z((**p)) * P_VEL_Z((**p)));
 
     ++macro_count;
   }
@@ -387,9 +387,9 @@ void SpecieP::rectangular_velocity_distribution ()
 
     // take into account relativistic factor
     // maxwellJuttner procedure returns relativistic momentums
-    P_VEL_R((**p)) *= lib::get_gamma_inv(P_VEL_R((**p)) * P_VEL_R((**p)));
-    P_VEL_PHI((**p)) *= lib::get_gamma_inv(P_VEL_PHI((**p)) * P_VEL_PHI((**p)));
-    P_VEL_Z((**p)) *= lib::get_gamma_inv(P_VEL_Z((**p)) * P_VEL_Z((**p)));
+    P_VEL_R((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_R((**p)) * P_VEL_R((**p)));
+    P_VEL_PHI((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_PHI((**p)) * P_VEL_PHI((**p)));
+    P_VEL_Z((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_Z((**p)) * P_VEL_Z((**p)));
   }
 }
 
@@ -397,7 +397,7 @@ void SpecieP::eigen_velocity_distribution ()
 // ! singular velocity distribution
 {
   double therm_vel_cmp = lib::sq_rt(2. * EL_CHARGE * temperature / mass / 3.);
-  double gamma = lib::get_gamma_inv(therm_vel_cmp);
+  double gamma = phys::rel::lorenz_factor_inv(therm_vel_cmp);
   therm_vel_cmp *= gamma;
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
@@ -415,7 +415,7 @@ void SpecieP::eigen_directed_velocity_distribution (unsigned int dir)
 // ! 2 is for "Z" direction
 {
   double therm_vel = lib::sq_rt(2. * EL_CHARGE * temperature / mass);
-  double gamma = lib::get_gamma_inv(therm_vel);
+  double gamma = phys::rel::lorenz_factor_inv(therm_vel);
   therm_vel *= gamma;
 
   switch (dir)
@@ -498,7 +498,7 @@ void SpecieP::boris_pusher()
     {
       sq_velocity = velocity.length2();
 
-      gamma = lib::get_gamma(sq_velocity);
+      gamma = phys::rel::lorenz_factor(sq_velocity);
       velocity *= gamma;
     }
 #endif
@@ -517,7 +517,7 @@ void SpecieP::boris_pusher()
 #if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
     {
       sq_velocity = velocity.length2();
-      gamma = lib::get_gamma_inv(sq_velocity);
+      gamma = phys::rel::lorenz_factor_inv(sq_velocity);
       b *= gamma;
     }
 #endif
@@ -552,7 +552,7 @@ void SpecieP::boris_pusher()
 #if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
     {
       sq_velocity = velocity.length2();
-      gamma = lib::get_gamma_inv(sq_velocity);
+      gamma = phys::rel::lorenz_factor_inv(sq_velocity);
       velocity *= gamma;
     }
 #endif
@@ -590,7 +590,7 @@ void SpecieP::vay_pusher()
 
     // convert velocity to relativistic momentum
     sq_vel = velocity.length2();
-    gamma = lib::get_gamma(sq_vel);
+    gamma = phys::rel::lorenz_factor(sq_vel);
     velocity *= gamma;
 
     //
@@ -607,7 +607,7 @@ void SpecieP::vay_pusher()
 
     // Smilei: For unknown reason, this has to be computed again
     sq_vel = velocity.length2();
-    gamma = lib::get_gamma_inv(sq_vel);
+    gamma = phys::rel::lorenz_factor_inv(sq_vel);
 
     uplocity[0] += gamma * ( velocity[1] * b[2] - velocity[2] * b[1] );
     uplocity[1] += gamma * ( velocity[2] * b[0] - velocity[0] * b[2] );
@@ -639,7 +639,7 @@ void SpecieP::vay_pusher()
     psm[2] = s * ( uplocity[2] + alpha*b[2] + b[1]*uplocity[0] - b[0]*uplocity[1] );
 
     sq_vel = psm.length2();
-    gamma = lib::get_gamma_inv(sq_vel);
+    gamma = phys::rel::lorenz_factor_inv(sq_vel);
     psm *= gamma;
 
     P_VEL_R((**p)) = psm[0];
@@ -682,7 +682,7 @@ void SpecieP::hc_pusher()
 
     // convert velocity to relativistic momentum
     sq_vel = velocity.length2();
-    gamma = lib::get_gamma(sq_vel);
+    gamma = phys::rel::lorenz_factor(sq_vel);
     velocity *= gamma;
 
     //// enter main algo
@@ -732,7 +732,7 @@ void SpecieP::hc_pusher()
     //// exit main algo
 
     sq_vel = psm.length2();
-    gamma = lib::get_gamma_inv(sq_vel);
+    gamma = phys::rel::lorenz_factor_inv(sq_vel);
     psm *= gamma;
 
     P_VEL_R((**p)) = psm[0];
