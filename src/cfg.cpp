@@ -398,23 +398,27 @@ void Cfg::weight_macro_amount()
 #elif defined PUSHER_BORIS_RELATIVISTIC
   LOG_S(INFO) << "Using fully relativistic Boris particles pusher";
 #elif defined PUSHER_VAY
-  LOG_S(INFO) << "Using Vay particles pusher";
+  LOG_S(INFO) << "Using Vay particles pusher [10.1063/1.2837054]";
 #elif defined PUSHER_HIGUERA_CARY
-  LOG_S(INFO) << "Using Higuera-Cary particles pusher";
+  LOG_S(INFO) << "Using Higuera-Cary particles pusher [10.1063/1.4979989]";
 #else
   LOG_S(FATAL) << "Undefined particles pusher used";
 #endif
 
   // message about charge conservation scheme, used in system
 #if defined(CCS_ZIGZAG)
-  LOG_S(INFO) << "Using ZigZag charge conservation scheme";
+  LOG_S(INFO) << "Using ZigZag charge conservation scheme [10.1016/S0010-4655(03)00437-5]";
 #elif defined(CCS_VILLASENOR_BUNEMAN)
-  LOG_S(INFO) << "Using Villasenor-Buneman charge conservation scheme";
+  LOG_S(INFO) << "Using Villasenor-Buneman charge conservation scheme [10.1016/0010-4655(92)90169-Y]";
 #endif
 
   // message about coulomb colisions
 #ifdef COLLISIONS
-  LOG_S(INFO) << "Simulating with DSMC Coulomb collisions (10.1002/ctpp.201700121)";
+#ifdef COULOMB_COLLISIONS_TANAKA
+  LOG_S(INFO) << "Using Tanaka et al. Coulomb collisions scheme [10.1002/ctpp.201700121]";
+#elif COULOMB_COLLISIONS_SENTOKU_M
+  LOG_S(INFO) << "Using modified Sentoku-Kemp Coulomb collisions scheme [10.1063/1.4742167]";
+#endif
 #endif
 
   // align macroparticles amount to particle species
@@ -489,7 +493,7 @@ bool Cfg::method_limitations_check ()
     LOG_S(FATAL) << "There is no electrons present in system";
   }
 
-  double plasma_freq = sqrt(electron_density * EL_CHARGE * EL_CHARGE / (EL_MASS * EPSILON0));
+  double plasma_freq = lib::get_plasma_frequency ( electron_density );
 
   // TODO: WTF
   unsigned int time_multiplicator = 100;
@@ -512,7 +516,7 @@ bool Cfg::method_limitations_check ()
   // cell size d{r,z} < \lambda debye
 
   // 7400 is a coefficient, when T is in electron volts and N is in \f$ m^-3 \f$
-  double debye_length = 7400 * sqrt(electron_temperature / electron_density);
+  double debye_length = lib::get_debye_length (electron_density, electron_temperature);
   unsigned int debye_multiplicator = 100;
 
   if ( electron_temperature != 0)

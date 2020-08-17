@@ -38,9 +38,6 @@
   const double REL_LIMIT_POW_2 = pow (REL_LIMIT, 2);
 #endif
 
-// C^2 define c^2 to decrease number of operations
-const double LIGHT_VEL_POW_2 = pow (LIGHT_VEL, 2);
-
 // getters from particles vector
 #define PP_POS_R(var, p_num) (*var[p_num])[0]
 #define PP_POS_PHI(var, p_num) (*var[p_num])[1]

@@ -78,7 +78,6 @@ public:
 
   Grid<T>& operator[] (int index)
   {
-    // Grid <T> ret;
     if (index == 0) return r_component;
     if (index == 1) return phi_component;
     if (index == 2) return z_component;
@@ -91,6 +90,6 @@ public:
     if (x == 1) return phi_component(y, z);
     if (x == 2) return z_component(y, z);
     LOG_S(FATAL) << "Grid3D: Out of index";
-  };
+  }
 };
 #endif // end of _GRID_3D_HPP_

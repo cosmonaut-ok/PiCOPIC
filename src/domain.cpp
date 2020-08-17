@@ -45,7 +45,11 @@ Domain::Domain(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry
 #endif
 
 #ifdef COLLISIONS
-  collisions = new Collisions(&geometry, time, species_p);
+#ifdef COULOMB_COLLISIONS_TANAKA
+  collisions = new CollisionsTanaka(&geometry, time, species_p);
+#elif COULOMB_COLLISIONS_SENTOKU_M
+  collisions = new CollisionsSentokuM(&geometry, time, species_p);
+#endif
 #endif
 
 #ifdef DENSITY_CALC_COUNTING
@@ -187,10 +191,5 @@ void Domain::dump_particle_positions_to_old()
 void Domain::collide()
 {
   collisions->run();
-  // MSG("COLLIDE");
-  // collisions->clear();
-  // collisions->sort_to_cells();
-  // collisions->random_sort();
-  // collisions->collide();
 }
 #endif
