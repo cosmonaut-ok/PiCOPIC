@@ -38,8 +38,8 @@
 #define omp_get_thread_num() 0
 #endif
 
-// #include "lib.h"
 #include "constant.hpp"
+#include "lib.hpp"
 #include "geometry.hpp"
 #include "timeSim.hpp"
 #include "msg.hpp"

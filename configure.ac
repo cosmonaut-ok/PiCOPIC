@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT(PiCOPIC, esyscmd(git log --pretty=%h -1 | tr -d \\n), cosmonaut.ok@zoho.com)
+AC_INIT(PiCOPIC, esyscmd(git log --pretty=%h -1 | tr -d \\n), alexander.vynnyk@protonmail.com)
 
 AC_CONFIG_HEADERS([include/defines.hpp])
 
@@ -63,9 +63,11 @@ AC_ARG_WITH([plasma-spatial-distribution], [AC_HELP_STRING([--with-plasma-spatia
 
 AC_ARG_WITH([plasma-velocity-distribution], [AC_HELP_STRING([--with-plasma-velocity-distribution], [Set plasma particles velocity distribution (supported: thermal (default), rectangular, eigen (singular velocities))])], [PLASMA_VELOCITY="$withval"], [PLASMA_VELOCITY="thermal"])
 
-AC_ARG_WITH([current-solver], [AC_HELP_STRING([--with-current-solver], [Set charge convervation scheme of current solver (supported: villasenor-buneman (default) and zigzag)])], [CCS="$withval"], [CCS="villasenor-buneman"])
+AC_ARG_WITH([current-solver], [AC_HELP_STRING([--with-current-solver], [Set charge concervation scheme of current solver (supported: villasenor-buneman (default) and zigzag)])], [CCS="$withval"], [CCS="villasenor-buneman"])
 
-AC_ARG_ENABLE([collisions], [AC_HELP_STRING([--enable-collisions], [Enable DSMC coulomb collisions. See 10.1002/ctpp.201700121 (WARNING! This is an experimental unfinished feature. This switch is only for development purposes.)])], [COLLISIONS="$enableval"], [COLLISIONS=no])
+AC_ARG_ENABLE([coulomb-collisions], [AC_HELP_STRING([--enable-coulomb-collisions], [Enable coulomb collisions. (WARNING! This is an experimental unfinished feature. This switch is only for development purposes.)])], [COLLISIONS="$enableval"], [COLLISIONS=no])
+
+AC_ARG_WITH([coulomb-collisions-scheme], [AC_HELP_STRING([--with-coulomb-collisions-scheme], [Set coulomb collisions  scheme (supported: tanaka [10.1002/ctpp.201700121] (default) and sentoku-m [modified 10.1063/1.4742167 for different particle weights])])], [COULOMB_COLLISIONS_SCHEME="$withval"], [COULOMB_COLLISIONS_SCHEME="tanaka"])
 
 AC_PROG_CXXCPP
 AC_LANG(C++)
@@ -180,7 +182,7 @@ else
    AC_MSG_ERROR([Plasma velocity distribution type is not supported.])
 fi
 
-# define charge convervation scheme
+# define charge concervation scheme
 if test x$CCS == xvillasenor-buneman; then
    AC_DEFINE_UNQUOTED([CCS_VILLASENOR_BUNEMAN], [true], [Set plasma charge conservation scheme to Villasenor-Buneman])
 elif test x$CCS == xzigzag; then
@@ -190,8 +192,17 @@ else
 fi
 
 if test x$COLLISIONS = xyes; then
-   AC_DEFINE_UNQUOTED([COLLISIONS], [true], [Enable DSMC coulomb collisions])
-   AC_MSG_WARN([Coulomb DSMC collisions is an unfinished experimental feature. Currently it is ONLY for development purposes. Ensure, you know what you do by enabling it.])
+   AC_DEFINE_UNQUOTED([COLLISIONS], [true], [Enable coulomb collisions])
+   AC_MSG_WARN([Coulomb collisions is an unfinished experimental feature. Currently it is ONLY for development purposes. Ensure, you know what you do by enabling it.])
+fi
+
+# define charge concervation scheme
+if test x$COULOMB_COLLISIONS_SCHEME == xtanaka; then
+   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_TANAKA], [true], [Set coulomb collision scheme to 10.1002/ctpp.201700121])
+elif test x$COULOMB_COLLISIONS_SCHEME == xsentoku-m; then
+   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_SENTOKU_M], [true], [Set coulomb collision scheme to 10.1063/1.4742167])
+else
+   AC_MSG_ERROR([Coulomb collisions scheme is not supported.])
 fi
 
 AC_DEFINE_UNQUOTED([CXXFLAGS], ["$CFLAGS_DEFAULT $CFLAGS_ADDITIONAL"], [define used C(XX)FLAGS])

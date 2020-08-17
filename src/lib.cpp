@@ -132,6 +132,30 @@ namespace lib
     return the_time;
   }
 
+  double get_debye_length (double density, double temperature)
+  {
+    // sqrt ( epsilon_0 * k_boltzmann / q_el^2 ) is 7400,
+    // when density in m-3 and temperature in eV
+    double const1 = 7400;
+    if (density <= 0) LOG_S(FATAL) << "(get_debye_length): density must be positive. Actucal value is: ``" << density << "''";
+    return ( const1 * lib::sq_rt ( temperature / density ) );
+  }
+
+  double get_plasma_frequency (double density)
+  {
+    // const1 is sqrt ( q_e^2 / ( m_e * epsilon_0 ) )
+    double const1 = 56.3803;
+    return ( const1 * lib::sq_rt ( density ) );
+  }
+
+  double get_coulomb_log ( double mass, double velocity,
+                           double density, double temperature )
+  {
+    double debye_length = get_debye_length ( density, temperature );
+
+    return ( debye_length * mass * velocity / constant::PLANK_BAR_CONST );
+  }
+
 // Make directory and check if it exists
   bool directory_exists(const std::string& path)
   {

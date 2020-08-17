@@ -54,7 +54,11 @@
 #endif
 
 #ifdef COLLISIONS
-#include "collisions.hpp"
+#ifdef COULOMB_COLLISIONS_TANAKA
+#include "collisionsTanaka.hpp"
+#elif COULOMB_COLLISIONS_SENTOKU_M
+#include "collisionsSentokuM.hpp"
+#endif
 #endif
 
 using namespace std;

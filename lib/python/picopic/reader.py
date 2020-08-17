@@ -76,28 +76,28 @@ class Reader:
 
 #### validators
     def __validate_ds__(self, p_component, p_type, shape, number):
-        drange = self.__ds_range__(p_component, p_type, shape)
-        if number < 0:
-            raise IndexError('Dataset should not be less, than 0. The value was: {}'
-                             .format(number))
-        elif drange < number:
-            raise IndexError('Dataset should be less, than {}. The value was: {}.'
-                             .format(drange, number))
-        else:
-            return True
+        # drange = self.__ds_range__(p_component, p_type, shape)
+        # if number < 0:
+        #     raise IndexError('Dataset should not be less, than 0. The value was: {}'
+        #                      .format(number))
+        # elif drange < number:
+        #     raise IndexError('Dataset should be less, than {}. The value was: {}.'
+        #                      .format(drange, number))
+        # else:
+        return True
 
 
     def __validate_rec__(self, p_component, shape, number):
-        frange = self.__ds_range__(p_component, 'rec', shape)
-        if number < 0:
-            raise IndexError('Rec should not be less, than 0. The value was: {}'
-                             .format(number))
-        elif frange <= number:
-            raise IndexError('Rec should be less, than {}. The value was: {}'
-                             .format(frange - 1, number))
-        else:
+        # frange = self.__ds_range__(p_component, 'rec', shape)
+        # if number < 0:
+        #     raise IndexError('Rec should not be less, than 0. The value was: {}'
+        #                      .format(number))
+        # elif frange <= number:
+        #     raise IndexError('Rec should be less, than {}. The value was: {}'
+        #                      .format(frange - 1, number))
+        # else:
 
-            return True
+        return True
 
 
     def __validate_col__(self, p_component, shape, number):

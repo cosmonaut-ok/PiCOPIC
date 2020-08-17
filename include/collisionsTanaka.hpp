@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _COLLISIONS_HPP_
-#define _COLLISIONS_HPP_
+#ifndef _COLLISIONS_TANAKA_HPP_
+#define _COLLISIONS_TANAKA_HPP_
 
 #include <vector>
 #include <algorithm>    // std::min, std::random_shuffle
@@ -27,40 +27,30 @@
 
 #include <string>
 
-#include "defines.hpp"
-#include "loguru.hpp"
 #include "lib.hpp"
 #include "geometry.hpp"
 #include "specieP.hpp"
 
-#include "temperatureCounted.hpp"
-#include "densityCounted.hpp"
+#include "specieP.hpp"
 
-const double PROTON_MASS = EL_MASS * 1836;
+#include "collisions.hpp"
 
-class Collisions
+class Collisions;
+
+class CollisionsTanaka : public Collisions
 {
 public:
+  CollisionsTanaka(void) {};
+  CollisionsTanaka(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
+  ~CollisionsTanaka(void) {};
 
-  TemperatureCounted temperature_el;
-  TemperatureCounted temperature_ion;
-  // DensityCounted density;
+  // virtual void calc_collisions() = 0;
+  void collide_single(int i, int j, double m_real_a, double m_real_b,
+                      vector<double> &p1, vector<double> &p2);
 
-  Collisions(void) {};
-  Collisions(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
-  ~Collisions(void) {};
-
-  void sort_to_cells();
-  void random_sort();
-
-  virtual void clear();
-  virtual void run () = 0;
+  void run ();
 
 protected:
-  vector <SpecieP *> species_p;
-  Grid < vector< vector<double> * > > map_el2cell;
-  Grid < vector< vector<double> * > > map_ion2cell;
-
   Grid < double > energy_tot_el;
   Grid < double > mass_tot_el;
   Grid3D < double > moment_tot_el;
@@ -69,19 +59,9 @@ protected:
   Grid < double > mass_tot_ion;
   Grid3D < double > moment_tot_ion;
 
-  Geometry* geometry;
-  TimeSim *time;
+  void correct_velocities();
 
-  double get_el_density(int i, int j);
-  double get_ion_density(int i, int j);
-  double get_el_temperature(int i, int j);
-  double get_ion_temperature(int i, int j);
-
-  double geometry_cell_volume(int i);
-
-  void collect_weighted_params_tot_grid();
-
-  virtual void collide () = 0;
+  void collide();
 };
 
-#endif // end of _COLLISIONS_HPP_
+#endif // end of _COLLISIONS_TANAKA_HPP_
