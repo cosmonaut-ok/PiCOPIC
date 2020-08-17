@@ -30,44 +30,6 @@ CollisionsSentokuM::CollisionsSentokuM (Geometry* _geometry, TimeSim *_time, vec
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////// service functions ///////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-double CollisionsSentokuM::get_rel_p0 (double mass, double sq_vel)
-// get 0th momentum in 4-momentum space, aka E/c
-{
-  if (mass == 0) LOG_S(FATAL) << "mass must not be zero";
-  double gamma = lib::get_gamma(sq_vel);
-
-  return mass * LIGHT_VEL * gamma; // gamma m c^2 / c
-}
-
-double CollisionsSentokuM::get_coulomb_logarithm (double m_a, double m_b,
-                                                  double debye_length,
-                                                  double v_rel)
-{
-  double gamma_rel = lib::get_gamma(v_rel * v_rel);
-
-  // get reduced mass
-  double m_ab = m_a * m_b / (m_a + m_b);
-
-  // FIXME: temporary simple formula
-  return log ( debye_length * m_ab * v_rel / PLANK_BAR_CONST );
-}
-
-double CollisionsSentokuM::get_collision_freq (double e_a, double e_b,
-                                               double density_lowest,
-                                               double L,
-                                               double p_rel, double v_rel)
-{
-  return 4 * constant::PI * pow(e_a * e_b, 2) * density_lowest * L / (p_rel * p_rel * v_rel);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
 void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_real_b,
                                 vector<double> &pa, vector<double> &pb)
 {
@@ -118,16 +80,14 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
   //// main calculation
 
   // get p^0_a, p^0_b, \gamma_a and \gamma_b --- LAB frame
-  double p0_a = get_rel_p0(mass_a, v_a.length2());
-  double p0_b = get_rel_p0(mass_a, v_b.length2());
-  double gamma_a = lib::get_gamma(v_a.length2());
-  double gamma_b = lib::get_gamma(v_b.length2());
+  double p0_a = phys::rel::momentum_0(mass_a, v_a);
+  double p0_b = phys::rel::momentum_0(mass_a, v_b);
 
   // get p_a and p_b --- LAB frame
   vector3d<double> p_a;
   vector3d<double> p_b;
-  p_a = v_a * gamma_a * mass_a;
-  p_b = v_b * gamma_a * mass_b;
+  p_a = phys::rel::momentum (mass_a, v_a);
+  p_b = phys::rel::momentum (mass_b, v_b);
 
   // do not collide, if momentums are equal
   if (v_a == v_b) return;
@@ -137,7 +97,7 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
   v_cm = (p_a + p_b) / (p0_a + p0_b);
 
   // get \gamma of CM frame
-  double gamma_cm = lib::get_gamma(v_cm.length2());
+  double gamma_cm = phys::rel::lorenz_factor(v_cm.length2());
 
   // get p^0_a and p^0_b  --- CM frame
   double p0_a_cm = gamma_cm * ( p0_a - v_cm.dot(p_a) );
@@ -186,16 +146,20 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
   double density_highest = max(get_el_density(i, j), get_ion_density(i, j));
 
   // get debye length
-  double debye = lib::get_debye_length(density_el, temperature_el);
+  double debye = phys::plasma::debye_length(density_el, temperature_el);
 
   // get coulomb logarithm
-  double L_coulomb = get_coulomb_logarithm(mass_a, mass_b, debye, v_rel.length());
+  double L_coulomb = phys::plasma::coulomb_logarithm (mass_a, mass_b,
+                                                      debye, v_rel.length());
   // TODO: figure out, why coulomb logarithm can acquire negative values
   if (L_coulomb < 1) L_coulomb = 1;
 
   // get collision frequency
-  double coll_freq = get_collision_freq (charge_a, charge_b, density_lowest,
-                                         L_coulomb, p_rel.length(), v_rel.length());
+  double coll_freq = phys::plasma::collision_freqency (charge_a, charge_b,
+                                                       density_lowest,
+                                                       L_coulomb,
+                                                       p_rel.length(),
+                                                       v_rel.length());
 
   // LOG_S(ERROR) << "debye: " << debye
   //              << " L Coulomb: " << L_coulomb
@@ -299,11 +263,11 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
 
   v_a_bar = p_a_bar;
   v_a_bar /= mass_a;
-  v_a_bar *= lib::get_gamma_inv(v_a_bar.length2());
+  v_a_bar *= phys::rel::lorenz_factor_inv(v_a_bar.length2());
 
   v_b_bar = p_b_bar;
   v_b_bar /= mass_b;
-  v_b_bar *= lib::get_gamma_inv(v_b_bar.length2());
+  v_b_bar *= phys::rel::lorenz_factor_inv(v_b_bar.length2());
 
   // LOG_S(ERROR) << "v_a -> v_b         : " << v_a[0] << " " << v_a[1] << " " << v_a[2] << "\t" << "\t" << v_b[0] << " " << v_b[1] << " " << v_b[2];
   // LOG_S(ERROR) << "v_a_bar -> v_b_bar : " << v_a_bar[0] << " " << v_a_bar[1] << " " << v_a_bar[2] << "\t" << "\t" << v_b_bar[0] << " " << v_b_bar[1] << " " << v_b_bar[2];

@@ -36,7 +36,7 @@
 #endif
 
 #ifdef __AVX__
-#include <immintrin.h>//AVX Intrinsic Functions
+#include <immintrin.h> //AVX Intrinsic Functions
 #endif
 
 #ifdef _WIN32
@@ -55,8 +55,6 @@ namespace lib
 {
   double sqrt_recip (float x);
   bool to_bool (string str);
-  double get_gamma (double velocity);
-  double get_gamma_inv (double velocity);
   char* get_simulation_duration ();
   bool directory_exists (const std::string& path);
   bool make_directory (const std::string& path);
@@ -67,8 +65,6 @@ namespace lib
   void splitstr (std::string const &str, const char delim,
                  std::vector<std::string> &out);
   unsigned int nearest_divide (unsigned int number, double what);
-  double get_debye_length (double density, double temperature);
-  double get_plasma_frequency (double density);
 
   // template is workaround, because c++ does not see Grid class template
   // from inside of custom namespace (for unknown reason)

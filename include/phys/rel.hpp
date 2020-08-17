@@ -15,31 +15,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _TEMPERATURE_COUNTED_HPP_
-#define _TEMPERATURE_COUNTED_HPP_
+#ifndef _REL_HPP_
+#define _REL_HPP_
 
+#include <math.h>
+#include <algorithm>
+
+#include "defines.hpp"
 #include "constant.hpp"
-#include "phys/rel.hpp"
-#include "geometry.hpp"
-#include "grid.hpp"
-#include "specieP.hpp"
-#include "temperature.hpp"
+#include "loguru.hpp"
+#include "lib.hpp"
+#include "math/vector3d.hpp"
 
-class TemperatureCounted : public Temperature
+namespace phys::rel
 {
-public:
-  Grid<double> count;
+  double lorenz_factor (double sq_velocity);
+  double lorenz_factor_inv (double sq_velocity);
 
-  TemperatureCounted () {};
-  TemperatureCounted (Geometry *geom, vector<SpecieP *> species) : Temperature(geom, species)
-  {
-    count = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  };
-  ~TemperatureCounted () {};
-
-  void calc_temperature_cylindrical(string specie);
-
-private:
-  void weight_temperature_cylindrical(string specie);
-};
-#endif // end of _TEMPERATURE_COUNTED_HPP_
+  double momentum_0 (double mass, vector3d<double> velocity);
+  vector3d<double> momentum (double mass, vector3d<double> velocity);
+}
+#endif // end of _REL_HPP_

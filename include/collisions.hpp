@@ -53,8 +53,8 @@ public:
   void sort_to_cells();
   void random_sort();
 
-  virtual void clear();
-  virtual void run () = 0;
+  virtual void clear ();
+  virtual void run ();
 
 protected:
   vector <SpecieP *> species_p;
@@ -79,9 +79,9 @@ protected:
 
   double geometry_cell_volume(int i);
 
-  void collect_weighted_params_tot_grid();
-
+  virtual void collect_weighted_params_tot_grid();
   virtual void collide () = 0;
+
 };
 
 #endif // end of _COLLISIONS_HPP_

@@ -493,7 +493,7 @@ bool Cfg::method_limitations_check ()
     LOG_S(FATAL) << "There is no electrons present in system";
   }
 
-  double plasma_freq = lib::get_plasma_frequency ( electron_density );
+  double plasma_freq = phys::plasma::plasma_frequency ( electron_density );
 
   // TODO: WTF
   unsigned int time_multiplicator = 100;
@@ -516,7 +516,7 @@ bool Cfg::method_limitations_check ()
   // cell size d{r,z} < \lambda debye
 
   // 7400 is a coefficient, when T is in electron volts and N is in \f$ m^-3 \f$
-  double debye_length = lib::get_debye_length (electron_density, electron_temperature);
+  double debye_length = phys::plasma::debye_length (electron_density, electron_temperature);
   unsigned int debye_multiplicator = 100;
 
   if ( electron_temperature != 0)

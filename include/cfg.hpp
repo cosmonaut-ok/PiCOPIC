@@ -40,6 +40,7 @@
 
 #include "constant.hpp"
 #include "lib.hpp"
+#include "phys/plasma.hpp"
 #include "geometry.hpp"
 #include "timeSim.hpp"
 #include "msg.hpp"

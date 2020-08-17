@@ -94,7 +94,7 @@ void TemperatureCounted::calc_temperature_cylindrical(string specie)
         temperature.set(r, z, speciep->mass * v_sc_sum_2 / 2);
       else
       {
-        double gamma = lib::get_gamma(v_sc_sum_2);
+        double gamma = phys::rel::lorenz_factor(v_sc_sum_2);
         temperature.set(r, z, speciep->mass * LIGHT_VEL_POW_2 * (gamma - 1));
       }
 
