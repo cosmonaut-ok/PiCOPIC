@@ -48,7 +48,7 @@ Cfg::Cfg(const char *json_file_name)
   //! set logfile
   log_file = (char*)json_data.get<object>()["log_file"].get<string>().c_str();
   // set log level, file etc
-#ifndef DEBUG
+#ifdef DEBUG
   loguru::add_file(log_file, loguru::Truncate, loguru::Verbosity_MAX);
   loguru::g_stderr_verbosity = loguru::Verbosity_MAX;
 #else
@@ -63,7 +63,12 @@ Cfg::Cfg(const char *json_file_name)
   // json_data.get<object>()["package_version"] = value((string)PACKAGE_VERSION);
   object o;
   o["package_version"] = value((string)PACKAGE_VERSION);
-  o["debug"] = value((bool)DEBUG);
+#ifdef DEBUG
+  o["debug"] = value(true);
+#else
+  o["debug"] = value(false);
+#endif
+
 #ifdef SPEEDUP
   o["ieee"] = value(false);
 #else

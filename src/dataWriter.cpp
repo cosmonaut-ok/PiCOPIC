@@ -126,8 +126,9 @@ void DataWriter::go()
 
   if (is_run == 0)
   {
-    if (! DEBUG)
-    {
+#ifndef DEBUG
+    // if (! DEBUG)
+    // {
       int print_header_step = 30;
       if (time->print_header_counter % print_header_step == 0)
       {
@@ -142,8 +143,8 @@ void DataWriter::go()
           );
         MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
       }
-    }
-
+    // }
+#endif
     string dump_step = to_string((int)current_time_step / schedule);
     string shape_name;
     string component_name;
@@ -214,8 +215,9 @@ void DataWriter::go()
       }
     }
 
-    if (! DEBUG)
-    {
+    // if (! DEBUG)
+    // {
+#ifndef DEBUG
       std::ostringstream time_conv;
       time_conv << time->current;
       std::string cur_time_str = time_conv.str();
@@ -228,8 +230,8 @@ void DataWriter::go()
           << left << setw(22) << "| " + (string)lib::get_simulation_duration()
           << left << "|"
         );
-    }
-
+      // }
+#endif
     ++time->print_header_counter;
   }
 }

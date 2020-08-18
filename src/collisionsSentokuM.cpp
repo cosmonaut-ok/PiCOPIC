@@ -89,7 +89,7 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
   p_a = phys::rel::momentum (mass_a, v_a);
   p_b = phys::rel::momentum (mass_b, v_b);
 
-  // do not collide, if momentums are equal
+  // do not collide, if velocities are equal
   if (v_a == v_b) return;
 
   // get v of CM frame
@@ -136,7 +136,7 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
   v_rel /= 1 - v_a_cm.dot(v_b_cm) / LIGHT_VEL_POW_2;
 
   // check if collision is possible
-  if (p_rel.length2() < constant::MNZL) return;
+  if (p_rel.length2() == 0) return;
   if (v_rel.length2() < constant::MNZL) return;
 
   // get densities and electron temperature
@@ -302,44 +302,27 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
      // << p_b_bar_cm[2] << ";"
       ;
     }
-  // 7.54897e+16,1,0,8.57476e-148,1;inf;1;-nan,-nan,-nan
-  // charge_a, charge_b, density_lowest, L_coulomb, p_rel.length(), v_rel.length());
-  // double variance_tg_theta_half = coll_freq * time->step;
-  // double tg_theta = 2 * math::random::normal(lib::sq_rt(variance_tg_theta_half));
-
-  // d_p[0] = p_cm_l * (
-  //   cos_theta_r * cos_phi_r * sin_theta_cm * cos_phi_cm
-  //   - cos_theta_r * sin_phi_r * sin_theta_cm * sin_phi_cm
-  //   + sin_theta_r * sin_theta_cm) - p_cm[0];
-  // d_p[1] = p_cm_l * (
-  //   sin_phi_r * sin_theta_cm * cos_phi_cm
-  //   + cos_phi_r * sin_theta_cm * sin_phi_cm) - p_cm[1];
-  // d_p[2] = p_cm_l * (
-  //   - sin_theta_r * cos_phi_r * sin_theta_cm * cos_phi_cm
-  //   - sin_theta_r * sin_phi_r * sin_theta_cm * sin_phi_cm
-  //   + cos_theta_r * cos_theta_cm) - p_cm[2];
-
 
   // set new velocity components
   if (swap)
   {
-    P_VEL_R(pa) = p_b_bar[0];
-    P_VEL_PHI(pa) = p_b_bar[1];
-    P_VEL_Z(pa) = p_b_bar[2];
+    P_VEL_R(pa) = v_b_bar[0];
+    P_VEL_PHI(pa) = v_b_bar[1];
+    P_VEL_Z(pa) = v_b_bar[2];
 
-    P_VEL_R(pb) = p_a_bar[0];
-    P_VEL_PHI(pb) = p_a_bar[1];
-    P_VEL_Z(pb) = p_a_bar[2];
+    P_VEL_R(pb) = v_a_bar[0];
+    P_VEL_PHI(pb) = v_a_bar[1];
+    P_VEL_Z(pb) = v_a_bar[2];
   }
   else
   {
-    P_VEL_R(pa) = p_a_bar[0];
-    P_VEL_PHI(pa) = p_a_bar[1];
-    P_VEL_Z(pa) = p_a_bar[2];
+    P_VEL_R(pa) = v_a_bar[0];
+    P_VEL_PHI(pa) = v_a_bar[1];
+    P_VEL_Z(pa) = v_a_bar[2];
 
-    P_VEL_R(pb) = p_b_bar[0];
-    P_VEL_PHI(pb) = p_b_bar[1];
-    P_VEL_Z(pb) = p_b_bar[2];
+    P_VEL_R(pb) = v_b_bar[0];
+    P_VEL_PHI(pb) = v_b_bar[1];
+    P_VEL_Z(pb) = v_b_bar[2];
   }
   // LOG_S(FATAL);
 }

@@ -618,10 +618,12 @@ int main(int argc, char **argv)
   }
 
   // this is only to finish pretty pringing of data_writers output
-  if (!DEBUG)
-  {
+  // if (!DEBUG)
+  // {
+#ifndef DEBUG
     MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
-  }
+  // }
+#endif
 
   LOG_S(INFO) << "SIMULATION COMPLETE";
 

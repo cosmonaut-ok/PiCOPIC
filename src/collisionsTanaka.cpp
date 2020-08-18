@@ -75,6 +75,7 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   double density_el = get_el_density(i, j);
   double density_ion = get_ion_density(i, j);
   double density_lowest = min(density_el, density_ion);
+  double temperature_el = get_el_temperature(i, j);
   double m_ab = mass_a * mass_b / (mass_a + mass_b);
 
   // relative velocity
@@ -82,14 +83,16 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   double uy = vphi_a - vphi_b;
   double uz = vz_a - vz_b;
   double u = lib::sq_rt(pow(ux, 2) + pow(uy, 2) + pow(uz, 2));
-  
-  // get densities and electron temperature
-  double temperature_el = get_el_temperature(i, j);
-  double debye = phys::plasma::debye_length(density_el, temperature_el);
-  double lambda_coulomb = phys::plasma::coulomb_logarithm (mass_a, mass_b, debye, u);
+
 
   // if ``u'' (relative velocity) is zero, particles can not collide
   if (u == 0) return;
+  // do not collide, if density or temperature is zero
+  if (density_el == 0 || temperature_el == 0) return;
+
+  // get lambda Coulomb
+  double debye = phys::plasma::debye_length(density_el, temperature_el);
+  double lambda_coulomb = phys::plasma::coulomb_logarithm (mass_a, mass_b, debye, u);
 
   // TA77: calculate u perpendicular
   double u_p = lib::sq_rt(pow(ux, 2) + pow(uy, 2));
@@ -233,7 +236,9 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   }
 
   if (vr_a_new > LIGHT_VEL || vphi_a_new > LIGHT_VEL || vz_a_new > LIGHT_VEL
-      || vr_b_new > LIGHT_VEL || vphi_b_new > LIGHT_VEL || vz_b_new > LIGHT_VEL)
+      || vr_b_new > LIGHT_VEL || vphi_b_new > LIGHT_VEL || vz_b_new > LIGHT_VEL
+      || vr_a_new * vr_a_new + vphi_a_new * vphi_a_new + vz_a_new * vz_a_new > LIGHT_VEL_POW_2 - 1e3
+      || vr_b_new * vr_b_new + vphi_b_new * vphi_b_new + vz_b_new * vz_b_new > LIGHT_VEL_POW_2 - 1e3)
     LOG_S(ERROR) << "OH SHI! " << vr_a << " " << vphi_a << " " << vz_a << " => "
         << vr_a_new << " " << vphi_a_new << " " << vz_a_new << " -- "
         << charge_a << " " << mass_a << "; "
@@ -546,5 +551,5 @@ void CollisionsTanaka::run ()
   random_sort();
   collect_weighted_params_tot_grid();
   collide();
-  correct_velocities();
+  // correct_velocities();
 }

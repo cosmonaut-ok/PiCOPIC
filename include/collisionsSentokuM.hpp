@@ -37,8 +37,6 @@
 
 #include "collisions.hpp"
 
-class Collisions;
-
 class CollisionsSentokuM : public Collisions
 {
 public:

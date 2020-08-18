@@ -23,15 +23,11 @@
 
 #include "lib.hpp"
 
-#ifndef DEBUG
-#define DEBUG false
-#endif
+#define MSG(message) std::cout << message << std::endl;
 
 #ifndef FIXME
 #define FIXME false
 #endif
-
-#define MSG(message) std::cout << message << std::endl;
 
 #define MSG_FIXME(message) if (FIXME) std::cerr << "FIXME: " << message << "." << std::endl;
 

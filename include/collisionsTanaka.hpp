@@ -36,8 +36,6 @@
 
 #include "collisions.hpp"
 
-class Collisions;
-
 class CollisionsTanaka : public Collisions
 {
 public:
@@ -52,14 +50,6 @@ public:
   void run ();
 
 protected:
-  Grid < double > energy_tot_el;
-  Grid < double > mass_tot_el;
-  Grid3D < double > moment_tot_el;
-
-  Grid < double > energy_tot_ion;
-  Grid < double > mass_tot_ion;
-  Grid3D < double > moment_tot_ion;
-
   void correct_velocities();
 
   void collide();
