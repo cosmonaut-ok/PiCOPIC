@@ -551,5 +551,5 @@ void CollisionsTanaka::run ()
   random_sort();
   collect_weighted_params_tot_grid();
   collide();
-  // correct_velocities();
+  correct_velocities();
 }

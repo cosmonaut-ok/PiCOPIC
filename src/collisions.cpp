@@ -41,6 +41,26 @@ Collisions::Collisions (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> 
 //! TA77: clear
 void Collisions::clear()
 {
+  energy_tot_el = 0;
+  energy_tot_el.overlay_set(0);
+  mass_tot_el = 0;
+  mass_tot_el.overlay_set(0);
+  moment_tot_el = 0;
+  moment_tot_el.overlay_set(0);
+
+  energy_tot_ion = 0;
+  energy_tot_ion.overlay_set(0);
+  mass_tot_ion = 0;
+  mass_tot_ion.overlay_set(0);
+  moment_tot_ion = 0;
+  moment_tot_ion.overlay_set(0);
+
+  temperature_el.temperature = 0;
+  temperature_el.temperature.overlay_set(0);
+
+  temperature_ion.temperature = 0;
+  temperature_ion.temperature.overlay_set(0);
+
   for (int i = 0; i < geometry->r_grid_amount; ++i)
     for (int j = 0; j < geometry->z_grid_amount; ++j)
     {
