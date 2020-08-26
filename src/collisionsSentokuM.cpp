@@ -37,8 +37,10 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
   double charge_a, mass_a, charge_b, mass_b;
   bool swap = false;
 
+  double id = math::random::uniform();
+
   // TITU18: find weight ratio
-  double w_ratio = P_MASS(pa) * m_real_b / (P_MASS(pb) * m_real_a);
+  double w_ratio = 2; // P_MASS(pa) * m_real_b / (P_MASS(pb) * m_real_a);
 
   vector3d<double> v_a;
   vector3d<double> v_b;
@@ -79,65 +81,42 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
 
   //// main calculation
 
-  // get p^0_a, p^0_b, \gamma_a and \gamma_b --- LAB frame
-  double p0_a = phys::rel::momentum_0(mass_a, v_a);
-  double p0_b = phys::rel::momentum_0(mass_a, v_b);
-
-  // get p_a and p_b --- LAB frame
-  vector3d<double> p_a;
-  vector3d<double> p_b;
-  p_a = phys::rel::momentum (mass_a, v_a);
-  p_b = phys::rel::momentum (mass_b, v_b);
-
-  // do not collide, if velocities are equal
-  if (v_a == v_b) return;
+  // get \gamma_a and \gamma_b --- LAB frame
+  double gamma_a = phys::rel::lorenz_factor(v_a.length2());
+  double gamma_b = phys::rel::lorenz_factor(v_b.length2());
 
   // get v of CM frame
-  vector3d<double> v_cm(0,0,0);
-  v_cm = (p_a + p_b) / (p0_a + p0_b);
-
-  // get \gamma of CM frame
+  vector3d<double> v_cm, v_a_cm, v_b_cm;
+  v_cm = v_a * gamma_a * mass_a + v_b * gamma_b * mass_b;
+  v_cm /= gamma_a * mass_a + gamma_b * mass_b;
   double gamma_cm = phys::rel::lorenz_factor(v_cm.length2());
 
-  // get p^0_a and p^0_b  --- CM frame
-  double p0_a_cm = gamma_cm * ( p0_a - v_cm.dot(p_a) );
-  double p0_b_cm = gamma_cm * ( p0_b - v_cm.dot(p_b) );
+  // get v_a and v_b --- COM frame
+  v_a_cm = v_cm * v_cm.dot(v_a) * (gamma_cm - 1) / v_cm.length2();
+  v_a_cm += v_a;
+  v_a_cm -= v_cm * gamma_cm;
+  v_a_cm /= gamma_cm * (1 - v_cm.dot(v_a) / LIGHT_VEL_POW_2);
+  double gamma_a_cm = phys::rel::lorenz_factor(v_a_cm.length2());
 
-  // LOG_S(ERROR) << "v_cm: " << v_cm[0] << " " << v_cm[1] << " " << v_cm[2];
-  // LOG_S(ERROR) << "p_a : " << p_a[0] << " " << p_a[1] << " " << p_a[2];
-  // LOG_S(ERROR) << "p0_a, p0_a_cm : " << p0_a << " " << p0_a_cm;
-  // LOG_S(ERROR);
+  v_b_cm = v_cm * v_cm.dot(v_b) * (gamma_cm - 1) / v_cm.length2();
+  v_b_cm += v_b;
+  v_b_cm -= v_cm * gamma_cm;
+  v_b_cm /= gamma_cm * (1 - v_cm.dot(v_b) / LIGHT_VEL_POW_2);
+  double gamma_b_cm = phys::rel::lorenz_factor(v_b_cm.length2());
 
-  // P, P_a and P_b --- CM frame
-  vector3d<double> p_cm;
-  vector3d<double> p_a_cm;
-  vector3d<double> p_b_cm;
+  // get p_a_cm and p_b_cm --- COM frame
+  vector3d<double> p_cm, p_a_cm, p_b_cm;
+  p_a_cm = v_a_cm * mass_a * gamma_a_cm;
+  p_b_cm = v_b_cm * mass_b * gamma_b_cm;
+  p_cm = p_a_cm;
 
-  // get v_a and v_b  --- CM frame
-  vector3d<double> v_a_cm;
-  // find p_a in CM frame initially
-  p_a_cm = p_a;
-  p_a_cm += v_cm * v_cm.dot(p_a) * (gamma_cm - 1) / v_cm.length2();
-  p_a_cm -= v_cm * p0_a * gamma_cm;
-  p_cm = p_a_cm; // just set p_cm. FIXME: should it be like this?
-  v_a_cm = p_a_cm / p0_a_cm; // v_a_cm = P_a_cm / (gamma_a_cm * m_a) -> P_a_cm / p0_a_cm
-
-  vector3d<double> v_b_cm(0,0,0);
-  p_b_cm = p_b;
-  p_b_cm += v_cm * v_cm.dot(p_b) * (gamma_cm - 1) / v_cm.length2();
-  p_b_cm -= v_cm * p0_b * gamma_cm;
-  v_b_cm = p_b_cm / p0_b_cm;
-
-  // get p and v --- OPR frame (alpha particle is in rest)
-  vector3d<double> p_rel;
-  vector3d<double> v_rel;
-  p_rel = p_b_cm - p_a_cm;
+  // get v relative --- OPR frame
+  vector3d<double> v_rel, p_rel;
   v_rel = v_a_cm - v_b_cm;
   v_rel /= 1 - v_a_cm.dot(v_b_cm) / LIGHT_VEL_POW_2;
+  p_rel = p_b_cm - p_a_cm;
 
-  // check if collision is possible
-  if (p_rel.length2() == 0) return;
-  if (v_rel.length2() < constant::MNZL) return;
+////////////////////////////////////////////////////////////////////////////////
 
   // get densities and electron temperature
   double temperature_el = get_el_temperature(i, j);
@@ -145,14 +124,20 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
   double density_lowest = min(get_el_density(i, j), get_ion_density(i, j));
   double density_highest = max(get_el_density(i, j), get_ion_density(i, j));
 
+  // check if collision is possible
+  if (p_rel.length2() == 0) return;
+  if (v_rel.length2() < constant::MNZL) return;
+  if (density_el <= 0) return;
+  if (!isnormal(temperature_el)) return;
+
   // get debye length
   double debye = phys::plasma::debye_length(density_el, temperature_el);
 
   // get coulomb logarithm
   double L_coulomb = phys::plasma::coulomb_logarithm (mass_a, mass_b,
-                                                      debye, v_rel.length());
+						      debye, v_rel.length());
   // TODO: figure out, why coulomb logarithm can acquire negative values
-  if (L_coulomb < 1) L_coulomb = 1;
+  if (L_coulomb <= 0) return;
 
   // get collision frequency
   double coll_freq = phys::plasma::collision_freqency (charge_a, charge_b,
@@ -161,147 +146,80 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
                                                        p_rel.length(),
                                                        v_rel.length());
 
-  // LOG_S(ERROR) << "debye: " << debye
-  //              << " L Coulomb: " << L_coulomb
-  //              << " Collisions freq: " << coll_freq;
+  // TA77: calculate scattering angles Theta and Phi
+  // TA77 sub: find delta
+  //// find variance of delta
+  double m_ab = mass_a * mass_b / (mass_a + mass_b);
+  double variance_d = pow(charge_a, 2) * pow(charge_b, 2) * density_lowest
+    * L_coulomb / (8 * constant::PI * pow(EPSILON0, 2) * m_ab
+                   * p_cm.length2() * v_cm.length())
+    * time->step;
+  //// find standard deviation of delta
+  double std_dev_d = lib::sq_rt(variance_d);
+  //// find delta
+  double delta = math::random::normal(std_dev_d);
 
-  // get Theta angle --- OPR frame
-  double variance_tg_theta_half = coll_freq * time->step;
-  double tg_theta = 2 * math::random::normal(lib::sq_rt(variance_tg_theta_half));
-  double sin_theta = sin(atan(tg_theta));
-  double cos_theta = cos(atan(tg_theta));
+  // TA77: find Theta angle
+  double sin_theta = 2 * delta / (1 + pow(delta, 2));
+  double cos_theta = 1 - 2 * pow(delta, 2) / (1 + pow(delta, 2));
 
-  // LOG_S(ERROR) << "variance tg theta: " << variance_tg_theta_half
-  //              << " tg theta: " << tg_theta
-  //              << " sin theta: " << sin_theta
-  //              << " cos theta: " << cos_theta;
+  // TA77: find Phi angle
+  double phi_angle = math::random::uniform_angle();
+  double sin_phi = sin(phi_angle);
+  double cos_phi = cos(phi_angle);
 
-  // get Phi angle --- CM frame
-  double phi_cm = math::random::uniform_angle();
-  double cos_phi_cm = cos(phi_cm);
-  double sin_phi_cm = sin(phi_cm);
+////////////////////////////////////////////////////////////////////////////////
 
-  // LOG_S(ERROR) << "Phi_CM: " << phi_cm
-  //              << " cos Phi_CM: " << cos_phi_cm
-  //              << " sin Phi_CM: " << sin_phi_cm;
+  // get d_p --- COM frame
+  vector3d<double> d_p;
+  double p_cm_abs = p_cm.length();
+  double p_cm_prp = lib::sq_rt(p_cm[0] * p_cm[0] + p_cm[1] * p_cm[1]);
 
-  // get \beta and \beta_{cm}
-  double beta = 0.01; // v_a.length() * v_b.length() / LIGHT_VEL_POW_2;
-  double beta_cm = 0.02; //v_a_cm.length() * v_b_cm.length() / LIGHT_VEL_POW_2;
+  d_p[0] = p_cm[0] * p_cm[2] / p_cm_prp * sin_theta * cos_phi
+    - p_cm[1] * p_cm_abs / p_cm_prp * sin_theta * sin_phi
+    - p_cm[0] * ( 1 - cos_theta);
+  d_p[1] = p_cm[1] * p_cm[2] / p_cm_prp * sin_theta * cos_phi
+    + p_cm[0] * p_cm_abs / p_cm_prp * sin_theta * sin_phi
+    - p_cm[0] * ( 1 - cos_theta);
+  d_p[2] = -p_cm_prp * sin_theta * cos_phi - p_cm[2] * ( 1 - cos_theta );
 
-  // get Theta angle --- CM frame
-  double tg_theta_cm = sin_theta / (gamma_cm * (cos_theta - beta/beta_cm));
-  double sin_theta_cm = sin(atan(tg_theta_cm));
-  double cos_theta_cm = cos(atan(tg_theta_cm));
-
-
-  // LOG_S(ERROR) << "tg Theta_CM: " << tg_theta_cm
-  //              << " cos Theta_CM: " << cos_theta_cm
-  //              << " sin Theta_CM: " << sin_theta_cm;
-
-  // get Theta angle --- rotation // FIXME: not P_x-P_y ?
-  double cos_theta_r = p_cm[2] / p_cm.length();
-  double sin_theta_r = lib::sq_rt(p_cm[0] * p_cm[0] + p_cm[1] * p_cm[1]) / p_cm.length();
-
-  // LOG_S(ERROR) << "cos Theta_r: " << cos_theta_r
-  //              << " sin Theta_r: " << sin_theta_r;
-
-  // get Phi angle --- rotation
-  double cos_phi_r = p_cm[0] / lib::sq_rt(p_cm[0] * p_cm[0] + p_cm[1] * p_cm[1]);
-  double sin_phi_r = p_cm[1] / lib::sq_rt(p_cm[0] * p_cm[0] + p_cm[1] * p_cm[1]);
-
-  // LOG_S(ERROR) << "cos Phi_r: " << cos_phi_r
-  //              << " sin Phi_r: " << sin_phi_r;
-
-  double p_cm_l = p_cm.length();
-  vector3d<double> d_p(0,0,0);
-
-  d_p[0] = p_cm_l * (
-    cos_theta_r * cos_phi_r * sin_theta_cm * cos_phi_cm
-    - cos_theta_r * sin_phi_r * sin_theta_cm * sin_phi_cm
-    + sin_theta_r * sin_theta_cm) - p_cm[0];
-  d_p[1] = p_cm_l * (
-    sin_phi_r * sin_theta_cm * cos_phi_cm
-    + cos_phi_r * sin_theta_cm * sin_phi_cm) - p_cm[1];
-  d_p[2] = p_cm_l * (
-    - sin_theta_r * cos_phi_r * sin_theta_cm * cos_phi_cm
-    - sin_theta_r * sin_phi_r * sin_theta_cm * sin_phi_cm
-    + cos_theta_r * cos_theta_cm) - p_cm[2];
-
-  // LOG_S(ERROR) << "P_a    : " << p_a[0] << " " << p_a[1] << " " << p_b[2] << " " << p0_a;
-  // LOG_S(ERROR) << "P_b    : " << p_b[0] << " " << p_b[1] << " " << p_b[2] << " " << p0_b;
-  // LOG_S(ERROR) << "P_a_CM : " << p_a_cm[0] << " " << p_a_cm[1] << " " << p_b_cm[2] << " " << p0_a_cm;
-  // LOG_S(ERROR) << "P_b_CM : " << p_b_cm[0] << " " << p_b_cm[1] << " " << p_b_cm[2] << " " << p0_b_cm;
-  // LOG_S(ERROR) << "Delta P: " << d_p[0] << " " << d_p[1] << " " << d_p[2];
-
-  vector3d<double> p_a_bar_cm;
-  vector3d<double> p_b_bar_cm;
-
+  // get p_a_bar_cm and p_b_bar_cm --- COM frame
+  vector3d<double> p_a_bar_cm, p_b_bar_cm;
   p_a_bar_cm = p_a_cm + d_p;
   p_b_bar_cm = p_b_cm - d_p;
 
-  vector3d<double> p_a_bar;
-  vector3d<double> p_b_bar;
+  // get v_a_bar_cm and v_b_bar_cm --- COM frame
+  vector3d<double> v_a_bar_cm, v_b_bar_cm;
+  v_a_bar_cm = p_a_cm / gamma_a_cm / mass_a;
+  v_b_bar_cm = p_b_cm / gamma_b_cm / mass_b;
 
-  p_a_bar = p_a_bar_cm;
-  p_a_bar += v_cm * v_cm.dot(p_a_bar_cm) * ( ( gamma_cm - 1 ) / v_cm.length2() );
-  p_a_bar += v_cm * gamma_cm * p0_a_cm;
+  // get v_a_bar and v_b_bar --- LAB frame
+  vector3d<double> v_a_bar, v_b_bar;
 
-  // LOG_S(ERROR);
-  // LOG_S(ERROR) << "v_cm      : " << v_cm[0] << " " << v_cm[1] << " " << v_cm[2];
-  // LOG_S(ERROR) << "p_a_cm    : " << p_a_cm[0] << " " << p_a_cm[1] << " " << p_a_cm[2];
-  // LOG_S(ERROR) << "p_a_bar_cm: " << p_a_bar_cm[0] << " " << p_a_bar_cm[1] << " " << p_a_bar_cm[2];
-  // LOG_S(ERROR) << "p_a_bar   : " << p_a_bar[0] << " " << p_a_bar[1] << " " << p_a_bar[2];
-  // LOG_S(ERROR);
+  v_a_bar = v_cm * v_cm.dot(v_a_bar_cm) * (gamma_cm - 1) / v_cm.length2();
+  v_a_bar += v_a_bar_cm;
+  v_a_bar += v_cm * gamma_cm; // FIXME: should it be a vector?
+  v_a_bar /= gamma_cm * (1 + v_cm.dot(v_a_bar_cm) / LIGHT_VEL_POW_2);
+  // double gamma_a_cm = phys::rel::lorenz_factor(v_a_cm.length2());
 
-  p_b_bar = p_b_bar_cm;
-  p_b_bar += v_cm * v_cm.dot(p_b_bar_cm) * ( ( gamma_cm - 1 ) / v_cm.length2() );
-  p_b_bar += v_cm * gamma_cm * p0_b_cm;
+  v_b_bar = v_cm * v_cm.dot(v_b_bar_cm) * (gamma_cm - 1) / v_cm.length2();
+  v_b_bar += v_b_bar_cm;
+  v_b_bar += v_cm * gamma_cm; // FIXME: should it be a vector?
+  v_b_bar /= gamma_cm * (1 + v_cm.dot(v_b_bar_cm) / LIGHT_VEL_POW_2);
+  // double gamma_b_cm = phys::rel::lorenz_factor(v_b_cm.length2());
 
-  vector3d<double> v_a_bar;
-  vector3d<double> v_b_bar;
-
-  v_a_bar = p_a_bar;
-  v_a_bar /= mass_a;
-  v_a_bar *= phys::rel::lorenz_factor_inv(v_a_bar.length2());
-
-  v_b_bar = p_b_bar;
-  v_b_bar /= mass_b;
-  v_b_bar *= phys::rel::lorenz_factor_inv(v_b_bar.length2());
-
-  // LOG_S(ERROR) << "v_a -> v_b         : " << v_a[0] << " " << v_a[1] << " " << v_a[2] << "\t" << "\t" << v_b[0] << " " << v_b[1] << " " << v_b[2];
-  // LOG_S(ERROR) << "v_a_bar -> v_b_bar : " << v_a_bar[0] << " " << v_a_bar[1] << " " << v_a_bar[2] << "\t" << "\t" << v_b_bar[0] << " " << v_b_bar[1] << " " << v_b_bar[2];
-
-  // LOG_S(ERROR) << "p_a, p_b         : " << p_a.length() << ", " << p_b.length();
-  // LOG_S(ERROR) << "p_a_bar, p_b_bar : " << p_a_bar.length() << ", " << p_b_bar.length();
-
+  // if (v_a.length() > 1e8 || v_b.length() > 1e8)
+  // {
+  //   LOG_S(ERROR) << v_a[0] << " " << v_a[1] << " " << v_a[2] << " " << v_a.length();
+  //   LOG_S(ERROR) << v_b[0] << " " << v_b[1] << " " << v_b[2] << " " << v_b.length();
+  //   LOG_S(ERROR) << sin_theta << " " << cos_theta << " " << sin_phi << " " << cos_phi;
+  //   LOG_S(ERROR) << v_a_cm[0] << " " << v_a_cm[1] << " " << v_a_cm[2] << " " << v_a_cm.length();
+  //   LOG_S(ERROR) << v_b_cm[0] << " " << v_b_cm[1] << " " << v_b_cm[2] << " " << v_b_cm.length();
+  //   LOG_S(ERROR) << v_a_bar[0] << " " << v_a_bar[1] << " " << v_a_bar[2] << " " << v_a_bar.length();
+  //   LOG_S(ERROR) << v_b_bar[0] << " " << v_b_bar[1] << " " << v_b_bar[2] << " " << v_b_bar.length();
+  //   LOG_S(ERROR);
+  // }
   //// end of main calculation
-
-  if ( !isnormal(v_a_bar[0])
-       || !isnormal(v_a_bar[1])
-       || !isnormal(v_a_bar[2])
-       || !isnormal(v_b_bar[0])
-       || !isnormal(v_b_bar[1])
-       || !isnormal(v_b_bar[2])
-       )
-    {
-    LOG_S(ERROR) << "Something went wrong during collide. Velocities a :"
-     << L_coulomb << ","
-     << p_rel.length() << ","
-     << v_rel.length() << ","
-     << coll_freq << ";"
-     << sin_theta << ";" // / (gamma_cm * (cos_theta - beta/beta_cm)) << ";"
-     << d_p[0] << ","
-     << d_p[1] << ","
-     << d_p[2] << ";"
-     // << p_a_bar_cm[0] << ","
-     // << p_a_bar_cm[1] << ","
-     // << p_a_bar_cm[2] << ","
-     // << p_b_bar_cm[0] << ","
-     // << p_b_bar_cm[1] << ","
-     // << p_b_bar_cm[2] << ";"
-      ;
-    }
 
   // set new velocity components
   if (swap)
@@ -324,7 +242,17 @@ void CollisionsSentokuM::collide_single(int i, int j, double m_real_a, double m_
     P_VEL_PHI(pb) = v_b_bar[1];
     P_VEL_Z(pb) = v_b_bar[2];
   }
-  // LOG_S(FATAL);
+
+  // if ( v_a_bar.length2() > LIGHT_VEL_POW_2 / 10 / 10
+  //      || v_b_bar.length2() > LIGHT_VEL_POW_2 / 10 / 10)
+  //   LOG_S(ERROR) << "OH SHI! " << v_a[0] << " " << v_a[1] << " " << v_a[2] << " => "
+  //                << v_a_bar[0] << " " << v_a_bar[1] << " " << v_a_bar[2] << " -- "
+  //                << charge_a << " " << mass_a << "; "
+  //                << v_b[0] << " " << v_b[1] << " " << v_b[2] << " => "
+  //                << v_b_bar[0] << " " << v_b_bar[1] << " " << v_b_bar[2] << " -- "
+  //                << charge_b << " " << mass_b << "; "
+  //                << "vels: " << lib::sq_rt(p_a.length2() + p_b.length2()) << " => "
+  //                << lib::sq_rt(p_a_bar.length2() + p_b_bar.length2());
 }
 
 void CollisionsSentokuM::collide ()
