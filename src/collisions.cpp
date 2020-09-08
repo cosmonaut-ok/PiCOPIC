@@ -146,7 +146,7 @@ double Collisions::get_ion_temperature(int i, int j)
   double e_tot = energy_tot_ion(i, j);
   double m_tot = mass_tot_ion(i, j);
 
-  return e_tot * PROTON_MASS / m_tot;
+  return e_tot * PROTON_MASS / m_tot / EL_CHARGE;
 }
 
 double Collisions::geometry_cell_volume(int i)
