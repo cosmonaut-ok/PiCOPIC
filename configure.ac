@@ -67,7 +67,7 @@ AC_ARG_WITH([current-solver], [AC_HELP_STRING([--with-current-solver], [Set char
 
 AC_ARG_ENABLE([coulomb-collisions], [AC_HELP_STRING([--enable-coulomb-collisions], [Enable coulomb collisions. (WARNING! This is an experimental unfinished feature. This switch is only for development purposes.)])], [COLLISIONS="$enableval"], [COLLISIONS=no])
 
-AC_ARG_WITH([coulomb-collisions-scheme], [AC_HELP_STRING([--with-coulomb-collisions-scheme], [Set coulomb collisions  scheme (supported: tanaka [10.1002/ctpp.201700121] (default) and sentoku-m [modified 10.1063/1.4742167 for different particle weights])])], [COULOMB_COLLISIONS_SCHEME="$withval"], [COULOMB_COLLISIONS_SCHEME="tanaka"])
+AC_ARG_WITH([coulomb-collisions-scheme], [AC_HELP_STRING([--with-coulomb-collisions-scheme], [Set coulomb collisions scheme (supported: ta77s [10.1002/ctpp.201700121] (default), sk98m [10.1063/1.4742167] and sk98s [sk with symmetric weighting])])], [COULOMB_COLLISIONS_SCHEME="$withval"], [COULOMB_COLLISIONS_SCHEME="ta77s"])
 
 AC_PROG_CXXCPP
 AC_LANG(C++)
@@ -197,10 +197,12 @@ if test x$COLLISIONS = xyes; then
 fi
 
 # define charge concervation scheme
-if test x$COULOMB_COLLISIONS_SCHEME == xtanaka; then
-   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_TANAKA], [true], [Set coulomb collision scheme to 10.1002/ctpp.201700121])
-elif test x$COULOMB_COLLISIONS_SCHEME == xsentoku-m; then
-   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_SENTOKU_M], [true], [Set coulomb collision scheme to 10.1063/1.4742167])
+if test x$COULOMB_COLLISIONS_SCHEME == xta77s; then
+   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_TA77S], [true], [Set coulomb collision scheme to 10.1002/ctpp.201700121])
+elif test x$COULOMB_COLLISIONS_SCHEME == xsk98m; then
+   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_SK98M], [true], [Set coulomb collision scheme to 10.1063/1.4742167])
+elif test x$COULOMB_COLLISIONS_SCHEME == xsk98m; then
+   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_SK98S], [true], [Set coulomb collision scheme to 10.1063/1.4742167 with weighting from 10.1002/ctpp.201700121])
 else
    AC_MSG_ERROR([Coulomb collisions scheme is not supported.])
 fi

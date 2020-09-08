@@ -15,18 +15,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "collisionsTanaka.hpp"
+#include "collisionsTA77S.hpp"
 
 // say: TA77   - Takizuka, Abe; 1977; DOI: 10.1016/0021-9991(77)90099-7
-//      TITU18 - Tanaka et al.; 2018; DOI: 10.1002/ctpp.201700121
+//      TA77S18 - TA77S et al.; 2018; DOI: 10.1002/ctpp.201700121
 
 using namespace std;
 
-CollisionsTanaka::CollisionsTanaka (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p) : Collisions ( _geometry, _time, _species_p)
+CollisionsTA77S::CollisionsTA77S (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p) : Collisions ( _geometry, _time, _species_p)
 {
 }
 
-void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_real_b,
+void CollisionsTA77S::collide_single(int i, int j, double m_real_a, double m_real_b,
                                 vector<double> &pa, vector<double> &pb)
 {
   // get required parameters
@@ -35,7 +35,7 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
 
   bool swap = false;
 
-  // TITU18: find weight ratio
+  // TA77S18: find weight ratio
   double w_ratio = 1; // P_MASS(pa) * m_real_b / (P_MASS(pb) * m_real_a);
 
   // a-particle should be lighter, than b-particle
@@ -76,6 +76,7 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   double density_ion = get_ion_density(i, j);
   double density_lowest = min(density_el, density_ion);
   double temperature_el = get_el_temperature(i, j);
+  double temperature_ion = get_ion_temperature(i, j);
   double m_ab = mass_a * mass_b / (mass_a + mass_b);
 
   // relative velocity
@@ -84,14 +85,13 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   double uz = vz_a - vz_b;
   double u = lib::sq_rt(pow(ux, 2) + pow(uy, 2) + pow(uz, 2));
 
-
   // if ``u'' (relative velocity) is zero, particles can not collide
   if (u == 0) return;
   // do not collide, if density or temperature is zero
   if (density_el == 0 || temperature_el == 0) return;
 
   // get lambda Coulomb
-  double debye = phys::plasma::debye_length(density_el, temperature_el);
+  double debye = phys::plasma::debye_length(density_el, density_ion, temperature_el, temperature_ion);
   double lambda_coulomb = phys::plasma::coulomb_logarithm (mass_a, mass_b, debye, u);
 
   // TA77: calculate u perpendicular
@@ -101,8 +101,9 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   // TA77 sub: find delta
   //// find variance of delta
   double variance_d = pow(charge_a, 2) * pow(charge_b, 2) * density_lowest
-    * lambda_coulomb / (8 * constant::PI * pow(EPSILON0, 2) * m_ab * pow(u, 3))
+    * lambda_coulomb / (8 * constant::PI * pow(EPSILON0, 2) * pow(m_ab, 2) * pow(u, 3))
     * time->step;
+
   //// find standard deviation of delta
   double std_dev_d = lib::sq_rt(variance_d);
   //// find delta
@@ -112,12 +113,12 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   double sin_Theta = 2 * delta / (1 + pow(delta, 2));
   double cos_Theta = 1 - 2 * pow(delta, 2) / (1 + pow(delta, 2));
 
-  // TITU18: find Theta_2 angle
+  // TA77S18: find Theta_2 angle
   double sin_Theta2 = lib::sq_rt(
     w_ratio * pow(sin_Theta, 2)
     + w_ratio * ( 1 - w_ratio ) * pow(( 1 - cos_Theta), 2));
   double cos_Theta2 = 1 - w_ratio * (1 - cos_Theta);
-  // TITU18: sign of the sinus of Theta_angle
+  // TA77S18: sign of the sinus of Theta_angle
   // should be the same as sinus of Theta2_angle
   if (sin_Theta2 * sin_Theta < 0)
     sin_Theta2 = -sin_Theta2;
@@ -127,7 +128,7 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   double sin_Phi = sin(Phi_angle);
   double cos_Phi = cos(Phi_angle);
 
-  // TITU18: find Phi_2 angle
+  // TA77S18: find Phi_2 angle
   //// find dzeta for Phi_2 angle
   double dzeta = math::random::uniform();
   double Phi2_angle = Phi_angle + 2 * constant::PI * ( 1 - lib::sq_rt(w_ratio)) * (1 - dzeta);
@@ -182,7 +183,6 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
   double vphi_b_new = vphi_b + m_ab/mass_b * d_uy2;
   double vz_b_new = vz_b + m_ab/mass_b * d_uz2;
 
-
   if ( !isnormal(vr_a_new)
        || !isnormal(vphi_a_new)
        || !isnormal(vz_a_new)
@@ -211,6 +211,21 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
             << "Variance of delta: "
             << m_ab << " "
             << pow(u, 3);
+  }
+
+  if (pow(vr_a, 2) + pow(vphi_a, 2) + pow(vz_a, 2) >= LIGHT_VEL_POW_2 / 2
+      || pow(vr_a, 2) + pow(vphi_a, 2) + pow(vz_a, 2) >= LIGHT_VEL_POW_2 / 2)
+  {
+    LOG_S(WARNING) << vr_a << " "
+                   << vphi_a << " "
+                   << vz_a;
+
+    LOG_S(WARNING) << asin(sin_Theta) << " " << asin(sin_Phi) << " " << variance_d;
+
+    LOG_S(WARNING) << vr_a_new << " "
+                   << vphi_a_new << " "
+                   << vz_a_new;
+    LOG_S(WARNING) << "==============================================";
   }
 
   // set new velocity components
@@ -247,7 +262,7 @@ void CollisionsTanaka::collide_single(int i, int j, double m_real_a, double m_re
         << charge_b << " " << mass_b;
 }
 
-void CollisionsTanaka::collide ()
+void CollisionsTA77S::collide ()
 {
   // pairing
   for (int i = 0; i < geometry->r_grid_amount; ++i)
@@ -387,16 +402,16 @@ void CollisionsTanaka::collide ()
     }
 }
 
-void CollisionsTanaka::correct_velocities()
+void CollisionsTA77S::correct_velocities()
 {
-  // TITU18: correct velocities
+  // TA77S18: correct velocities
   for (int i = 0; i < geometry->r_grid_amount; ++i)
     for (int j = 0; j < geometry->z_grid_amount; ++j)
     {
       unsigned int vec_size_ions = map_ion2cell(i, j).size();
       unsigned int vec_size_electrons = map_el2cell(i, j).size();
 
-      // TITU18: calculate delta V
+      // TA77S18: calculate delta V
       //// calculate summary moment components and total energy for t+delta_t
       double moment_new_r_ion = 0, moment_new_phi_ion = 0, moment_new_z_ion = 0,
         moment_new_r_el = 0, moment_new_phi_el = 0, moment_new_z_el = 0,
@@ -544,7 +559,7 @@ void CollisionsTanaka::correct_velocities()
 
 }
 
-void CollisionsTanaka::run ()
+void CollisionsTA77S::run ()
 {
   clear();
   sort_to_cells();

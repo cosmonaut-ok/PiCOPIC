@@ -54,10 +54,12 @@
 #endif
 
 #ifdef COLLISIONS
-#ifdef COULOMB_COLLISIONS_TANAKA
-#include "collisionsTanaka.hpp"
-#elif COULOMB_COLLISIONS_SENTOKU_M
-#include "collisionsSentokuM.hpp"
+#ifdef COULOMB_COLLISIONS_TA77S
+#include "collisionsTA77S.hpp"
+#elif COULOMB_COLLISIONS_SK98M
+#include "collisionsSK98M.hpp"
+#elif COULOMB_COLLISIONS_SK98S
+#include "collisionsSK98S.hpp"
 #endif
 #endif
 

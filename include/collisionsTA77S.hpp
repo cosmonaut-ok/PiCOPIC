@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _COLLISIONS_TANAKA_HPP_
-#define _COLLISIONS_TANAKA_HPP_
+#ifndef _COLLISIONS_TA77S_HPP_
+#define _COLLISIONS_TA77S_HPP_
 
 #include <vector>
 #include <algorithm>    // std::min, std::random_shuffle
@@ -36,12 +36,12 @@
 
 #include "collisions.hpp"
 
-class CollisionsTanaka : public Collisions
+class CollisionsTA77S : public Collisions
 {
 public:
-  CollisionsTanaka(void) {};
-  CollisionsTanaka(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
-  ~CollisionsTanaka(void) {};
+  CollisionsTA77S(void) {};
+  CollisionsTA77S(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
+  ~CollisionsTA77S(void) {};
 
   // virtual void calc_collisions() = 0;
   void collide_single(int i, int j, double m_real_a, double m_real_b,
@@ -55,4 +55,4 @@ protected:
   void collide();
 };
 
-#endif // end of _COLLISIONS_TANAKA_HPP_
+#endif // end of _COLLISIONS_TA77S_HPP_

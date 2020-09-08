@@ -25,29 +25,24 @@ def langmur_freq(density):
     w_p = math.sqrt(density * math.pow(charge_el, 2) / (mass_el * epsilon_0))
     return w_p
 
-def debye_length(density, temperature):
-    ev_k = 1.16e4
-    charge_el = -1.6e-19 # coul
-    mass_el = 9.1e-31 # kg
-    epsilon_0 = 8.8e-12
-    boltzman_const = 1.38e-23
 
-    temperature *= ev_k # convert temperature from electronvolts to Kelvins
-    print(temperature)
-    l_d_tmp = epsilon_0 * boltzman_const * temperature / (density * math.pow(charge_el, 2))
-    l_d = math.sqrt(l_d_tmp)
-    return l_d
+def debye_length(density_el, density_ion, temperature_el, temperature_ion):
+    const1 = 7433.944 # sqrt ( epsilon_0 * k_boltzmann * T(eV)->T(K) / q_el^2 )
+    return const1 / math.sqrt ( density_el / temperature_el + density_ion / temperature_ion )
+
 
 def eV2kelvin(ev):
     res = ev * 1.16045221e4
     return res
 
+
 def wake_length(density, beam_velocity):
     w_p = langmur_freq(density)
     lambda_ = 2* math.pi * beam_velocity / w_p
     return lambda_
-## for phys-info
 
+
+## for phys-info
 def phys_info(properties_path):
     # set reader
     if os.path.isfile(properties_path):
@@ -68,9 +63,14 @@ def phys_info(properties_path):
         if i.name.lower() == 'electrons':
             el_density = (i.density[0] + i.density[1]) / 2
             el_temperature = i.temperature
+        if i.name.lower() == 'ions':
+            ion_density = (i.density[0] + i.density[1]) / 2
+            ion_temperature = i.temperature
 
     if not el_density:
-        print("Incorrect parameters.xml file (no particles->particle_kind->electrons section)")
+        print("Incorrect {} file (no particles->particle_kind->electrons section)".format(properties_path))
+    elif not ion_density:
+        print("Incorrect {} file (no particles->particle_kind->ions section)".format(properties_path))
     else:
         bunch_duration = config.beams[0].bunch_length / config.beams[0].velocity
         interval_bunches_duration = config.beams[0].bunches_distance / config.beams[0].velocity
@@ -78,8 +78,7 @@ def phys_info(properties_path):
         beam_duration = beam_length / config.beams[0].velocity
         w_p = langmur_freq(el_density)
         wake_len = wake_length(el_density, config.beams[0].velocity)
-        el_temperature = eV2kelvin(el_temperature)
-        debye = debye_length(el_density, el_temperature)
+        debye = debye_length(el_density, ion_density, el_temperature, ion_temperature)
         bunch_part_number = math.pi * math.pow(config.beams[0].bunch_radius, 2) * bunch_duration * config.beams[0].velocity * config.beams[0].bunch_density
 
         print("General:")
