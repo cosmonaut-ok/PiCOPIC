@@ -30,6 +30,6 @@ RUN rm -rf /tmp/hdf5-1.10.5
 
 ## install python libraries
 WORKDIR /tmp/
-RUN apk add py3-numpy py-numpy-dev py3-scipy py3-jinja2
+RUN apk add py3-numpy py3-numpy-dev py3-scipy py3-jinja2
 # RUN pip install --upgrade pip
 RUN pip install colorama matplotlib h5py pkgconfig
