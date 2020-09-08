@@ -56,6 +56,6 @@ namespace phys::plasma
     return pow(e_a * e_b, 2) * density * L
       / (8 * constant::PI
          * pow(constant::EPSILON0, 2)
-         * pow(p_rel, 2) * v_rel, 2);
+         * pow(p_rel, 2) * v_rel);
   }
 }
