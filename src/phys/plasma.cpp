@@ -21,13 +21,15 @@ using namespace constant;
 
 namespace phys::plasma
 {
-  double debye_length (double density, double temperature)
+  double debye_length (double density_el, double density_ion,
+                       double temperature_el, double temperature_ion)
   {
-    // sqrt ( epsilon_0 * k_boltzmann / q_el^2 ) is 7400,
-    // when density in m-3 and temperature in eV
-    const double const1 = 7400;
-    if (density <= 0) LOG_S(FATAL) << "(debye_length): density must be positive. Actucal value is: ``" << density << "''";
-    return ( const1 * lib::sq_rt ( temperature / density ) );
+    // sqrt ( epsilon_0 * k_boltzmann * T(eV)->T(K) / q_el^2 ) is 7433.944,
+    // when density in m^-3 and temperature in eV
+    const double const1 = 7433.944;
+    if (density_el <= 0) LOG_S(FATAL) << "(debye_length): electron density must be positive. Actucal value is: ``" << density_el << "''";
+    if (density_ion <= 0) LOG_S(FATAL) << "(debye_length): ion density must be positive. Actucal value is: ``" << density_ion << "''";
+    return ( const1 / lib::sq_rt ( density_el / temperature_el + density_ion / temperature_ion ) );
   }
 
   double plasma_frequency (double density)
@@ -51,8 +53,9 @@ namespace phys::plasma
                              double L,
                              double p_rel, double v_rel)
   {
-    return 4 * constant::PI * pow(e_a * e_b, 2) * density * L / (p_rel * p_rel * v_rel);
+    return pow(e_a * e_b, 2) * density * L
+      / (8 * constant::PI
+         * pow(constant::EPSILON0, 2)
+         * pow(p_rel, 2) * v_rel, 2);
   }
-
-
 }

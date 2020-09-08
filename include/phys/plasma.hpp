@@ -30,7 +30,9 @@
 
 namespace phys::plasma
 {
-  double debye_length (double density, double temperature);
+  double debye_length (double density_el, double density_ion,
+                       double temperature_ion, double temperature_el);
+
   double plasma_frequency (double density);
 
   double coulomb_logarithm (double mass_a, double mass_b,

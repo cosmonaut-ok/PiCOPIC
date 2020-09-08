@@ -419,10 +419,15 @@ void Cfg::weight_macro_amount()
 
   // message about coulomb colisions
 #ifdef COLLISIONS
-#ifdef COULOMB_COLLISIONS_TANAKA
-  LOG_S(INFO) << "Using Tanaka et al. Coulomb collisions scheme [10.1002/ctpp.201700121]";
-#elif COULOMB_COLLISIONS_SENTOKU_M
-  LOG_S(INFO) << "Using modified Sentoku-Kemp Coulomb collisions scheme [10.1063/1.4742167]";
+#ifdef COULOMB_COLLISIONS_TA77S
+  LOG_S(INFO) << "Using Takizuka and Abe Coulomb collisions scheme";
+  LOG_S(INFO) << "\twith symmetric weighted particles correction [10.1002/ctpp.201700121]";
+#elif COULOMB_COLLISIONS_SK98M
+  LOG_S(INFO) << "Using Sentoku and Kemp Coulomb collisions scheme";
+  LOG_S(INFO) << "\twith merging weighted particles correction [10.1002/ctpp.201700121]";
+#elif COULOMB_COLLISIONS_SK98S
+  LOG_S(INFO) << "Using Sentoku and Kemp Coulomb collisions scheme";
+  LOG_S(INFO) << "\twith symmetric weighted particles correction";
 #endif
 #endif
 
@@ -454,7 +459,9 @@ bool Cfg::method_limitations_check ()
 {
   double full_macro_amount = 0;
   double electron_density = 0;
+  double ion_density = 0;
   double electron_temperature = 0;
+  double ion_temperature = 0;
 
   // grid limitations
   if ((fmod(geometry->domains_by_r, 2) != 0 && geometry->domains_by_r != 1) || (fmod(geometry->domains_by_z, 2) != 0 && geometry->domains_by_z != 1))
@@ -491,6 +498,15 @@ bool Cfg::method_limitations_check ()
       electron_density = ((*i).left_density + (*i).right_density) / 2;
       electron_temperature = (*i).temperature;
     }
+
+    if (strcmp((*i).name, "Ions") == 0
+        || strcmp((*i).name, "ions") == 0
+        || strcmp((*i).name, "Ion") == 0
+        || strcmp((*i).name, "ion") == 0)
+    {
+      ion_density = ((*i).left_density + (*i).right_density) / 2;
+      ion_temperature = (*i).temperature;
+    }
   }
 
   if (electron_density == 0)
@@ -520,8 +536,7 @@ bool Cfg::method_limitations_check ()
 
   // cell size d{r,z} < \lambda debye
 
-  // 7400 is a coefficient, when T is in electron volts and N is in \f$ m^-3 \f$
-  double debye_length = phys::plasma::debye_length (electron_density, electron_temperature);
+  double debye_length = phys::plasma::debye_length (electron_density, ion_density, ion_temperature, electron_temperature);
   unsigned int debye_multiplicator = 100;
 
   if ( electron_temperature != 0)

@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _COLLISIONS_SENTOKU_M_HPP_
-#define _COLLISIONS_SENTOKU_M_HPP_
+#ifndef _COLLISIONS_SK98S_HPP_
+#define _COLLISIONS_SK98S_HPP_
 
 #include <vector>
 #include <algorithm>    // std::min, std::random_shuffle
@@ -37,12 +37,12 @@
 
 #include "collisions.hpp"
 
-class CollisionsSentokuM : public Collisions
+class CollisionsSK98S : public Collisions
 {
 public:
-  CollisionsSentokuM(void) {};
-  CollisionsSentokuM(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
-  ~CollisionsSentokuM(void) {};
+  CollisionsSK98S(void) {};
+  CollisionsSK98S(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
+  ~CollisionsSK98S(void) {};
 
   void collide_single(int i, int j, double m_real_a, double m_real_b,
                       vector<double> &p1, vector<double> &p2);
@@ -63,4 +63,4 @@ double get_collision_freq (double e_a, double e_b,
                            double p_rel, double v_rel);
 };
 
-#endif // end of _COLLISIONS_SENTOKU_M_HPP_
+#endif // end of _COLLISIONS_SK98S_HPP_
