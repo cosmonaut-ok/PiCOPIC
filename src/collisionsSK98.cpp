@@ -15,22 +15,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "collisionsSK98M.hpp"
+#include "collisionsSK98.hpp"
 #include <iostream>
 // say: TA77   - Takizuka, Abe; 1977; DOI: 10.1016/0021-9991(77)90099-7
-//      TA77S18 - SK98M et al.; 2018; DOI: 10.1002/ctpp.201700121
+//      TA77S18 - SK98 et al.; 2018; DOI: 10.1002/ctpp.201700121
 
 using namespace std;
 
-CollisionsSK98M::CollisionsSK98M (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p) : Collisions ( _geometry, _time, _species_p)
-{
-  //! TA77: make dummies to place particles there
-  // map_el2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  // map_ion2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-
-}
-
-void CollisionsSK98M::collide_single(int i, int j, double m_real_a, double m_real_b,
+void CollisionsSK98::collide_single(int i, int j, double m_real_a, double m_real_b,
                                 vector<double> &pa, vector<double> &pb)
 {
   // get required parameters
@@ -156,6 +148,9 @@ void CollisionsSK98M::collide_single(int i, int j, double m_real_a, double m_rea
   if (v_rel_abs < constant::MNZL) return;
   if (density_el <= 0) return;
   if (!isnormal(temperature_el)) return;
+  if (!isnormal(temperature_ion)) return;
+  if (!isnormal(density_el)) return;
+  if (!isnormal(density_ion)) return;
 
   // get debye length
   double debye = phys::plasma::debye_length(density_el, density_ion, temperature_el, temperature_ion);
@@ -163,6 +158,7 @@ void CollisionsSK98M::collide_single(int i, int j, double m_real_a, double m_rea
   // get coulomb logarithm
   double L_coulomb = phys::plasma::coulomb_logarithm (mass_a, mass_b,
                                                       debye, v_rel_abs);
+
   // FIXME: figure out, why coulomb logarithm can acquire negative values
   if (L_coulomb <= 0) return;
 
@@ -182,10 +178,6 @@ void CollisionsSK98M::collide_single(int i, int j, double m_real_a, double m_rea
 
   double sin_theta = 2 * delta / (1 + pow(delta, 2));
   double cos_theta = 1 - 2 * pow(delta, 2) / (1 + pow(delta, 2));
-
-  // double theta_angle = math::random::uniform_angle();
-  // double sin_theta = sin(theta_angle);
-  // double cos_theta = cos(theta_angle);
 
   // find theta angle for the COM frame
   double tg_theta_cm = sin_theta / (gamma_cm * ( cos_theta - lib::sq_rt(v_cm_2) / v_rel_abs ) );
@@ -238,143 +230,6 @@ void CollisionsSK98M::collide_single(int i, int j, double m_real_a, double m_rea
   //// end of main calculation
   ////
 
-  ////
-  //// merging model of weighting correction
-  ////
-
-  // double gamma_b = phys::rel::lorenz_factor(v_b.length2());
-
-  // double prob_b = w_a / max(w_a, w_b);
-
-  // double e_b_before = mass_b * LIGHT_VEL_POW_2 * (gamma_b - 1);
-
-  // double gamma_b_prime = phys::rel::lorenz_factor(v_b_prime.length2());
-  // double e_b_scat = mass_b * LIGHT_VEL_POW_2 * (gamma_b_prime - 1);
-  // double e_b_after = (1 - prob_b) * e_b_before + prob_b * e_b_scat;
-
-  // vector3d<double> p_b_after;
-  // p_b_after = p_b * (1 - prob_b) + p_b_prime * prob_b;
-  // double p_b_after_abs = p_b_after.length();
-
-  // if (p_b_after_abs == 0 ) return;
-
-  // double gamma_b_e_after = 1 + e_b_after / (mass_b * LIGHT_VEL_POW_2);
-  // double gamma_b_p_after = lib::sq_rt( 1 + p_b_after.length2() / (mass_b * LIGHT_VEL_POW_2) );
-
-  // double d_p_after_mag = mass_b * LIGHT_VEL * lib::sq_rt (
-  //   gamma_b_e_after * gamma_b_e_after
-  //   - gamma_b_p_after * gamma_b_p_after
-  //   );
-
-  // double gamma_angle = math::random::uniform_angle();
-
-  // double p_b_after_mag = p_b_after.length();
-  // double p_b_after_perp = lib::sq_rt ( p_b_after[0] * p_b_after[0]
-  //                                      + p_b_after[1] * p_b_after[1] );
-
-  // p_b_after[0] = d_p_after_mag * cos(gamma_angle)
-  //   * p_b_after[2] / p_b_after_mag * p_b_after[0] / p_b_after_perp;
-
-  // p_b_after[1] = d_p_after_mag * cos(gamma_angle)
-  //   * p_b_after[2] / p_b_after_mag * p_b_after[1] / p_b_after_perp;
-
-  // p_b_after[2] = d_p_after_mag * cos(gamma_angle)
-  //   * p_b_after_perp / p_b_after_mag;
-
-  //// end of merging model of weighting correction
-
-  v_a_prime = p_a_prime / mass_a;
-  // v_b_prime = p_b_after / mass_b;
-  v_b_prime = p_b_prime / mass_b;
-
-  gamma_a_prime_inv = phys::rel::lorenz_factor_inv(v_a_prime.length2());
-  gamma_b_prime_inv = phys::rel::lorenz_factor_inv(v_b_prime.length2());
-
-  // if (v_a.length2() >= LIGHT_VEL_POW_2 / 2 || v_b.length2() >= LIGHT_VEL_POW_2 / 2)
-  // {
-  //   LOG_S(WARNING) << v_a[0] << " "
-  //                  << v_a[1] << " "
-  //                  << v_a[2];
-
-  //   LOG_S(WARNING) << asin(sin_theta) << " " << asin(sin_phi) << " " << variance_d;
-
-  //   LOG_S(WARNING) << v_a_prime[0] << " "
-  //                  << v_a_prime[1] << " "
-  //                  << v_a_prime[2];
-  // }
-
-  v_a_prime *= gamma_a_prime_inv;
-  v_b_prime *= gamma_b_prime_inv;
-
-  // if (v_a.length2() >= LIGHT_VEL_POW_2 / 2 || v_b.length2() >= LIGHT_VEL_POW_2 / 2)
-  // {
-  //   LOG_S(WARNING) << v_a_prime[0] << " "
-  //                  << v_a_prime[1] << " "
-  //                  << v_a_prime[2];
-  //   LOG_S(WARNING) << "==============================================";
-  // }
-
-
-    // LOG_S(WARNING) << d_p_after_mag << " "
-    //                << gamma_angle << " "
-    //                << p_b_after_perp;
-
-    // LOG_S(WARNING) << p_b_after[0] << " "
-    //                << p_b_after[1] << " "
-    //                << p_b_after[2];
-
-    // LOG_S(WARNING) << v_a_prime[0] << " "
-    //                << v_a_prime[1] << " "
-    //                << v_a_prime[2];
-
-    // LOG_S(WARNING) << v_b_prime[0] << " "
-    //                << v_b_prime[1] << " "
-    //                << v_b_prime[2];
-
-  // if (v_a.length2() >= LIGHT_VEL_POW_2 / 2 || v_b.length2() >= LIGHT_VEL_POW_2 / 2)
-  // {
-  //   LOG_S(WARNING) << "------------------------------------------------";
-
-  //   LOG_S(WARNING) << "time                  : " << time->current;
-  //   LOG_S(WARNING) << "m_a                   : " << mass_a;
-  //   LOG_S(WARNING) << "m_b                   : " << mass_b;
-  //   LOG_S(WARNING) << "Theta angle           : " << asin(sin_theta);
-  //   LOG_S(WARNING) << "Phi angle             : " << asin(sin_phi);
-  //   LOG_S(WARNING) << "Collision freq & time : " << coll_freq << " " << time->step;
-
-  //   LOG_S(WARNING) << "variance theta        : " << variance_d;
-
-  //   LOG_S(WARNING) << "p sum before & after  : "
-  //                  << p_a.length() + p_b.length() << " "
-  //                  << p_a_prime.length() + p_b_prime.length() << " "
-  //                  << ( p_a.length() + p_b.length() ) / ( p_a_prime.length() + p_b_prime.length() ) ;
-
-  //   LOG_S(WARNING) << "p sum COM frame before: " << p_a_cm.length() + p_b_cm.length();
-  //   LOG_S(WARNING) << "p sum COM frame after : " << p_a_prime_cm.length() + p_b_prime_cm.length();
-
-
-  //   LOG_S(WARNING) << "v_a                   : " << v_a[0] << " " << v_a[1] << " " << v_a[2] << " " << v_a.length();
-  //   LOG_S(WARNING) << "v_b                   : " << v_b[0] << " " << v_b[1] << " " << v_b[2] << " " << v_b.length();
-
-  //   LOG_S(WARNING) << "beta_cm               : " << beta_cm[0] << " " << beta_cm[1] << " " << beta_cm[2] << " " << beta_cm.length();
-
-  //   LOG_S(WARNING) << "v_a_prime             : " << v_a_prime[0] << " " << v_a_prime[1] << " " << v_a_prime[2] << " " << v_a_prime.length();
-  //   LOG_S(WARNING) << "v_b_prime             : " << v_b_prime[0] << " " << v_b_prime[1] << " " << v_b_prime[2] << " " << v_b_prime.length();
-
-  //   LOG_S(WARNING) << "------------------------------------------------";
-  //   // LOG_S(FATAL);
-  // }
-
-
-  // if (!isnormal(v_a_prime[0]) || !isnormal(v_a_prime[1]) || !isnormal(v_a_prime[2]))
-  // {
-  //   LOG_S(FATAL) << "OH SHI: "
-  //                << v_a_prime[0] << " "
-  //                << v_a_prime[1] << " "
-  //                << v_a_prime[2]
-  //     ;
-  // }
-
   // set new velocity components
   if (swap)
   {
@@ -398,7 +253,7 @@ void CollisionsSK98M::collide_single(int i, int j, double m_real_a, double m_rea
   }
 }
 
-void CollisionsSK98M::collide ()
+void CollisionsSK98::collide ()
 {
   // pairing
   for (int i = 0; i < geometry->r_grid_amount; ++i)
@@ -538,164 +393,7 @@ void CollisionsSK98M::collide ()
     }
 }
 
-// void CollisionsSK98M::correct_velocities()
-// {
-//   // TA77S18: correct velocities
-//   for (int i = 0; i < geometry->r_grid_amount; ++i)
-//     for (int j = 0; j < geometry->z_grid_amount; ++j)
-//     {
-//       unsigned int vec_size_ions = map_ion2cell(i, j).size();
-//       unsigned int vec_size_electrons = map_el2cell(i, j).size();
-
-//       // TA77S18: calculate delta V
-//       //// calculate summary moment components and total energy for t+delta_t
-//       double moment_new_r_ion = 0, moment_new_phi_ion = 0, moment_new_z_ion = 0,
-//         moment_new_r_el = 0, moment_new_phi_el = 0, moment_new_z_el = 0,
-//         E_tot_ion_new = 0, E_tot_el_new = 0;
-
-//       for (unsigned int k = 0; k < vec_size_ions; ++k)
-//       {
-//         double vr = P_VEL_R((*map_ion2cell(i, j)[k]));
-//         double vphi = P_VEL_PHI((*map_ion2cell(i, j)[k]));
-//         double vz = P_VEL_Z((*map_ion2cell(i, j)[k]));
-//         double v_sq = vr*vr + vphi*vphi + vz*vz;
-
-//         double mass = P_MASS((*map_ion2cell(i, j)[k]));
-//         double weight = mass / PROTON_MASS;
-//         double weighted_m = weight * mass;
-
-//         moment_new_r_ion += weighted_m * vr;
-//         moment_new_phi_ion += weighted_m * vphi;
-//         moment_new_z_ion += weighted_m * vz;
-//         E_tot_ion_new += weighted_m * v_sq / 2;
-//       }
-
-//       for (unsigned int k = 0; k < vec_size_electrons; ++k)
-//       {
-//         double vr = P_VEL_R((*map_el2cell(i, j)[k]));
-//         double vphi = P_VEL_PHI((*map_el2cell(i, j)[k]));
-//         double vz = P_VEL_Z((*map_el2cell(i, j)[k]));
-//         double v_sq = vr*vr + vphi*vphi + vz*vz;
-
-//         double mass = P_MASS((*map_el2cell(i, j)[k]));
-//         double weight = mass / EL_MASS;
-//         double weighted_m = weight * mass;
-
-//         moment_new_r_el += weighted_m * vr;
-//         moment_new_phi_el += weighted_m * vphi;
-//         moment_new_z_el += weighted_m * vz;
-//         E_tot_el_new += weighted_m * v_sq / 2;
-//       }
-
-//       //// calculate delta V components and delta E total
-//       double delta_V_r_ion = (moment_new_r_ion - moment_tot_ion[0](i, j)) / mass_tot_ion(i, j);
-//       double delta_V_phi_ion = (moment_new_phi_ion - moment_tot_ion[1](i, j)) / mass_tot_ion(i, j);
-//       double delta_V_z_ion = (moment_new_z_ion - moment_tot_ion[2](i, j)) / mass_tot_ion(i, j);
-//       double delta_V_r_el = (moment_new_r_el - moment_tot_el[0](i, j)) / mass_tot_el(i, j);
-//       double delta_V_phi_el = (moment_new_phi_el - moment_tot_el[1](i, j)) / mass_tot_el(i, j);
-//       double delta_V_z_el = (moment_new_z_el - moment_tot_el[2](i, j)) / mass_tot_el(i, j);
-
-//       //// calculate V_0 components
-//       double V_0_r_ion = moment_tot_ion[0](i, j) / mass_tot_ion(i, j);
-//       double V_0_phi_ion = moment_tot_ion[1](i, j) / mass_tot_ion(i, j);
-//       double V_0_z_ion = moment_tot_ion[2](i, j) / mass_tot_ion(i, j);
-//       double V_0_r_el = moment_tot_el[0](i, j) / mass_tot_el(i, j);
-//       double V_0_phi_el = moment_tot_el[1](i, j) / mass_tot_el(i, j);
-//       double V_0_z_el = moment_tot_el[2](i, j) / mass_tot_el(i, j);
-//       //// calculate delta E total
-//       double delta_E_tot_ion = E_tot_ion_new - energy_tot_ion(i, j);
-//       double delta_E_tot_el = E_tot_el_new - energy_tot_el(i, j);
-//       //// link E total to local vars
-//       double E_tot_ion = energy_tot_ion(i, j);
-//       double E_tot_el = energy_tot_el(i, j);
-//       double V_0_sq_ion = V_0_r_ion*V_0_r_ion + V_0_phi_ion*V_0_phi_ion + V_0_z_ion*V_0_z_ion;
-//       double delta_V_sq_ion = delta_V_r_ion*delta_V_r_ion
-//         + delta_V_phi_ion*delta_V_phi_ion
-//         + delta_V_z_ion*delta_V_z_ion;
-//       double V_0_sq_el = V_0_r_el*V_0_r_el + V_0_phi_el*V_0_phi_el + V_0_z_el*V_0_z_el;
-//       double delta_V_sq_el = delta_V_r_el*delta_V_r_el
-//         + delta_V_phi_el*delta_V_phi_el
-//         + delta_V_z_el*delta_V_z_el;
-//       /// calculate alpha
-//       double alpha_ion =
-//         ( E_tot_ion - mass_tot_ion(i, j) * V_0_sq_ion / 2 )
-//         / ( E_tot_ion
-//             + delta_E_tot_ion
-//             - mass_tot_ion(i, j)
-//             * ( pow(V_0_r_ion + delta_V_r_ion, 2)
-//                 + pow(V_0_phi_ion + delta_V_phi_ion, 2)
-//                 + pow(V_0_z_ion + delta_V_z_ion, 2)
-//               )
-//             / 2
-//           );
-//       double alpha_el =
-//         ( E_tot_el - mass_tot_el(i, j) * V_0_sq_el / 2 )
-//         / ( E_tot_el
-//             + delta_E_tot_el
-//             - mass_tot_el(i, j)
-//             * ( pow(V_0_r_el + delta_V_r_el, 2)
-//                 + pow(V_0_phi_el + delta_V_phi_el, 2)
-//                 + pow(V_0_z_el + delta_V_z_el, 2)
-//               )
-//             / 2
-//           );
-
-//       // correct ion velocity
-//       if (isnormal(alpha_ion)) // FIXME: sometimes E_tot_ion = mass_tot_ion(i, j) * V_0_sq_ion / 2
-//       {
-//         // FIXME: quick and dirty workadound
-//         // caused negative values under squared root
-//         // and zeros
-//         if (alpha_ion < 0) alpha_ion = -alpha_ion;
-//         if (alpha_ion == 0) alpha_ion = 1;
-//         alpha_ion = lib::sq_rt(alpha_ion);
-
-//         for (unsigned int k = 0; k < vec_size_ions; ++k)
-//         {
-//           double vr = P_VEL_R((*map_ion2cell(i, j)[k]));
-//           double vphi = P_VEL_PHI((*map_ion2cell(i, j)[k]));
-//           double vz = P_VEL_Z((*map_ion2cell(i, j)[k]));
-
-//           double vr_corr = V_0_r_ion + alpha_ion * (vr - V_0_r_ion - delta_V_r_ion);
-//           double vphi_corr = V_0_phi_ion + alpha_ion * (vphi - V_0_phi_ion - delta_V_phi_ion);
-//           double vz_corr = V_0_z_ion + alpha_ion * (vz - V_0_z_ion - delta_V_z_ion);
-
-//           P_VEL_R((*map_ion2cell(i, j)[k])) = vr_corr;
-//           P_VEL_PHI((*map_ion2cell(i, j)[k])) = vphi_corr;
-//           P_VEL_Z((*map_ion2cell(i, j)[k])) = vz_corr;
-//         }
-//       }
-
-//       // correct electron velocity
-//       if (isnormal(alpha_el)) // FIXME: sometimes E_tot_el = mass_tot_el(i, j) * V_0_sq_el / 2
-//       {
-//         // FIXME: quick and dirty workadound
-//         // caused negative values under squared root
-//         // and zeros
-//         if (alpha_el < 0) alpha_el = -alpha_el;
-//         if (alpha_el == 0) alpha_el = 1;
-//         alpha_el = lib::sq_rt(alpha_el);
-
-//         for (unsigned int k = 0; k < vec_size_electrons; ++k)
-//         {
-//           double vr = P_VEL_R((*map_el2cell(i, j)[k]));
-//           double vphi = P_VEL_PHI((*map_el2cell(i, j)[k]));
-//           double vz = P_VEL_Z((*map_el2cell(i, j)[k]));
-
-//           double vr_corr = V_0_r_el + alpha_el * (vr - V_0_r_el - delta_V_r_el);
-//           double vphi_corr = V_0_phi_el + alpha_el * (vphi - V_0_phi_el - delta_V_phi_el);
-//           double vz_corr = V_0_z_el + alpha_el * (vz - V_0_z_el - delta_V_z_el);
-
-//           P_VEL_R((*map_el2cell(i, j)[k])) = vr_corr;
-//           P_VEL_PHI((*map_el2cell(i, j)[k])) = vphi_corr;
-//           P_VEL_Z((*map_el2cell(i, j)[k])) = vz_corr;
-//         }
-//       }
-//     }
-
-// }
-
-void CollisionsSK98M::run ()
+void CollisionsSK98::run ()
 {
   clear();
   sort_to_cells();

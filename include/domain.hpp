@@ -56,10 +56,8 @@
 #ifdef COLLISIONS
 #ifdef COULOMB_COLLISIONS_TA77S
 #include "collisionsTA77S.hpp"
-#elif COULOMB_COLLISIONS_SK98M
-#include "collisionsSK98M.hpp"
-#elif COULOMB_COLLISIONS_SK98S
-#include "collisionsSK98S.hpp"
+#elif COULOMB_COLLISIONS_SK98
+#include "collisionsSK98.hpp"
 #endif
 #endif
 

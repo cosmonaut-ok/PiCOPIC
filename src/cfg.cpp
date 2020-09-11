@@ -422,12 +422,8 @@ void Cfg::weight_macro_amount()
 #ifdef COULOMB_COLLISIONS_TA77S
   LOG_S(INFO) << "Using Takizuka and Abe Coulomb collisions scheme";
   LOG_S(INFO) << "\twith symmetric weighted particles correction [10.1002/ctpp.201700121]";
-#elif COULOMB_COLLISIONS_SK98M
-  LOG_S(INFO) << "Using Sentoku and Kemp Coulomb collisions scheme";
-  LOG_S(INFO) << "\twith merging weighted particles correction [10.1002/ctpp.201700121]";
-#elif COULOMB_COLLISIONS_SK98S
-  LOG_S(INFO) << "Using Sentoku and Kemp Coulomb collisions scheme";
-  LOG_S(INFO) << "\twith symmetric weighted particles correction";
+#elif COULOMB_COLLISIONS_SK98
+  LOG_S(INFO) << "Using Sentoku and Kemp Coulomb collisions scheme [10.1143/JPSJ.67.4084, 10.1016/j.jcp.2008.03.043]";
 #endif
 #endif
 
