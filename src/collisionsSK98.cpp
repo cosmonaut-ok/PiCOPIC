@@ -22,6 +22,9 @@
 
 using namespace std;
 
+CollisionsSK98::CollisionsSK98 (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p) : Collisions ( _geometry, _time, _species_p)
+{}
+
 void CollisionsSK98::collide_single(int i, int j, double m_real_a, double m_real_b,
                                 vector<double> &pa, vector<double> &pb)
 {

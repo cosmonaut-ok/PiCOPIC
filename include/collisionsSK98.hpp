@@ -41,7 +41,7 @@ class CollisionsSK98 : public Collisions
 {
 public:
   CollisionsSK98(void) {};
-  CollisionsSK98(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p) {};
+  CollisionsSK98(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
   ~CollisionsSK98(void) {};
 
   void collide_single(int i, int j, double m_real_a, double m_real_b,
