@@ -79,8 +79,8 @@ void Collisions::sort_to_cells()
       double dz = geometry->z_cell_size;
 
       // finding number new and old cells
-      int i_n = CELL_NUMBER(P_POS_R((**i)), dr);
-      int k_n = CELL_NUMBER(P_POS_Z((**i)), dz);
+      int i_n = P_CELL_R((**i));
+      int k_n = P_CELL_Z((**i));
 
       //! shift also to take overlaying into account
       int i_n_shift = i_n - geometry->bottom_r_grid_number;

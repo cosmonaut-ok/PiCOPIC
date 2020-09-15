@@ -181,8 +181,8 @@ void CurrentVB::rz_current_distribution()
     for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
     {
       // finding number new and old cells
-      int i_n = CELL_NUMBER(P_POS_R((**i)), dr);
-      int k_n = CELL_NUMBER(P_POS_Z((**i)), dz);
+      int i_n = P_CELL_R((**i));
+      int k_n = P_CELL_Z((**i));
       int i_o = CELL_NUMBER(P_POS_OLD_R((**i)), dr);
       int k_o = CELL_NUMBER(P_POS_OLD_Z((**i)), dz);
 
@@ -403,9 +403,9 @@ void CurrentVB::azimuthal_current_distribution()
       double rho = 0; // charge density in cell
       double wj; // j_phi in cell
 
-      // finding number of i and k cell. example: dr = 0.5; r = 0.4; i =0
-      int r_i = CELL_NUMBER(P_POS_R((**i)), dr); // number of particle i cell
-      int z_k = CELL_NUMBER(P_POS_Z((**i)), dz);
+      // finding number of i and k cell
+      int r_i = P_CELL_R((**i));
+      int z_k = P_CELL_Z((**i));
 
       double v_1 = CELL_VOLUME(r_i, dr, dz);  // volume of [i][k] cell
       double v_2 = CELL_VOLUME(r_i + 1, dr, dz);  // volume of [i + 1][k] cell

@@ -81,6 +81,7 @@ void Domain::distribute()
   for (auto i = species_p.begin(); i != species_p.end(); i++)
   {
     (**i).fullyfill_spatial_distribution();
+    (**i).bind_cell_numbers(); // calculate cell numbers at initial state
     (**i).velocity_distribution();
   }
 }
@@ -147,7 +148,14 @@ void Domain::update_particles_coords()
 {
   // ! update particles coordinates
   for (auto i = species_p.begin(); i != species_p.end(); i++)
-    (*i)->mover_cylindrical();
+    (**i).mover_cylindrical();
+}
+
+void Domain::bind_cell_numbers()
+{
+  // ! bind cell r-number and z-number to each particle
+  for (auto i = species_p.begin(); i != species_p.end(); i++)
+    (**i).bind_cell_numbers();
 }
 
 void Domain::reflect()

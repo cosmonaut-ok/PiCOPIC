@@ -111,8 +111,10 @@ void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_glob
                                bool res = false;
 
                                // not unsigned, because it could be less, than zero
-                               int r_cell = CELL_NUMBER(P_POS_R((*o)), sim_domain->geometry.r_cell_size);
-                               int z_cell = CELL_NUMBER(P_POS_Z((*o)), sim_domain->geometry.z_cell_size);
+                               // int r_cell = CELL_NUMBER(P_POS_R((*o)), sim_domain->geometry.r_cell_size);
+                               // int z_cell = CELL_NUMBER(P_POS_Z((*o)), sim_domain->geometry.z_cell_size);
+			       int r_cell = P_CELL_R((*o));
+			       int z_cell = P_CELL_Z((*o));
 
                                unsigned int i_dst = (unsigned int)ceil(r_cell / sim_domain->geometry.r_grid_amount);
                                unsigned int j_dst = (unsigned int)ceil(z_cell / sim_domain->geometry.z_grid_amount);
@@ -584,6 +586,7 @@ int main(int argc, char **argv)
         sim_domain->particles_back_position_to_rz(); // +
 
         sim_domain->reflect();
+        sim_domain->bind_cell_numbers();
       }
     particles_runaway_collector(domains, geometry_global);
 

@@ -32,6 +32,9 @@
 #include "math/maxwellJuttner.hpp"
 #include "math/vector3d.hpp"
 
+//! define service constant "particle`s vector size"
+#define P_VEC_SIZE 15
+
 // getters from particles vector
 #define PP_POS_R(var, p_num) (*var[p_num])[0]
 #define PP_POS_PHI(var, p_num) (*var[p_num])[1]
@@ -52,9 +55,8 @@
 #define PP_SIN(var, num) (*var[num])[11]
 #define PP_COS(var, num) (*var[num])[12]
 
-// #define PP_ALIVE(var, num) (*var[num])[13]
-
-// #define PP_JUMP(var, num) (*var[num])[14]
+#define PP_CELL_R(var, num) (*var[num])[13]
+#define PP_CELL_Z(var, num) (*var[num])[14]
 
 // getters from particle directly
 #define P_POS_R(var) var[0]
@@ -76,9 +78,8 @@
 #define P_SIN(var) var[11]
 #define P_COS(var) var[12]
 
-// #define P_ALIVE(var) var[13]
-
-// #define P_JUMP(var) var[14]
+#define P_CELL_R(var) var[13]
+#define P_CELL_Z(var) var[14]
 
 class FieldE;
 class FieldH;
@@ -169,10 +170,6 @@ public:
                                         unsigned int right_cell_number);
 
   virtual void velocity_distribution ();
-  // virtual void thermal_velocity_distribution ();
-  // void rectangular_velocity_distribution ();
-  // void eigen_velocity_distribution ();
-  // void eigen_directed_velocity_distribution (unsigned int dir);
   virtual void inject();
   void inject_bunch();
   void boris_pusher();
@@ -182,8 +179,8 @@ public:
   virtual void reflect();
   void back_position_to_rz();
   void back_velocity_to_rz();
-
   void dump_position_to_old();
+  void bind_cell_numbers ();
 
 protected:
   void rectangular_random_placement (unsigned int int_cell_number,

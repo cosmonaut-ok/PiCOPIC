@@ -113,5 +113,6 @@ public:
   void manage_beam();
   void dump_particle_positions_to_old();
   void collide();
+  void bind_cell_numbers();
 };
 #endif // end of _DOMAIN_HPP_

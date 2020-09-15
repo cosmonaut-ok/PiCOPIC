@@ -27,8 +27,8 @@ void TemperatureCounted::weight_temperature_cylindrical(string specie)
         double dz = geometry->z_cell_size;
 
         // finding number of i and k cell. example: dr = 0.5; r = 0.4; i =0
-        unsigned int r_i = CELL_NUMBER(P_POS_R((**i)), dr);
-        unsigned int z_k = CELL_NUMBER(P_POS_Z((**i)), dz);
+        unsigned int r_i = P_CELL_R((**i));
+        unsigned int z_k = P_CELL_Z((**i));
         unsigned int r_i_shift = r_i - geometry->bottom_r_grid_number;
         unsigned int z_k_shift = z_k - geometry->left_z_grid_number;
 

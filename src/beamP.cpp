@@ -100,7 +100,7 @@ void BeamP::inject()
 
       for (unsigned int i = 0; i < macro_per_step_to_inject; ++i)
       {
-        vector<double> *v = new vector<double>(13, 0);
+        vector<double> *v = new vector<double>(P_VEC_SIZE, 0);
 
         double rand_r = math::random::uniform();
         double rand_z = math::random::uniform();
