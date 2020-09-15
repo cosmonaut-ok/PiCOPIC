@@ -156,10 +156,6 @@ void BeamP::reflect ()
   double dr = geometry->r_cell_size;
   double half_dr = dr / 2.;
 
-  double radius_wall = geometry->r_size - dr / 2.;
-
-  double radius_wallX2 = radius_wall * 2.;
-
   // shift for converting local positions into global and back
   double r_shift = geometry->bottom_r_grid_number * dr;
 

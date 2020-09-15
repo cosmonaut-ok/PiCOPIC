@@ -163,8 +163,6 @@ try
 
     double arr[fdim[0]];
 
-    int fdd = fdim[0] - 1;
-
     for (int i = 0; i < fdim[0]; ++i)
       if (fdim[0] == data.y_size)
         arr[i] = data(size[2]-1, i);

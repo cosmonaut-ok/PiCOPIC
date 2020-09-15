@@ -23,9 +23,6 @@ void TemperatureCounted::weight_temperature_cylindrical(string specie)
     if (specie.compare((**ps).name) == 0)
       for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
       {
-        double dr = geometry->r_cell_size;
-        double dz = geometry->z_cell_size;
-
         // finding number of i and k cell. example: dr = 0.5; r = 0.4; i =0
         unsigned int r_i = P_CELL_R((**i));
         unsigned int z_k = P_CELL_Z((**i));
@@ -82,8 +79,8 @@ void TemperatureCounted::calc_temperature_cylindrical(string specie)
   weight_temperature_cylindrical(specie);
 
   /////////////////////// FIXME: Legacy algorithm ////////////////////////////
-  for (unsigned int r = 0; r < geometry->r_grid_amount; r++)
-    for (unsigned int z = 0; z < geometry->z_grid_amount; z++)
+  for (int r = 0; r < geometry->r_grid_amount; r++)
+    for (int z = 0; z < geometry->z_grid_amount; z++)
     {
       double v_vec_sum_2 = vel_r(r, z) * vel_r(r, z)
         + vel_phi(r, z) * vel_phi(r, z) + vel_z(r, z) * vel_z(r, z);

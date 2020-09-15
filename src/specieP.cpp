@@ -686,7 +686,7 @@ void SpecieP::hc_pusher()
     vector3d<double> b2;
     vector3d<double> b_cross;
 
-    double gamma, sq_vel, s, us2, alpha, B2;
+    double gamma, sq_vel, B2;
 
     // convert velocity to relativistic momentum
     sq_vel = velocity.length2();

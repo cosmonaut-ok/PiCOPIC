@@ -44,7 +44,6 @@ public:
 
   TemperatureCounted temperature_el;
   TemperatureCounted temperature_ion;
-  // DensityCounted density;
 
   Collisions(void) {};
   Collisions(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);

@@ -75,9 +75,6 @@ void Collisions::sort_to_cells()
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
     for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
     {
-      double dr = geometry->r_cell_size;
-      double dz = geometry->z_cell_size;
-
       // finding number new and old cells
       int i_n = P_CELL_R((**i));
       int k_n = P_CELL_Z((**i));
@@ -110,7 +107,7 @@ void Collisions::random_sort ()
 
 double Collisions::get_el_density(int i, int j)
 {
-  int len = map_el2cell(i, j).size();
+  unsigned int len = map_el2cell(i, j).size();
   double sum_mass = 0;
   double cell_volume = geometry_cell_volume(i);
 
@@ -123,7 +120,7 @@ double Collisions::get_el_density(int i, int j)
 
 double Collisions::get_ion_density(int i, int j)
 {
-  int len = map_ion2cell(i, j).size();
+  unsigned int len = map_ion2cell(i, j).size();
   double sum_mass = 0;
   double cell_volume = geometry_cell_volume(i);
 
@@ -212,8 +209,6 @@ void Collisions::collect_weighted_params_tot_grid ()
     }
   temperature_el.calc_temperature_cylindrical("electrons");
   temperature_ion.calc_temperature_cylindrical("ions");
-  // density.calc_density_cylindrical("electrons");
-  // density.calc_density_cylindrical("ions");
 }
 
 void Collisions::run ()

@@ -26,16 +26,16 @@
 #include "specieP.hpp"
 
 class SpecieP;
-class Geometry;
+// class Geometry;
 
 class Current
 {
 public:
-  TimeSim *time;
   Geometry *geometry;
-  Grid3D<double> current;
+  TimeSim *time;
   vector<SpecieP *> species_p;
-
+  Grid3D<double> current;
+  
   Current() {};
   Current(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : geometry(geom), time(t)
   {

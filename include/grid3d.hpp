@@ -78,18 +78,25 @@ public:
 
   Grid<T>& operator[] (int index)
   {
-    if (index == 0) return r_component;
-    if (index == 1) return phi_component;
-    if (index == 2) return z_component;
-    LOG_S(FATAL) << "Grid3D: Out of index";
+    Grid<T>* ret;
+    if (index == 0) ret = &r_component;
+    if (index == 1) ret = &phi_component;
+    if (index == 2) ret = &z_component;
+    if (index > 2) LOG_S(FATAL) << "Grid3D: Out of index";
+
+    return *ret;
   };
 
-  T& operator() (unsigned int x, unsigned int y, unsigned int z)
+  T operator() (unsigned int x, unsigned int y, unsigned int z)
   {
-    if (x == 0) return r_component(y, z);
-    if (x == 1) return phi_component(y, z);
-    if (x == 2) return z_component(y, z);
-    LOG_S(FATAL) << "Grid3D: Out of index";
+    T ret;
+    if (x == 0) ret = r_component(y, z);
+    if (x == 1) ret = phi_component(y, z);
+    if (x == 2) ret = z_component(y, z);
+    if (x > 2) LOG_S(FATAL) << "Grid3D: Out of index";
+
+    return ret;
   }
 };
+
 #endif // end of _GRID_3D_HPP_

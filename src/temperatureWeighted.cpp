@@ -91,8 +91,8 @@ void TemperatureWeighted::calc_temperature_cylindrical(string specie)
   weight_temperature_cylindrical(specie);
 
   /////////////////////// FIXME: Legacy algorithm ////////////////////////////
-  for (unsigned int r = 0; r < geometry->r_grid_amount; r++)
-    for (unsigned int z = 0; z < geometry->z_grid_amount; z++)
+  for (int r = 0; r < geometry->r_grid_amount; r++)
+    for (int z = 0; z < geometry->z_grid_amount; z++)
     {
       double p_sum_2 = pow(vel_r(r, z), 2)
         + pow(vel_phi(r, z), 2) + pow(vel_z(r, z), 2);

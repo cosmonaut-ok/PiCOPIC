@@ -62,9 +62,6 @@ void FieldE::set_pml()
   double radial_shift = geometry->bottom_r_grid_number * geometry->r_cell_size;
   double longitudinal_shift = geometry->left_z_grid_number * geometry->z_cell_size;
 
-  double global_r_grid_amount = geometry->r_grid_amount * geometry->domains_by_r;
-  double global_z_grid_amount = geometry->z_grid_amount * geometry->domains_by_z;
-
   // r=r wall
   if (geometry->pml_length[2] != 0)
     for(int i = 0; i < geometry->r_grid_amount; i++)
@@ -117,7 +114,7 @@ void FieldE::calc_field_cylindrical()
 
   // E at the center axis (r=0) case
   if (geometry->walls[0]) // calculate only at the center axis (r=0)
-    for(int k = z_begin; k < z_end; ++k)
+    for (unsigned int k = z_begin; k < z_end; ++k)
     {
       int i = 0;
       double epsilonx2 = 2 * epsilon(i, k);
@@ -135,7 +132,7 @@ void FieldE::calc_field_cylindrical()
 
   // E_z at the left wall (z=0) case
   if (geometry->walls[1]) // calculate only at the left wall (z=0)
-    for(int i = r_begin; i < r_end; ++i)
+    for (unsigned int i = r_begin; i < r_end; ++i)
     {
       int k = 0;
       double epsilonx2 = 2 * epsilon(i, k);
@@ -152,8 +149,8 @@ void FieldE::calc_field_cylindrical()
     }
 
 // regular case
-  for (int i = r_begin; i < r_end; i++)
-    for (int k = z_begin; k < z_end; k++)
+  for (unsigned int i = r_begin; i < r_end; i++)
+    for (unsigned int k = z_begin; k < z_end; k++)
     {
       double epsilonx2 = 2 * epsilon(i, k);
       double sigma_t = sigma(i, k) * time->step;
