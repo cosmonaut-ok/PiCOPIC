@@ -19,6 +19,7 @@
 #define _CONSTANT_HPP_
 
 #include <ctime>
+#include "defines.hpp"
 
 // WARNING!
 // This header file used only to store
@@ -26,6 +27,11 @@
 
 namespace constant
 {
+  // some math constants and common numbers
+  const double ONE_OVER_3 = 1. / 3.;
+  const double TWO_OVER_3 = 2. / 3.;
+  const double FOUR_OVER_3 = 4. / 3.;
+  // PI constant
   const double PI = 3.1415926535897932;
   // Vacuum permittivity (electric constant), F*m(e-1)
   const double EPSILON0 = 8.85E-12;
@@ -48,4 +54,12 @@ namespace constant
   // Smaller values should be rounded to zero
   const double MNZL = 1e-15; // Minimal Non-Zeroing Limit
 }
+
+// define some service constants
+// use classical calculations, if velocity lower, than minimal
+#ifdef REL_LIMIT
+// define REL_LIMIT^2 to decrease number of operations
+const double REL_LIMIT_POW_2 = REL_LIMIT * REL_LIMIT;
+#endif
+
 #endif // end of _CONSTANT_HPP_

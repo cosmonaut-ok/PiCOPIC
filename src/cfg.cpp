@@ -424,6 +424,8 @@ void Cfg::weight_macro_amount()
   LOG_S(INFO) << "\twith symmetric weighted particles correction [10.1002/ctpp.201700121]";
 #elif COULOMB_COLLISIONS_SK98
   LOG_S(INFO) << "Using Sentoku and Kemp Coulomb collisions scheme [10.1143/JPSJ.67.4084, 10.1016/j.jcp.2008.03.043]";
+#elif COULOMB_COLLISIONS_P12
+  LOG_S(INFO) << "Using Perez et al. collisions scheme [10.1063/1.4742167]";
 #endif
 #endif
 
@@ -548,15 +550,15 @@ bool Cfg::method_limitations_check ()
     }
 
     // \f$ L >> R_{debye} \f$
-    if (geometry->r_size < debye_length * debye_multiplicator
-	|| geometry->z_size < debye_length * debye_multiplicator)
-    {
-      LOG_S(FATAL) << "Too small system size: ``"
-	       << geometry->r_size << " x " << geometry->z_size
-	       << " m.''. Should be more, than ``"
-	       <<  debye_length * debye_multiplicator
-		   << " m.''";
-    }
+    // if (geometry->r_size < debye_length * debye_multiplicator
+    // 	|| geometry->z_size < debye_length * debye_multiplicator)
+    // {
+    //   LOG_S(FATAL) << "Too small system size: ``"
+    // 	       << geometry->r_size << " x " << geometry->z_size
+    // 	       << " m.''. Should be more, than ``"
+    // 	       <<  debye_length * debye_multiplicator
+    // 		   << " m.''";
+    // }
 
     // \f$ L << N_{particles} * R_{debye} \f$
     if (geometry->r_size > debye_length * full_macro_amount * debye_multiplicator

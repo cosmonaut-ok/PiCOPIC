@@ -45,7 +45,10 @@ namespace phys::plasma
     double m_ab = m_a * m_b / (m_a + m_b);
 
     // FIXME: temporary simple formula
-    return log ( debye_length * m_ab * v_rel / PLANK_BAR_CONST );
+    double cl = log ( debye_length * m_ab * v_rel / PLANK_BAR_CONST );
+
+    // lower limit of Coulomb logarithm is 2
+    return std::max(2., cl);
   }
 
   double collision_freqency (double e_a, double e_b,

@@ -346,17 +346,24 @@ void SpecieP::thermal_velocity_distribution ()
   // normalize to $\frac{1}{\sqrt{2}}$
   double norm = 0.707;
 
+  double shift;
+
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
+    if (P_POS_Z((**p)) > geometry->z_size / 2)
+      shift = 1;
+    else
+      shift = 1;
+
     double therm_vel_el = lib::sq_rt(2 * EL_CHARGE * energies[macro_count] / mass);
 
     double rnd_0 = math::random::uniform2();
     double rnd_1 = math::random::uniform2();
     double rnd_2 = math::random::uniform2();
 
-    P_VEL_R((**p)) = rnd_0 * therm_vel_el * norm;
-    P_VEL_PHI((**p)) = rnd_1 * therm_vel_el * norm;
-    P_VEL_Z((**p)) = rnd_2 * therm_vel_el * norm;
+    P_VEL_R((**p)) = rnd_0 * therm_vel_el * norm * shift;
+    P_VEL_PHI((**p)) = rnd_1 * therm_vel_el * norm * shift;
+    P_VEL_Z((**p)) = rnd_2 * therm_vel_el * norm * shift;
 
     // take into account relativistic factor
     // maxwellJuttner procedure returns relativistic momentums

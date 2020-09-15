@@ -49,6 +49,8 @@ Domain::Domain(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry
   collisions = new CollisionsTA77S(&geometry, time, species_p);
 #elif COULOMB_COLLISIONS_SK98
   collisions = new CollisionsSK98(&geometry, time, species_p);
+#elif COULOMB_COLLISIONS_P12
+  collisions = new CollisionsP12(&geometry, time, species_p);
 #endif
 #endif
 
