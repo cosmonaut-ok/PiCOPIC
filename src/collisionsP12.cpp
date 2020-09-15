@@ -26,10 +26,12 @@ CollisionsP12::CollisionsP12 (Geometry* _geometry, TimeSim *_time, vector <Speci
 {}
 
 void CollisionsP12::collide_single(int i, int j, double m_real_a, double m_real_b,
-                                vector<double> &pa, vector<double> &pb)
+                                   vector<double> &pa, vector<double> &pb,
+                                   double _density_a, double _density_b,
+                                   double debye)
 {
   // get required parameters
-  double charge_a, mass_a, charge_b, mass_b, w_a, w_b;
+  double charge_a, mass_a, charge_b, mass_b, w_a, w_b, density_a, density_b;
   bool swap = false;
 
   double id = math::random::uniform();
@@ -49,6 +51,7 @@ void CollisionsP12::collide_single(int i, int j, double m_real_a, double m_real_
     charge_a = P_CHARGE(pa);
     mass_a = P_MASS(pa);
     w_a = mass_a / m_real_a;
+    density_a = _density_a;
 
     v_b[0] = P_VEL_R(pb);
     v_b[1] = P_VEL_PHI(pb);
@@ -56,6 +59,7 @@ void CollisionsP12::collide_single(int i, int j, double m_real_a, double m_real_
     charge_b = P_CHARGE(pb);
     mass_b = P_MASS(pb);
     w_b = mass_b / m_real_b;
+    density_b = _density_b;
   }
   else
   {
@@ -65,6 +69,7 @@ void CollisionsP12::collide_single(int i, int j, double m_real_a, double m_real_
     charge_a = P_CHARGE(pb);
     mass_a = P_MASS(pb);
     w_a = mass_a / m_real_b;
+    density_a = _density_b;
 
     v_b[0] = P_VEL_R(pa);
     v_b[1] = P_VEL_PHI(pa);
@@ -72,9 +77,9 @@ void CollisionsP12::collide_single(int i, int j, double m_real_a, double m_real_
     charge_b = P_CHARGE(pa);
     mass_b = P_MASS(pa);
     w_b = mass_b / m_real_a;
+    density_b = _density_a;
 
     // swap particles when b-particle is lighter, than a-particle
-    // w_ratio = 1 / w_ratio;
     swap = true;
   }
 
@@ -139,39 +144,14 @@ void CollisionsP12::collide_single(int i, int j, double m_real_a, double m_real_
   double gamma_rel = phys::rel::lorenz_factor(v_rel_abs * v_rel_abs);
   double p_rel_abs = gamma_rel * mass_b * v_rel_abs;
 
-  // get densities and electron temperature
-  double temperature_el = get_el_temperature(i, j);
-  double temperature_ion = get_ion_temperature(i, j);
-  double density_el = get_el_density(i, j);
-  double density_ion = get_ion_density(i, j);
-  double density_lowest = min(get_el_density(i, j), get_ion_density(i, j));
-  double density_highest = max(get_el_density(i, j), get_ion_density(i, j));
-
-  double density_a, density_b;
-  // this is a hack
-  // to calculate densities of a and b species
-  if (m_real_a == EL_MASS)
-  {
-    density_a = density_el;
-    density_b = density_ion;
-  }
-  else
-  {
-    density_a = density_ion;
-    density_b = density_el;
-  }
+  double density_lowest = min(density_a, density_b);
+  double density_highest = max(density_a, density_b);
 
   // // check if collision is possible
   if (p_rel_abs == 0) return;
   if (v_rel_abs < constant::MNZL) return;
-  if (density_el <= 0) return;
-  if (!isnormal(temperature_el)) return;
-  if (!isnormal(temperature_ion)) return;
-  if (!isnormal(density_el)) return;
-  if (!isnormal(density_ion)) return;
-
-  // get debye length
-  double debye = phys::plasma::debye_length(density_el, density_ion, temperature_el, temperature_ion);
+  if (!isnormal(density_a)) return;
+  if (!isnormal(density_b)) return;
 
   // get coulomb logarithm
   double L_coulomb = phys::plasma::coulomb_logarithm (mass_a, mass_b, debye, v_rel_abs);
@@ -265,11 +245,6 @@ void CollisionsP12::collide_single(int i, int j, double m_real_a, double m_real_
     + p_a_cm[1] * cos_xi_cm;
   p_a_prime_cm[2] = -p_cm_prp * sin_xi_cm * cos_phi_cm + p_a_cm[2] * cos_xi_cm;
 
-  // get p_a_prime_cm and p_b_prime_cm --- COM frame
-  // vector3d<double> p_a_prime_cm, p_b_prime_cm;
-  // p_a_prime_cm = p_a_cm + d_p;
-  // p_b_prime_cm = p_b_cm - d_p;
-
   // find deflection probability
   double U_defl = math::random::uniform();
   double w_ab = min( w_a , w_b);
@@ -313,6 +288,8 @@ void CollisionsP12::collide_single(int i, int j, double m_real_a, double m_real_
   // set new velocity components
   if (swap)
   {
+    // deflect particles only with some probability
+    // according to rejection scheme
     if (U_defl < w_a)
     {
       P_VEL_R(pa) = v_b_prime[0];
@@ -354,19 +331,37 @@ void CollisionsP12::collide ()
       unsigned int vec_size_ions = map_ion2cell(i, j).size();
       unsigned int vec_size_electrons = map_el2cell(i, j).size();
 
+      // get temperatures, densities and debye length
+      double temperature_el = get_el_temperature(i, j);
+      double temperature_ion = get_ion_temperature(i, j);
+      double density_el = get_el_density(i, j);
+      double density_ion = get_ion_density(i, j);
+
+      if (!isnormal(temperature_ion)) break;
+      if (!isnormal(temperature_el)) break;
+      if (!isnormal(density_ion)) break;
+      if (!isnormal(density_el)) break;
+
+      double debye = phys::plasma::debye_length(density_el, density_ion,
+                                                temperature_el, temperature_ion);
+
       // TA77: case 1a
       // ions
       if (vec_size_ions % 2 == 0)
         for (unsigned int k = 0; k < vec_size_ions; k = k + 2)
           collide_single(i, j, PROTON_MASS, PROTON_MASS,
                          (*map_ion2cell(i, j)[k]),
-                         (*map_ion2cell(i, j)[k+1]));
+                         (*map_ion2cell(i, j)[k+1]),
+                         density_ion, density_ion,
+                         debye);
       // electrons
       if (vec_size_electrons % 2 == 0)
         for (unsigned int k = 0; k < vec_size_electrons; k = k + 2)
           collide_single(i, j, EL_MASS, EL_MASS,
                          (*map_el2cell(i, j)[k]),
-                         (*map_el2cell(i, j)[k+1]));
+                         (*map_el2cell(i, j)[k+1]),
+                         density_el, density_el,
+                         debye);
 
       // TA77: case 1b
       // ions
@@ -377,19 +372,27 @@ void CollisionsP12::collide ()
           // first 3 collisions in special way
           collide_single(i, j, PROTON_MASS, PROTON_MASS,
                          (*map_ion2cell(i, j)[0]),
-                         (*map_ion2cell(i, j)[1]));
+                         (*map_ion2cell(i, j)[1]),
+                         density_ion, density_ion,
+                         debye);
           collide_single(i, j, PROTON_MASS, PROTON_MASS,
                          (*map_ion2cell(i, j)[1]),
-                         (*map_ion2cell(i, j)[2]));
+                         (*map_ion2cell(i, j)[2]),
+                         density_ion, density_ion,
+                         debye);
           collide_single(i, j, PROTON_MASS, PROTON_MASS,
                          (*map_ion2cell(i, j)[2]),
-                         (*map_ion2cell(i, j)[0]));
+                         (*map_ion2cell(i, j)[0]),
+                         density_ion, density_ion,
+                         debye);
         }
         if (vec_size_ions >= 5)
           for (unsigned int k = 3; k < vec_size_ions; k = k + 2)
             collide_single(i, j, PROTON_MASS, PROTON_MASS,
                            (*map_ion2cell(i, j)[k]),
-                           (*map_ion2cell(i, j)[k+1]));
+                           (*map_ion2cell(i, j)[k+1]),
+                           density_ion, density_ion,
+                           debye);
       }
       // TA77: electrons, case 1b
       // electrons
@@ -400,19 +403,27 @@ void CollisionsP12::collide ()
           // first 3 collisions in special way
           collide_single(i, j, EL_MASS, EL_MASS,
                          (*map_el2cell(i, j)[0]),
-                         (*map_el2cell(i, j)[1]));
+                         (*map_el2cell(i, j)[1]),
+                         density_el, density_el,
+                         debye);
           collide_single(i, j, EL_MASS, EL_MASS,
                          (*map_el2cell(i, j)[1]),
-                         (*map_el2cell(i, j)[2]));
+                         (*map_el2cell(i, j)[2]),
+                         density_el, density_el,
+                         debye);
           collide_single(i, j, EL_MASS, EL_MASS,
                          (*map_el2cell(i, j)[2]),
-                         (*map_el2cell(i, j)[0]));
+                         (*map_el2cell(i, j)[0]),
+                         density_el, density_el,
+                         debye);
         }
         if (vec_size_electrons >= 5)
           for (unsigned int k = 3; k < vec_size_electrons; k = k + 2)
             collide_single(i, j, EL_MASS, EL_MASS,
                            (*map_el2cell(i, j)[k]),
-                           (*map_el2cell(i, j)[k+1]));
+                           (*map_el2cell(i, j)[k+1]),
+                           density_el, density_el,
+                         debye);
       }
 
       // TA77: case 2a. electrons-ions
@@ -420,7 +431,9 @@ void CollisionsP12::collide ()
         for (unsigned int k = 0; k < vec_size_electrons; ++k)
           collide_single(i, j, EL_MASS, PROTON_MASS,
                          (*map_el2cell(i, j)[k]),
-                         (*map_ion2cell(i, j)[k]));
+                         (*map_ion2cell(i, j)[k]),
+                         density_el, density_ion,
+                         debye);
 
       // TA77: case 2b. electrons-ions
       if (vec_size_ions > vec_size_electrons && vec_size_electrons > 0 && vec_size_ions > 0)
@@ -440,7 +453,9 @@ void CollisionsP12::collide ()
           unsigned int fge = floor(float(fgi) / float(c_i+1));
           collide_single(i, j, EL_MASS, PROTON_MASS,
                          (*map_el2cell(i, j)[fge]),
-                         (*map_ion2cell(i, j)[fgi]));
+                         (*map_ion2cell(i, j)[fgi]),
+                         density_el, density_ion,
+                         debye);
         }
         // TA77: case 2b, 2nd group, ions
         for (unsigned int fgi = 0; fgi < ions_2nd_group; ++fgi)
@@ -448,7 +463,9 @@ void CollisionsP12::collide ()
           unsigned int fge = floor(float(fgi) / float(c_i));
           collide_single(i, j, EL_MASS, PROTON_MASS,
                          (*map_el2cell(i, j)[fge+els_1st_group]),
-                         (*map_ion2cell(i, j)[fgi+ions_1st_group]));
+                         (*map_ion2cell(i, j)[fgi+ions_1st_group]),
+                         density_el, density_ion,
+                         debye);
         }
       }
       // TA77: case 2b. electrons-ions
@@ -470,7 +487,9 @@ void CollisionsP12::collide ()
           // MSG("els 1st:  FGE " << fge << " FGI " << fgi << " VSI " << vec_size_ions << " VSE " << vec_size_electrons);
           collide_single(i, j, EL_MASS, PROTON_MASS,
                          (*map_el2cell(i, j)[fge]),
-                         (*map_ion2cell(i, j)[fgi]));
+                         (*map_ion2cell(i, j)[fgi]),
+                         density_el, density_ion,
+                         debye);
         }
         // TA77: case 2b, 2nd group, electrons
         for (unsigned int fge = 0; fge < els_2nd_group; ++fge)
@@ -479,7 +498,9 @@ void CollisionsP12::collide ()
           // MSG("els 2nd:  FGE " << fge << " FGI " << fgi << " VSI " << vec_size_ions << " VSE " << vec_size_electrons);
           collide_single(i, j, EL_MASS, PROTON_MASS,
                          (*map_el2cell(i, j)[fge+els_1st_group]),
-                         (*map_ion2cell(i, j)[fgi+ions_1st_group]));
+                         (*map_ion2cell(i, j)[fgi+ions_1st_group]),
+                         density_el, density_ion,
+                         debye);
         }
       }
     }

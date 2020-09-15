@@ -45,7 +45,8 @@ public:
   ~CollisionsP12(void) {};
 
   void collide_single(int i, int j, double m_real_a, double m_real_b,
-                      vector<double> &p1, vector<double> &p2);
+                      vector<double> &p1, vector<double> &p2,
+                      double _density_a, double _density_b, double debye);
 
   void run ();
 
