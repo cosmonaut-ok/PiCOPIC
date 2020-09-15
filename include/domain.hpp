@@ -58,6 +58,8 @@
 #include "collisionsTA77S.hpp"
 #elif COULOMB_COLLISIONS_SK98
 #include "collisionsSK98.hpp"
+#elif COULOMB_COLLISIONS_P12
+#include "collisionsP12.hpp"
 #endif
 #endif
 

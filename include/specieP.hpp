@@ -32,13 +32,6 @@
 #include "math/maxwellJuttner.hpp"
 #include "math/vector3d.hpp"
 
-// define some service constants
-// use classical calculations, if velocity lower, than minimal
-#ifdef REL_LIMIT
-// define REL_LIMIT^2 to decrease number of operations
-  const double REL_LIMIT_POW_2 = pow (REL_LIMIT, 2);
-#endif
-
 // getters from particles vector
 #define PP_POS_R(var, p_num) (*var[p_num])[0]
 #define PP_POS_PHI(var, p_num) (*var[p_num])[1]

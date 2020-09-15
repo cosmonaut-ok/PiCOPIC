@@ -67,7 +67,7 @@ AC_ARG_WITH([current-solver], [AC_HELP_STRING([--with-current-solver], [Set char
 
 AC_ARG_ENABLE([coulomb-collisions], [AC_HELP_STRING([--enable-coulomb-collisions], [Enable coulomb collisions. (WARNING! This is an experimental unfinished feature. This switch is only for development purposes.)])], [COLLISIONS="$enableval"], [COLLISIONS=no])
 
-AC_ARG_WITH([coulomb-collisions-scheme], [AC_HELP_STRING([--with-coulomb-collisions-scheme], [Set coulomb collisions scheme (supported: ta77s [10.1002/ctpp.201700121] (default), sk98 [10.1063/1.4742167])])], [COULOMB_COLLISIONS_SCHEME="$withval"], [COULOMB_COLLISIONS_SCHEME="ta77s"])
+AC_ARG_WITH([coulomb-collisions-scheme], [AC_HELP_STRING([--with-coulomb-collisions-scheme], [Set coulomb collisions scheme (supported: ta77s [10.1002/ctpp.201700121] (default), sk98 [10.1143/JPSJ.67.4084, 10.1016/j.jcp.2008.03.043] and p12 [10.1063/1.4742167])])], [COULOMB_COLLISIONS_SCHEME="$withval"], [COULOMB_COLLISIONS_SCHEME="ta77s"])
 
 AC_PROG_CXXCPP
 AC_LANG(C++)
@@ -200,7 +200,9 @@ fi
 if test x$COULOMB_COLLISIONS_SCHEME == xta77s; then
    AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_TA77S], [true], [Set coulomb collision scheme to 10.1002/ctpp.201700121])
 elif test x$COULOMB_COLLISIONS_SCHEME == xsk98; then
-   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_SK98], [true], [Set coulomb collision scheme to 10.1063/1.4742167])
+   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_SK98], [true], [Set coulomb collision scheme to 10.1143/JPSJ.67.4084, 10.1016/j.jcp.2008.03.043])
+elif test x$COULOMB_COLLISIONS_SCHEME == xp12; then
+   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_P12], [true], [Set coulomb collision scheme to 10.1063/1.4742167])
 else
    AC_MSG_ERROR([Coulomb collisions scheme is not supported.])
 fi
