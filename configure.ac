@@ -69,6 +69,8 @@ AC_ARG_ENABLE([coulomb-collisions], [AC_HELP_STRING([--enable-coulomb-collisions
 
 AC_ARG_WITH([coulomb-collisions-scheme], [AC_HELP_STRING([--with-coulomb-collisions-scheme], [Set coulomb collisions scheme (supported: ta77s [10.1002/ctpp.201700121] (default), sk98 [10.1143/JPSJ.67.4084, 10.1016/j.jcp.2008.03.043] and p12 [10.1063/1.4742167])])], [COULOMB_COLLISIONS_SCHEME="$withval"], [COULOMB_COLLISIONS_SCHEME="ta77s"])
 
+AC_ARG_ENABLE([pml], [AC_HELP_STRING([--enable-pml], [Enable PML (10.1006/jcph.1994.1159)])], [PML="$enableval"], [PML=yes])
+
 AC_PROG_CXXCPP
 AC_LANG(C++)
 
@@ -78,52 +80,56 @@ CFLAGS_DEFAULT="-m64 -mcmodel=medium -std=c++17"
 # singlethread
 if test x$SINGLETHREAD == xyes; then
      CFLAGS_ADDITIONAL+=" -Wno-unknown-pragmas"
-  AC_DEFINE([SINGLETHREAD], [true], [Debug option])
+  AC_DEFINE_UNQUOTED([SINGLETHREAD], [true], [Debug option])
 else
   AC_OPENMP
   CFLAGS_ADDITIONAL+=" -fopenmp -fopenmp-simd"
 fi
 
 if test x$OMP_DYNAMIC == xyes; then
-   AC_DEFINE([OPENMP_DYNAMIC_THREADS], [true], [Set OpenMP threads to be created dynamically])
+   AC_DEFINE_UNQUOTED([OPENMP_DYNAMIC_THREADS], [true], [Set OpenMP threads to be created dynamically])
 fi
 
 # speedup
 if test x$IEEE != xyes; then
   CFLAGS_ADDITIONAL="$CFLAGS_ADDITIONAL -ffast-math -O3 -march=native -funroll-loops -Wno-write-strings -freciprocal-math -fcx-fortran-rules -msse -mavx"
-  AC_DEFINE([SPEEDUP], [true], [Directive to increase calculation speed])
+  AC_DEFINE_UNQUOTED([SPEEDUP], [true], [Directive to increase calculation speed])
 fi
 
 dnl debug
 if test x$DEBUG == xyes; then
   CFLAGS_ADDITIONAL+=" -O0 -Wall -Wextra -ggdb3 -fvar-tracking -ggnu-pubnames -pedantic -time -ftree-vectorizer-verbose=7"
   DEBUG_OPTION=true
-  AC_DEFINE([DEBUG], [true], [Use debug option])
+  AC_DEFINE_UNQUOTED([DEBUG], [true], [Use debug option])
 else
   DEBUG_OPTION=false
 fi
 
 dnl debug
 if test x$FIXME == xyes; then
-  AC_DEFINE([FIXME], [true], [Use FIXME output])
+  AC_DEFINE_UNQUOTED([FIXME], [true], [Use FIXME output])
 fi
 
 # profiler
 if test x$PROFILER = xyes; then
   CFLAGS_ADDITIONAL="$CFLAGS_ADDITIONAL -pg -no-pie"
   LDFLAGS_ADDITIONAL="$LDFLAGS_ADDITIONAL -pg -no-pie"
-  AC_DEFINE([PROFILER], [true], [Performance debug option])
+  AC_DEFINE_UNQUOTED([PROFILER], [true], [Performance debug option])
 fi
 
 if test x$HDF5 = xyes; then
    AC_HAVE_LIBRARY(hdf5, , AC_MSG_WARN([No such library hdf5. You can build it locally after configuration with `make hdf5-install` before build and it includes to build paths automatically]))
    HDF5_OPTION=true
-   AC_DEFINE([USE_HDF5], [true], [Use HDF5])
+   AC_DEFINE_UNQUOTED([USE_HDF5], [true], [Use HDF5])
 else
    HDF5_OPTION=false
 fi
 
-AC_DEFINE([REL_LIMIT], [5e7], [Relativistit calculations limit (for boris-adaptive pusher)])
+if test x$PML = xyes; then
+   AC_DEFINE_UNQUOTED([USE_PML], [true], [Use PML (10.1006/jcph.1994.1159)])
+fi
+
+AC_DEFINE_UNQUOTED([REL_LIMIT], [5e7], [Relativistit calculations limit (for boris-adaptive pusher)])
 
 # define a pusher
 if test x$PUSHER == xboris-adaptive; then
