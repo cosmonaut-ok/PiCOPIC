@@ -319,7 +319,6 @@ void Cfg::init_geometry ()
 {
   //! initialize geometry
   object& json_root = json_data.get<object>()["geometry"].get<object>();
-  object& json_root_pml = json_root["pml"].get<object>();
   object& json_root_size = json_root["size"].get<object>();
   object& json_root_grid = json_root["grid"].get<object>();
 
@@ -330,6 +329,8 @@ void Cfg::init_geometry ()
   int n_grid_z = (int)json_root_grid["longitude"].get<double>();
 
   // init PML
+#ifdef USE_PML
+  object& json_root_pml = json_root["pml"].get<object>();
   double left_wall = json_root_pml["left_wall"].get<double>();
   double right_wall = json_root_pml["right_wall"].get<double>();
   double outer_wall = json_root_pml["outer_wall"].get<double>();
@@ -339,6 +340,10 @@ void Cfg::init_geometry ()
   geometry = new Geometry(radius, longitude, 0, n_grid_r, 0, n_grid_z,
                           left_wall, right_wall, outer_wall, sigma_1, sigma_2,
                           true, true, true, true); // init all walls
+  #else
+  geometry = new Geometry(radius, longitude, 0, n_grid_r, 0, n_grid_z,
+                          true, true, true, true); // init all walls
+#endif
 
   //
 #ifdef SINGLETHREAD

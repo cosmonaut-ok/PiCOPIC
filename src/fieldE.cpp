@@ -41,7 +41,9 @@ FieldE::FieldE(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Field(ge
   sigma = 0;
   sigma.overlay_set(0);
 
+#ifdef USE_PML
   set_pml();
+#endif
 }
 
 // PML
@@ -118,7 +120,12 @@ void FieldE::calc_field_cylindrical()
     {
       int i = 0;
       double epsilonx2 = 2 * epsilon(i, k);
+
+#ifdef USE_PML
       double sigma_t = sigma(i, k) * time->step;
+#else
+      double sigma_t = 0;
+#endif
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
@@ -136,7 +143,12 @@ void FieldE::calc_field_cylindrical()
     {
       int k = 0;
       double epsilonx2 = 2 * epsilon(i, k);
+
+#ifdef USE_PML
       double sigma_t = sigma(i, k) * time->step;
+#else
+      double sigma_t = 0;
+#endif
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
@@ -153,7 +165,12 @@ void FieldE::calc_field_cylindrical()
     for (unsigned int k = z_begin; k < z_end; k++)
     {
       double epsilonx2 = 2 * epsilon(i, k);
+
+#ifdef USE_PML
       double sigma_t = sigma(i, k) * time->step;
+#else
+      double sigma_t = 0;
+#endif
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h = 2 * time->step / (epsilonx2 + sigma_t);

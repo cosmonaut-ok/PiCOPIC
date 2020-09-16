@@ -58,6 +58,9 @@ public:
            double pml_l_zwall, double pml_l_rwall, double pml_sigma1,
            double pml_sigma2,
            bool wall_r0, bool wall_z0, bool wall_rr, bool wall_zz);
+  Geometry(double rs, double zs,
+           int bot_ngr, int top_ngr, int left_ngz, int right_ngz,
+           bool wall_r0, bool wall_z0, bool wall_rr, bool wall_zz);
   Geometry() {};
 
   ~Geometry(void);

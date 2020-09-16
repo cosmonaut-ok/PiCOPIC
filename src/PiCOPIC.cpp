@@ -398,6 +398,7 @@ int main(int argc, char **argv)
       if (j == z_domains - 1)
         wall_zz = true;
 
+#ifdef USE_PML
       // set PML to domains
       if (geometry_global->r_size - geometry_global->r_size / r_domains * (i + 1)
           < geometry_global->pml_length[2])
@@ -407,6 +408,7 @@ int main(int argc, char **argv)
       if (geometry_global->z_size - geometry_global->z_size / z_domains * (j + 1)
           < geometry_global->pml_length[3])
         pml_l_zwall = geometry_global->pml_length[3];
+#endif
 
       unsigned int bot_r = (unsigned int)geometry_global->r_grid_amount * i / r_domains;
       unsigned int top_r = (unsigned int)geometry_global->r_grid_amount * (i + 1) / r_domains;
@@ -414,6 +416,7 @@ int main(int argc, char **argv)
       unsigned int left_z = (unsigned int)geometry_global->z_grid_amount * j / z_domains;
       unsigned int right_z = (unsigned int)geometry_global->z_grid_amount * (j + 1) / z_domains;
 
+#ifdef USE_PML
       Geometry *geom_domain = new Geometry (
         geometry_global->r_size / r_domains,
         geometry_global->z_size / z_domains,
@@ -435,6 +438,17 @@ int main(int argc, char **argv)
       geom_domain->domains_by_r = r_domains;
       geom_domain->domains_by_z = z_domains;
       // /WORKAROUND
+#else
+      Geometry *geom_domain = new Geometry (
+        geometry_global->r_size / r_domains,
+        geometry_global->z_size / z_domains,
+        bot_r, top_r, left_z, right_z,
+        wall_r0,
+        wall_z0,
+        wall_rr,
+        wall_zz
+        );
+#endif
 
       // init particle species
       vector<SpecieP *> species_p;
