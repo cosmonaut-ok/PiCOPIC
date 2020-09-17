@@ -23,9 +23,10 @@ void TemperatureWeighted::weight_temperature_cylindrical(string specie)
     if (specie.compare((**ps).name) == 0)
       for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
       {
-        double p_vel_r = P_MASS((**i)) * P_VEL_R((**i));
-        double p_vel_phi = P_MASS((**i)) * P_VEL_PHI((**i));
-        double p_vel_z = P_MASS((**i)) * P_VEL_Z((**i));
+	double _mass = (**ps).mass * P_WEIGHT((**i));
+        double p_vel_r = _mass * P_VEL_R((**i));
+        double p_vel_phi = _mass * P_VEL_PHI((**i));
+        double p_vel_z = _mass * P_VEL_Z((**i));
         double p_vel_full = lib::sq_rt(
           pow(p_vel_r, 2)
           + pow(p_vel_phi, 2)

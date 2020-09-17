@@ -34,7 +34,7 @@ void DensityCharge::calc_density_cylindrical(string specie)
         weight_cylindrical<double>(geometry, &density,
                                    P_POS_R((**i)),
                                    P_POS_Z((**i)),
-                                   P_CHARGE((**i)));
+                                   (**ps).charge * P_WEIGHT((**i)));
 
 #if defined DENSITY_POSTPROC_BILINEAR
   Grid<double> density_src = density;

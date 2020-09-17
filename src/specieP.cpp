@@ -111,7 +111,7 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
                                  right_cell_number);
 #endif
 
-  set_mass_charges(int_cell_number, ext_cell_number, left_cell_number, right_cell_number);
+  set_weight(int_cell_number, ext_cell_number, left_cell_number, right_cell_number);
 }
 
 void SpecieP::rectangular_random_placement (unsigned int int_cell_number,
@@ -264,10 +264,10 @@ void SpecieP::rectangular_centered_placement (unsigned int int_cell_number,
     }
 }
 
-void SpecieP::set_mass_charges (unsigned int int_cell_number,
-                                unsigned int ext_cell_number,
-                                unsigned int left_cell_number,
-                                unsigned int right_cell_number)
+void SpecieP::set_weight (unsigned int int_cell_number,
+                          unsigned int ext_cell_number,
+                          unsigned int left_cell_number,
+                          unsigned int right_cell_number)
 {
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
@@ -313,8 +313,7 @@ void SpecieP::set_mass_charges (unsigned int int_cell_number,
     double n_per_macro = n_per_macro_avg * norm;
 
     // set charge and mass of macroparticle
-    P_CHARGE((**n)) = charge * n_per_macro;
-    P_MASS((**n)) = mass * n_per_macro;
+    P_WEIGHT((**n)) = n_per_macro;
   }
 }
 
@@ -486,7 +485,7 @@ void SpecieP::boris_pusher()
 
     // ! \f$ const1 = \frac{q t}{2 m} \f$
     // ! where \f$ q, m \f$ - particle charge and mass, \f$ t = \frac{\Delta t_{step}}{2} \f$
-    const1 = P_CHARGE((**p)) * time->step / (2 * P_MASS((**p)));
+    const1 = charge * P_WEIGHT((**p)) * time->step / (2 * mass * P_WEIGHT((**p)));
 
     e *= const1;
     b *= const1 * MAGN_CONST;
@@ -582,10 +581,9 @@ void SpecieP::vay_pusher()
     vector3d<double> uplocity; // u prime
     vector3d<double> psm; // pxsm, pysm, pzsm
 
-    double charge = P_CHARGE((**p));
-    double mass = P_MASS((**p));
+    double charge = charge * P_WEIGHT((**p));
+    double mass = mass * P_WEIGHT((**p));
 
-    // MSG(P_CHARGE((**p)) << " " << charge);
     double charge_over_2mass_dt = charge * time->step / (2 * mass);
 
     double pos_r = P_POS_R((**p));
@@ -656,8 +654,6 @@ void SpecieP::vay_pusher()
   }
 }
 
-
-
 void SpecieP::hc_pusher()
 {
   // !
@@ -672,10 +668,9 @@ void SpecieP::hc_pusher()
     vector3d<double> um; // pxsm, pysm, pzsm
     vector3d<double> up; // pxsm, pysm, pzsm
 
-    double charge = P_CHARGE((**p));
-    double mass = P_MASS((**p));
+    double charge = charge * P_WEIGHT((**p));
+    double mass = mass * P_WEIGHT((**p));
 
-    // MSG(P_CHARGE((**p)) << " " << charge);
     double charge_over_2mass_dt = charge * time->step / (2 * mass);
 
     double pos_r = P_POS_R((**p));
@@ -830,8 +825,6 @@ void SpecieP::back_velocity_to_rz()
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
     double sin = P_SIN((**p));
-    P_COS((**p)) = lib::sq_rt(1 - sin * sin);
-
     double cos = P_COS((**p));
     double v_r = P_VEL_R((**p));
     double v_phi = P_VEL_PHI((**p));

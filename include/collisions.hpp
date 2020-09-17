@@ -36,11 +36,16 @@
 #include "temperatureCounted.hpp"
 #include "densityCounted.hpp"
 
-const double PROTON_MASS = EL_MASS * 1836;
+// const double PROTON_MASS = EL_MASS * 1836;
 
 class Collisions
 {
 public:
+  double mass_el;
+  double mass_ion;
+
+  double charge_el;
+  double charge_ion;
 
   TemperatureCounted temperature_el;
   TemperatureCounted temperature_ion;
@@ -61,11 +66,11 @@ protected:
   Grid < vector< vector<double> * > > map_ion2cell;
 
   Grid < double > energy_tot_el;
-  Grid < double > mass_tot_el;
+  Grid < double > amount_tot_el;
   Grid3D < double > moment_tot_el;
 
   Grid < double > energy_tot_ion;
-  Grid < double > mass_tot_ion;
+  Grid < double > amount_tot_ion;
   Grid3D < double > moment_tot_ion;
 
   Geometry* geometry;

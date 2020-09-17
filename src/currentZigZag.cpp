@@ -37,7 +37,7 @@ void CurrentZigZag::current_distribution()
       double r_pos_new = P_POS_R((**i));
       double z_pos_new = P_POS_Z((**i));
 
-      double charge_over_dt = P_CHARGE((**i)) / dt;
+      double charge_over_dt = (**ps).charge * P_WEIGHT((**i)) / dt;
 
       // finding number new and old cells
       int i_n = CELL_NUMBER(r_pos_new, dr);
@@ -59,7 +59,7 @@ void CurrentZigZag::current_distribution()
       //// Calculation
 
       //! \f$ F_{\phi} = \frac{Q_{prtl} * (\phi{new} + \phi_{new})}{\Delta t} \f$
-      double F_phi = P_CHARGE((**i)) * P_VEL_PHI((**i));
+      double F_phi = (**ps).charge * P_WEIGHT((**i)) * P_VEL_PHI((**i));
 
       //! the formula is \f$ \frac{\phi_{old} + \phi_{new}}{2 \Delta \phi} - j_{old} \f$
       //! where \f$ j_{old} \f$ is 0 as well as \f$ j_{new} \f$ and

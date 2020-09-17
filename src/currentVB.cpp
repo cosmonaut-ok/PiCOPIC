@@ -197,7 +197,7 @@ void CurrentVB::rz_current_distribution()
           || (abs(P_POS_Z((**i)) - P_POS_OLD_Z((**i))) < MNZL))
         strict_motion_distribution(P_POS_R((**i)), P_POS_Z((**i)),
                                    P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)),
-                                   P_CHARGE((**i)));
+                                   (**ps).charge * P_WEIGHT((**i)));
       else
       {
         switch (res_cell)
@@ -206,7 +206,7 @@ void CurrentVB::rz_current_distribution()
         case 0: simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)),
                                             P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)),
                                             i_n, k_n,
-                                            P_CHARGE((**i)));
+                                            (**ps).charge * P_WEIGHT((**i)));
           break;
           // 2) charge in 7 nodes
         case 1:
@@ -223,9 +223,9 @@ void CurrentVB::rz_current_distribution()
               double z_boundary = P_POS_Z((**i)) + delta_r / a;
 
               simple_current_distribution(r_boundary, z_boundary,
-                                          P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n + 1, k_n, P_CHARGE((**i)));
+                                          P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n + 1, k_n, (**ps).charge * P_WEIGHT((**i)));
               simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)),
-                                          r_boundary, z_boundary, i_n, k_n, P_CHARGE((**i)));
+                                          r_boundary, z_boundary, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
             }
             // moving to wall
             else
@@ -237,11 +237,11 @@ void CurrentVB::rz_current_distribution()
 
               simple_current_distribution(r_boundary, z_boundary, P_POS_OLD_R((**i)),
                                           P_POS_OLD_Z((**i)), i_n-1, k_n,
-                                          P_CHARGE((**i)));
+                                          (**ps).charge * P_WEIGHT((**i)));
               simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)),
                                           r_boundary, z_boundary,
                                           i_n, k_n,
-                                          P_CHARGE((**i)));
+                                          (**ps).charge * P_WEIGHT((**i)));
             }
           }
           // charge in seven cells. Moving on z-axis (k_new != k_old)
@@ -254,8 +254,8 @@ void CurrentVB::rz_current_distribution()
               double delta_z = z_boundary - P_POS_OLD_Z((**i));
               double a = (P_POS_R((**i)) - P_POS_OLD_R((**i))) / (P_POS_Z((**i)) - P_POS_OLD_Z((**i)));
               double r_boundary = P_POS_OLD_R((**i)) + a * delta_z;
-              simple_current_distribution(r_boundary, z_boundary ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n, k_n-1, P_CHARGE((**i)));
-              simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r_boundary, z_boundary, i_n, k_n, P_CHARGE((**i)));
+              simple_current_distribution(r_boundary, z_boundary ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n, k_n-1, (**ps).charge * P_WEIGHT((**i)));
+              simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r_boundary, z_boundary, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
             }
             // moving backward
             else
@@ -264,8 +264,8 @@ void CurrentVB::rz_current_distribution()
               double delta_z = z_boundary - P_POS_Z((**i));
               double a = (P_POS_OLD_R((**i)) - P_POS_R((**i))) / (P_POS_OLD_Z((**i)) - P_POS_Z((**i)));
               double r_boundary = P_POS_R((**i)) + a * delta_z;
-              simple_current_distribution(r_boundary, z_boundary, P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n, k_n + 1, P_CHARGE((**i)));
-              simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r_boundary, z_boundary, i_n, k_n, P_CHARGE((**i)));
+              simple_current_distribution(r_boundary, z_boundary, P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n, k_n + 1, (**ps).charge * P_WEIGHT((**i)));
+              simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r_boundary, z_boundary, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
             }
           }
         }
@@ -288,15 +288,15 @@ void CurrentVB::rz_current_distribution()
               double r2 = P_POS_OLD_R((**i)) + delta_r2;
               if (z1 < k_n * dz)
               {
-                simple_current_distribution(r1, z1 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n-1, k_n-1, P_CHARGE((**i)));
-                simple_current_distribution(r2, z2, r1, z1, i_n, k_n-1, P_CHARGE((**i)));
-                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r2, z2, i_n, k_n, P_CHARGE((**i)));
+                simple_current_distribution(r1, z1 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n-1, k_n-1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(r2, z2, r1, z1, i_n, k_n-1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r2, z2, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
               }
               else if (z1>k_n * dz)
               {
-                simple_current_distribution(r2, z2 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n-1, k_n-1, P_CHARGE((**i)));
-                simple_current_distribution(r1, z1, r2, z2,i_n-1, k_n, P_CHARGE((**i)));
-                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r1, z1, i_n, k_n, P_CHARGE((**i)));
+                simple_current_distribution(r2, z2 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n-1, k_n-1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(r1, z1, r2, z2,i_n-1, k_n, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r1, z1, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
               }
             }
             // case, when particle move from [i-1][k + 1] -> [i][k] cell
@@ -312,15 +312,15 @@ void CurrentVB::rz_current_distribution()
               double r2 = P_POS_OLD_R((**i)) + delta_r2;
               if (z1>(k_n + 1) * dz)
               {
-                simple_current_distribution(r1, z1 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n-1, k_n + 1, P_CHARGE((**i)));
-                simple_current_distribution(r2, z2, r1, z1, i_n, k_n + 1, P_CHARGE((**i)));
-                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r2, z2, i_n, k_n, P_CHARGE((**i)));
+                simple_current_distribution(r1, z1 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n-1, k_n + 1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(r2, z2, r1, z1, i_n, k_n + 1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r2, z2, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
               }
               else if (z1<(k_n + 1) * dz)
               {
-                simple_current_distribution(r2, z2 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n-1, k_n + 1, P_CHARGE((**i)));
-                simple_current_distribution(r1, z1, r2, z2,i_n-1, k_n, P_CHARGE((**i)));
-                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r1, z1, i_n, k_n, P_CHARGE((**i)));
+                simple_current_distribution(r2, z2 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n-1, k_n + 1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(r1, z1, r2, z2,i_n-1, k_n, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r1, z1, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
               }
             }
           }
@@ -341,15 +341,15 @@ void CurrentVB::rz_current_distribution()
 
               if (z1<(k_n) * dz)
               {
-                simple_current_distribution(r1, z1 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n + 1, k_n-1, P_CHARGE((**i)));
-                simple_current_distribution(r2, z2, r1, z1, i_n, k_n-1, P_CHARGE((**i)));
-                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r2, z2, i_n, k_n, P_CHARGE((**i)));
+                simple_current_distribution(r1, z1 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n + 1, k_n-1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(r2, z2, r1, z1, i_n, k_n-1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r2, z2, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
               }
               else if (z1>(k_n) * dz)
               {
-                simple_current_distribution(r2, z2 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n + 1, k_n-1, P_CHARGE((**i)));
-                simple_current_distribution(r1, z1, r2, z2,i_n + 1, k_n, P_CHARGE((**i)));
-                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r1, z1, i_n, k_n, P_CHARGE((**i)));
+                simple_current_distribution(r2, z2 ,P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n + 1, k_n-1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(r1, z1, r2, z2,i_n + 1, k_n, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r1, z1, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
               }
 
             }
@@ -367,15 +367,15 @@ void CurrentVB::rz_current_distribution()
 
               if (z1>(k_n + 1) * dz)
               {
-                simple_current_distribution(r1, z1, P_POS_OLD_R((**i)),P_POS_OLD_Z((**i)), i_n + 1, k_n + 1, P_CHARGE((**i)));
-                simple_current_distribution(r2, z2, r1, z1, i_n, k_n + 1, P_CHARGE((**i)));
-                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r2, z2, i_n, k_n, P_CHARGE((**i)));
+                simple_current_distribution(r1, z1, P_POS_OLD_R((**i)),P_POS_OLD_Z((**i)), i_n + 1, k_n + 1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(r2, z2, r1, z1, i_n, k_n + 1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r2, z2, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
               }
               else if (z1<(k_n + 1) * dz)
               {
-                simple_current_distribution(r2, z2, P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n + 1, k_n + 1, P_CHARGE((**i)));
-                simple_current_distribution(r1, z1, r2, z2,i_n + 1, k_n, P_CHARGE((**i)));
-                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r1, z1, i_n, k_n, P_CHARGE((**i)));
+                simple_current_distribution(r2, z2, P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)), i_n + 1, k_n + 1, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(r1, z1, r2, z2,i_n + 1, k_n, (**ps).charge * P_WEIGHT((**i)));
+                simple_current_distribution(P_POS_R((**i)), P_POS_Z((**i)), r1, z1, i_n, k_n, (**ps).charge * P_WEIGHT((**i)));
               }
             }
           }
@@ -422,7 +422,7 @@ void CurrentVB::azimuthal_current_distribution()
         r1 = pos_r - 0.5 * dr;
         r2 = (r_i + 0.5) * dr;
         r3 = pos_r + 0.5 * dr;
-        ro_v = P_CHARGE((**i)) / (2. * PI * dz * dr * pos_r);
+        ro_v = (**ps).charge * P_WEIGHT((**i)) / (2. * PI * dz * dr * pos_r);
         dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
         dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
 
@@ -457,7 +457,7 @@ void CurrentVB::azimuthal_current_distribution()
         r3 = pos_r + 0.5 * dr;
         dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
         dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
-        ro_v = P_CHARGE((**i)) / (2. * PI * dz * dr * pos_r);
+        ro_v = (**ps).charge * P_WEIGHT((**i)) / (2. * PI * dz * dr * pos_r);
 
         // weighting in j[i][k] cell
         rho = ro_v * CYL_RNG_VOL(dz1, r1, r2) / v_1;

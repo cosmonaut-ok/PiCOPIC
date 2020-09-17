@@ -130,9 +130,7 @@ void BeamP::inject()
         double n_per_macro = n_per_macro_avg * norm;
 
         // 7. set charge
-        P_CHARGE((*v)) = charge * n_per_macro;
-        // 8. set mass
-        P_MASS((*v)) = mass * n_per_macro;
+        P_WEIGHT((*v)) = n_per_macro;
 
         // push particle to particles beam vector
         particles.push_back(v);

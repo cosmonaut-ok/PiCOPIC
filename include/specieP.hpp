@@ -33,7 +33,7 @@
 #include "math/vector3d.hpp"
 
 //! define service constant "particle`s vector size"
-#define P_VEC_SIZE 15
+#define P_VEC_SIZE 13
 
 // getters from particles vector
 #define PP_POS_R(var, p_num) (*var[p_num])[0]
@@ -48,15 +48,14 @@
 #define PP_VEL_PHI(var, num) (*var[num])[7]
 #define PP_VEL_Z(var, num) (*var[num])[8]
 
-#define PP_CHARGE(var, num) (*var[num])[9]
-#define PP_MASS(var, num) (*var[num])[10]
+#define PP_WEIGHT(var, num) (*var[num])[9]
 
 // service variables to correct cartesian to cylindrical geometry
-#define PP_SIN(var, num) (*var[num])[11]
-#define PP_COS(var, num) (*var[num])[12]
+#define PP_SIN(var, num) (*var[num])[10]
+#define PP_COS(var, num) lib::sq_rt( 1 - (*var[num])[10] * (*var[num])[10] )
 
-#define PP_CELL_R(var, num) (*var[num])[13]
-#define PP_CELL_Z(var, num) (*var[num])[14]
+#define PP_CELL_R(var, num) (*var[num])[11]
+#define PP_CELL_Z(var, num) (*var[num])[12]
 
 // getters from particle directly
 #define P_POS_R(var) var[0]
@@ -71,15 +70,14 @@
 #define P_VEL_PHI(var) var[7]
 #define P_VEL_Z(var) var[8]
 
-#define P_CHARGE(var) var[9]
-#define P_MASS(var) var[10]
+#define P_WEIGHT(var) var[9]
 
 // service variables to correct cartesian to cylindrical geometry
-#define P_SIN(var) var[11]
-#define P_COS(var) var[12]
+#define P_SIN(var) var[10]
+#define P_COS(var) lib::sq_rt(1 - var[10] * var[10])
 
-#define P_CELL_R(var) var[13]
-#define P_CELL_Z(var) var[14]
+#define P_CELL_R(var) var[11]
+#define P_CELL_Z(var) var[12]
 
 class FieldE;
 class FieldH;
@@ -199,10 +197,10 @@ protected:
                                        unsigned int ext_cell_number,
                                        unsigned int left_cell_number,
                                        unsigned int right_cell_number);
-  void set_mass_charges (unsigned int int_cell_number,
-                         unsigned int ext_cell_number,
-                         unsigned int left_cell_number,
-                         unsigned int right_cell_number);
+  void set_weight (unsigned int int_cell_number,
+                   unsigned int ext_cell_number,
+                   unsigned int left_cell_number,
+                   unsigned int right_cell_number);
 
   void thermal_velocity_distribution ();
   void rectangular_velocity_distribution ();

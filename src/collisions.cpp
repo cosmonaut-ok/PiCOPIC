@@ -23,15 +23,31 @@ Collisions::Collisions (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> 
 {
   species_p = _species_p;
 
+  // find electron and ion masses and charges
+  string name = "electrons";
+  string cname = "Electrons";
+
+  for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
+    if (name.compare((**ps).name) == 0 || cname.compare((**ps).name) == 0)
+    {
+      mass_el = (**ps).mass;
+      charge_el = (**ps).charge;
+    }
+    else
+    {
+      mass_ion = (**ps).mass;
+      charge_ion = (**ps).charge;
+    }
+
   map_el2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
   map_ion2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
 
   energy_tot_el = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  mass_tot_el = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  amount_tot_el = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
   moment_tot_el = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
 
   energy_tot_ion = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  mass_tot_ion = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  amount_tot_ion = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
   moment_tot_ion = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
 
   temperature_el = TemperatureCounted(_geometry, _species_p);
@@ -43,15 +59,15 @@ void Collisions::clear()
 {
   energy_tot_el = 0;
   energy_tot_el.overlay_set(0);
-  mass_tot_el = 0;
-  mass_tot_el.overlay_set(0);
+  amount_tot_el = 0;
+  amount_tot_el.overlay_set(0);
   moment_tot_el = 0;
   moment_tot_el.overlay_set(0);
 
   energy_tot_ion = 0;
   energy_tot_ion.overlay_set(0);
-  mass_tot_ion = 0;
-  mass_tot_ion.overlay_set(0);
+  amount_tot_ion = 0;
+  amount_tot_ion.overlay_set(0);
   moment_tot_ion = 0;
   moment_tot_ion.overlay_set(0);
 
@@ -108,42 +124,42 @@ void Collisions::random_sort ()
 double Collisions::get_el_density(int i, int j)
 {
   unsigned int len = map_el2cell(i, j).size();
-  double sum_mass = 0;
+  double sum_amount = 0;
   double cell_volume = geometry_cell_volume(i);
 
   // summary electron density in the cell
   for (unsigned int p = 0; p < len; ++p)
-    sum_mass += P_MASS((*map_el2cell(i, j)[p]));
+    sum_amount += P_WEIGHT((*map_el2cell(i, j)[p]));
 
-  return sum_mass / cell_volume / EL_MASS;
+  return sum_amount / cell_volume;
 }
 
 double Collisions::get_ion_density(int i, int j)
 {
   unsigned int len = map_ion2cell(i, j).size();
-  double sum_mass = 0;
+  double sum_amount = 0;
   double cell_volume = geometry_cell_volume(i);
 
   // summary electron density in the cell
   for (unsigned int p = 0; p < len; ++p)
-    sum_mass += P_MASS((*map_ion2cell(i, j)[p]));
+    sum_amount += P_WEIGHT((*map_ion2cell(i, j)[p]));
 
-  return sum_mass / cell_volume / PROTON_MASS;
+  return sum_amount / cell_volume;
 }
 
 double Collisions::get_el_temperature(int i, int j)
 {
   double e_tot = energy_tot_el(i, j);
-  double m_tot = mass_tot_el(i, j);
-  return e_tot * EL_MASS / m_tot / EL_CHARGE; // also, convert from J to eV
+  double amount = amount_tot_el(i, j);
+  return e_tot / amount / EL_CHARGE; // also, convert from J to eV
 }
 
 double Collisions::get_ion_temperature(int i, int j)
 {
   double e_tot = energy_tot_ion(i, j);
-  double m_tot = mass_tot_ion(i, j);
+  double amount = amount_tot_ion(i, j);
 
-  return e_tot * PROTON_MASS / m_tot / EL_CHARGE;
+  return e_tot / amount / EL_CHARGE;
 }
 
 double Collisions::geometry_cell_volume(int i)
@@ -171,16 +187,15 @@ void Collisions::collect_weighted_params_tot_grid ()
         double vz = P_VEL_Z((*map_ion2cell(i, j)[k]));
         double v_sq = vr*vr + vphi*vphi + vz*vz;
 
-        double mass = P_MASS((*map_ion2cell(i, j)[k]));
-        double weight = mass / PROTON_MASS;
-        double weighted_m = weight * mass;
+        double weight = P_WEIGHT((*map_ion2cell(i, j)[k]));
+        double weighted_m = weight * mass_ion;
 
         // increase sum of moment
         moment_tot_ion[0].inc(i, j, weighted_m * vr);
         moment_tot_ion[1].inc(i, j, weighted_m * vphi);
         moment_tot_ion[2].inc(i, j, weighted_m * vz);
         // increase sum os mass
-        mass_tot_ion.inc(i, j, weighted_m);
+        amount_tot_ion.inc(i, j, weight);
         // increase sum of moment
         energy_tot_ion.inc(i, j, weighted_m * v_sq / 2);
       }
@@ -193,16 +208,15 @@ void Collisions::collect_weighted_params_tot_grid ()
         double vz = P_VEL_Z((*map_el2cell(i, j)[k]));
         double v_sq = vr*vr + vphi*vphi + vz*vz;
 
-        double mass = P_MASS((*map_el2cell(i, j)[k]));
-        double weight = mass / EL_MASS;
-        double weighted_m = weight * mass;
+        double weight = P_WEIGHT((*map_el2cell(i, j)[k]));
+        double weighted_m = weight * mass_el;
 
         // increase sum of moment
         moment_tot_el[0].inc(i, j, weighted_m * vr);
         moment_tot_el[1].inc(i, j, weighted_m * vphi);
         moment_tot_el[2].inc(i, j, weighted_m * vz);
         // increase sum os mass
-        mass_tot_el.inc(i, j, weighted_m);
+        amount_tot_el.inc(i, j, weight);
         // increase sum of moment
         energy_tot_el.inc(i, j, weighted_m * v_sq / 2);
       }

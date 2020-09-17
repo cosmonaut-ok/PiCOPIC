@@ -26,6 +26,7 @@ CollisionsSK98::CollisionsSK98 (Geometry* _geometry, TimeSim *_time, vector <Spe
 {}
 
 void CollisionsSK98::collide_single(double m_real_a, double m_real_b,
+				    double q_real_a, double q_real_b,
                                     vector<double> &pa, vector<double> &pb,
                                     double _density_a, double _density_b,
                                     double debye)
@@ -35,7 +36,7 @@ void CollisionsSK98::collide_single(double m_real_a, double m_real_b,
   bool swap = false;
 
   // TA77S18: find weight ratio
-  double w_ratio = P_MASS(pa) * m_real_b / (P_MASS(pb) * m_real_a);
+  double w_ratio = P_WEIGHT(pa) / P_WEIGHT(pb);
 
   vector3d<double> v_a;
   vector3d<double> v_b;
@@ -46,17 +47,15 @@ void CollisionsSK98::collide_single(double m_real_a, double m_real_b,
     v_a[0] = P_VEL_R(pa);
     v_a[1] = P_VEL_PHI(pa);
     v_a[2] = P_VEL_Z(pa);
-    charge_a = P_CHARGE(pa);
-    mass_a = P_MASS(pa);
-    // w_a = mass_a / m_real_a;
+    charge_a = q_real_a * P_WEIGHT(pa);
+    mass_a = m_real_a * P_WEIGHT(pa);
     density_a = _density_a;
 
     v_b[0] = P_VEL_R(pb);
     v_b[1] = P_VEL_PHI(pb);
     v_b[2] = P_VEL_Z(pb);
-    charge_b = P_CHARGE(pb);
-    mass_b = P_MASS(pb);
-    // w_b = mass_b / m_real_b;
+    charge_b = q_real_b * P_WEIGHT(pb);
+    mass_b = m_real_b * P_WEIGHT(pb);
     density_b = _density_b;
   }
   else
@@ -64,17 +63,15 @@ void CollisionsSK98::collide_single(double m_real_a, double m_real_b,
     v_a[0] = P_VEL_R(pb);
     v_a[1] = P_VEL_PHI(pb);
     v_a[2] = P_VEL_Z(pb);
-    charge_a = P_CHARGE(pb);
-    mass_a = P_MASS(pb);
-    // w_a = mass_a / m_real_b;
+    charge_a = q_real_b * P_WEIGHT(pb);
+    mass_a = m_real_b * P_WEIGHT(pb);
     density_a = _density_b;
 
     v_b[0] = P_VEL_R(pa);
     v_b[1] = P_VEL_PHI(pa);
     v_b[2] = P_VEL_Z(pa);
-    charge_b = P_CHARGE(pa);
-    mass_b = P_MASS(pa);
-    // w_b = mass_b / m_real_a;
+    charge_b = q_real_a * P_WEIGHT(pa);
+    mass_b = m_real_a * P_WEIGHT(pa);
     density_b = _density_a;
 
     // swap particles when b-particle is lighter, than a-particle
@@ -272,7 +269,8 @@ void CollisionsSK98::collide ()
       // ions
       if (vec_size_ions % 2 == 0)
         for (unsigned int k = 0; k < vec_size_ions; k = k + 2)
-          collide_single(PROTON_MASS, PROTON_MASS,
+          collide_single(mass_ion, mass_ion,
+			 charge_ion, charge_ion,
                          (*map_ion2cell(i, j)[k]),
                          (*map_ion2cell(i, j)[k+1]),
                          density_ion, density_ion,
@@ -280,7 +278,8 @@ void CollisionsSK98::collide ()
       // electrons
       if (vec_size_electrons % 2 == 0)
         for (unsigned int k = 0; k < vec_size_electrons; k = k + 2)
-          collide_single(EL_MASS, EL_MASS,
+          collide_single(mass_el, mass_el,
+			 charge_el, charge_el,
                          (*map_el2cell(i, j)[k]),
                          (*map_el2cell(i, j)[k+1]),
                          density_el, density_el,
@@ -293,17 +292,20 @@ void CollisionsSK98::collide ()
         if (vec_size_ions >= 3)
         {
           // first 3 collisions in special way
-          collide_single(PROTON_MASS, PROTON_MASS,
+          collide_single(mass_ion, mass_ion,
+			 charge_ion, charge_ion,
                          (*map_ion2cell(i, j)[0]),
                          (*map_ion2cell(i, j)[1]),
                          density_ion, density_ion,
                          debye);
-          collide_single(PROTON_MASS, PROTON_MASS,
+          collide_single(mass_ion, mass_ion,
+			 charge_ion, charge_ion,
                          (*map_ion2cell(i, j)[1]),
                          (*map_ion2cell(i, j)[2]),
                          density_ion, density_ion,
                          debye);
-          collide_single(PROTON_MASS, PROTON_MASS,
+          collide_single(mass_ion, mass_ion,
+			 charge_ion, charge_ion,
                          (*map_ion2cell(i, j)[2]),
                          (*map_ion2cell(i, j)[0]),
                          density_ion, density_ion,
@@ -311,7 +313,8 @@ void CollisionsSK98::collide ()
         }
         if (vec_size_ions >= 5)
           for (unsigned int k = 3; k < vec_size_ions; k = k + 2)
-            collide_single(PROTON_MASS, PROTON_MASS,
+            collide_single(mass_ion, mass_ion,
+			   charge_ion, charge_ion,
                            (*map_ion2cell(i, j)[k]),
                            (*map_ion2cell(i, j)[k+1]),
                            density_ion, density_ion,
@@ -324,17 +327,20 @@ void CollisionsSK98::collide ()
         if (vec_size_electrons >= 3)
         {
           // first 3 collisions in special way
-          collide_single(EL_MASS, EL_MASS,
+          collide_single(mass_el, mass_el,
+			 charge_el, charge_el,
                          (*map_el2cell(i, j)[0]),
                          (*map_el2cell(i, j)[1]),
                          density_el, density_el,
                          debye);
-          collide_single(EL_MASS, EL_MASS,
+          collide_single(mass_el, mass_el,
+			 charge_el, charge_el,
                          (*map_el2cell(i, j)[1]),
                          (*map_el2cell(i, j)[2]),
                          density_el, density_el,
                          debye);
-          collide_single(EL_MASS, EL_MASS,
+          collide_single(mass_el, mass_el,
+			 charge_el, charge_el,
                          (*map_el2cell(i, j)[2]),
                          (*map_el2cell(i, j)[0]),
                          density_el, density_el,
@@ -342,7 +348,8 @@ void CollisionsSK98::collide ()
         }
         if (vec_size_electrons >= 5)
           for (unsigned int k = 3; k < vec_size_electrons; k = k + 2)
-            collide_single(EL_MASS, EL_MASS,
+            collide_single(mass_el, mass_el,
+			   charge_el, charge_el,
                            (*map_el2cell(i, j)[k]),
                            (*map_el2cell(i, j)[k+1]),
                            density_el, density_el,
@@ -352,7 +359,8 @@ void CollisionsSK98::collide ()
       // TA77: case 2a. electrons-ions
       if (vec_size_ions == vec_size_electrons)
         for (unsigned int k = 0; k < vec_size_electrons; ++k)
-          collide_single(EL_MASS, PROTON_MASS,
+          collide_single(mass_el, mass_ion,
+			 charge_el, charge_ion,
                          (*map_el2cell(i, j)[k]),
                          (*map_ion2cell(i, j)[k]),
                          density_el, density_ion,
@@ -374,7 +382,8 @@ void CollisionsSK98::collide ()
         for (unsigned int fgi = 0; fgi < ions_1st_group; ++fgi)
         {
           int fge = floor(float(fgi) / float(c_i+1));
-          collide_single(EL_MASS, PROTON_MASS,
+          collide_single(mass_el, mass_ion,
+			 charge_el, charge_ion,
                          (*map_el2cell(i, j)[fge]),
                          (*map_ion2cell(i, j)[fgi]),
                          density_el, density_ion,
@@ -384,7 +393,8 @@ void CollisionsSK98::collide ()
         for (unsigned int fgi = 0; fgi < ions_2nd_group; ++fgi)
         {
           int fge = floor(float(fgi) / float(c_i));
-          collide_single(EL_MASS, PROTON_MASS,
+          collide_single(mass_el, mass_ion,
+			 charge_el, charge_ion,
                          (*map_el2cell(i, j)[fge+els_1st_group]),
                          (*map_ion2cell(i, j)[fgi+ions_1st_group]),
                          density_el, density_ion,
@@ -407,7 +417,8 @@ void CollisionsSK98::collide ()
         for (unsigned int fge = 0; fge < els_1st_group; ++fge)
         {
           int fgi = floor(float(fge) / float(c_i+1));
-          collide_single(EL_MASS, PROTON_MASS,
+          collide_single(mass_el, mass_ion,
+			 charge_el, charge_ion,
                          (*map_el2cell(i, j)[fge]),
                          (*map_ion2cell(i, j)[fgi]),
                          density_el, density_ion,
@@ -417,7 +428,8 @@ void CollisionsSK98::collide ()
         for (unsigned int fge = 0; fge < els_2nd_group; ++fge)
         {
           int fgi = floor(float(fge) / float(c_i));
-          collide_single(EL_MASS, PROTON_MASS,
+          collide_single(mass_el, mass_ion,
+			 charge_el, charge_ion,
                          (*map_el2cell(i, j)[fge+els_1st_group]),
                          (*map_ion2cell(i, j)[fgi+ions_1st_group]),
                          density_el, density_ion,

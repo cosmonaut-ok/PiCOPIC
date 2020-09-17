@@ -27,6 +27,7 @@ CollisionsTA77S::CollisionsTA77S (Geometry* _geometry, TimeSim *_time, vector <S
 }
 
 void CollisionsTA77S::collide_single(double m_real_a, double m_real_b,
+				     double q_real_a, double q_real_b,
                                      vector<double> &pa, vector<double> &pb,
                                      double _density_a, double _density_b,
                                      double debye)
@@ -38,7 +39,7 @@ void CollisionsTA77S::collide_single(double m_real_a, double m_real_b,
   bool swap = false;
 
   // TA77S18: find weight ratio
-  double w_ratio = P_MASS(pa) * m_real_b / (P_MASS(pb) * m_real_a);
+  double w_ratio = P_WEIGHT(pa) / P_WEIGHT(pb);
 
   // a-particle should be lighter, than b-particle
   if (w_ratio <= 1)
@@ -46,15 +47,15 @@ void CollisionsTA77S::collide_single(double m_real_a, double m_real_b,
     vr_a = P_VEL_R(pa);
     vphi_a = P_VEL_PHI(pa);
     vz_a = P_VEL_Z(pa);
-    charge_a = P_CHARGE(pa);
-    mass_a = P_MASS(pa);
+    charge_a = q_real_a * P_WEIGHT(pa);
+    mass_a = m_real_a * P_WEIGHT(pa);
     density_a = _density_a;
 
     vr_b = P_VEL_R(pb);
     vphi_b = P_VEL_PHI(pb);
     vz_b = P_VEL_Z(pb);
-    charge_b = P_CHARGE(pb);
-    mass_b = P_MASS(pb);
+    charge_b = q_real_b * P_WEIGHT(pb);
+    mass_b = m_real_b * P_WEIGHT(pb);
     density_b = _density_b;
   }
   else
@@ -62,15 +63,15 @@ void CollisionsTA77S::collide_single(double m_real_a, double m_real_b,
     vr_a = P_VEL_R(pb);
     vphi_a = P_VEL_PHI(pb);
     vz_a = P_VEL_Z(pb);
-    charge_a = P_CHARGE(pb);
-    mass_a = P_MASS(pb);
+    charge_a = q_real_b * P_WEIGHT(pb);
+    mass_a = m_real_b * P_WEIGHT(pb);
     density_a = _density_b;
 
     vr_b = P_VEL_R(pa);
     vphi_b = P_VEL_PHI(pa);
     vz_b = P_VEL_Z(pa);
-    charge_b = P_CHARGE(pa);
-    mass_b = P_MASS(pa);
+    charge_b = q_real_a * P_WEIGHT(pa);
+    mass_b = m_real_a * P_WEIGHT(pa);
     density_b = _density_a;
 
     // swap particles when b-particle is lighter, than a-particle
@@ -288,7 +289,8 @@ void CollisionsTA77S::collide ()
       // ions
       if (vec_size_ions % 2 == 0)
         for (unsigned int k = 0; k < vec_size_ions; k = k + 2)
-          collide_single(PROTON_MASS, PROTON_MASS,
+          collide_single(mass_ion, mass_ion,
+			 charge_ion, charge_ion,
                          (*map_ion2cell(i, j)[k]),
                          (*map_ion2cell(i, j)[k+1]),
                          density_ion, density_ion,
@@ -296,7 +298,8 @@ void CollisionsTA77S::collide ()
       // electrons
       if (vec_size_electrons % 2 == 0)
         for (unsigned int k = 0; k < vec_size_electrons; k = k + 2)
-          collide_single(EL_MASS, EL_MASS,
+          collide_single(mass_el, mass_el,
+			 charge_el, charge_el,
                          (*map_el2cell(i, j)[k]),
                          (*map_el2cell(i, j)[k+1]),
                          density_el, density_el,
@@ -309,17 +312,20 @@ void CollisionsTA77S::collide ()
         if (vec_size_ions >= 3)
         {
           // first 3 collisions in special way
-          collide_single(PROTON_MASS, PROTON_MASS,
+          collide_single(mass_ion, mass_ion,
+			 charge_ion, charge_ion,
                          (*map_ion2cell(i, j)[0]),
                          (*map_ion2cell(i, j)[1]),
                          density_ion, density_ion,
                          debye);
-          collide_single(PROTON_MASS, PROTON_MASS,
+          collide_single(mass_ion, mass_ion,
+			 charge_ion, charge_ion,
                          (*map_ion2cell(i, j)[1]),
                          (*map_ion2cell(i, j)[2]),
                          density_ion, density_ion,
                          debye);
-          collide_single(PROTON_MASS, PROTON_MASS,
+          collide_single(mass_ion, mass_ion,
+			 charge_ion, charge_ion,
                          (*map_ion2cell(i, j)[2]),
                          (*map_ion2cell(i, j)[0]),
                          density_ion, density_ion,
@@ -327,7 +333,8 @@ void CollisionsTA77S::collide ()
         }
         if (vec_size_ions >= 5)
           for (unsigned int k = 3; k < vec_size_ions; k = k + 2)
-            collide_single(PROTON_MASS, PROTON_MASS,
+            collide_single(mass_ion, mass_ion,
+			   charge_ion, charge_ion,
                            (*map_ion2cell(i, j)[k]),
                            (*map_ion2cell(i, j)[k+1]),
                            density_ion, density_ion,
@@ -340,17 +347,20 @@ void CollisionsTA77S::collide ()
         if (vec_size_electrons >= 3)
         {
           // first 3 collisions in special way
-          collide_single(EL_MASS, EL_MASS,
+          collide_single(mass_el, mass_el,
+			 charge_el, charge_el,
                          (*map_el2cell(i, j)[0]),
                          (*map_el2cell(i, j)[1]),
                          density_el, density_el,
                          debye);
-          collide_single(EL_MASS, EL_MASS,
+          collide_single(mass_el, mass_el,
+			 charge_el, charge_el,
                          (*map_el2cell(i, j)[1]),
                          (*map_el2cell(i, j)[2]),
                          density_el, density_el,
                          debye);
-          collide_single(EL_MASS, EL_MASS,
+          collide_single(mass_el, mass_el,
+			 charge_el, charge_el,
                          (*map_el2cell(i, j)[2]),
                          (*map_el2cell(i, j)[0]),
                          density_el, density_el,
@@ -358,7 +368,8 @@ void CollisionsTA77S::collide ()
         }
         if (vec_size_electrons >= 5)
           for (unsigned int k = 3; k < vec_size_electrons; k = k + 2)
-            collide_single(EL_MASS, EL_MASS,
+            collide_single(mass_el, mass_el,
+			   charge_el, charge_el,
                            (*map_el2cell(i, j)[k]),
                            (*map_el2cell(i, j)[k+1]),
                            density_el, density_el,
@@ -368,7 +379,8 @@ void CollisionsTA77S::collide ()
       // TA77: case 2a. electrons-ions
       if (vec_size_ions == vec_size_electrons)
         for (unsigned int k = 0; k < vec_size_electrons; ++k)
-          collide_single(EL_MASS, PROTON_MASS,
+          collide_single(mass_el, mass_ion,
+			 charge_el, charge_ion,
                          (*map_el2cell(i, j)[k]),
                          (*map_ion2cell(i, j)[k]),
                          density_el, density_ion,
@@ -390,7 +402,8 @@ void CollisionsTA77S::collide ()
         for (unsigned int fgi = 0; fgi < ions_1st_group; ++fgi)
         {
           int fge = floor(float(fgi) / float(c_i+1));
-          collide_single(EL_MASS, PROTON_MASS,
+          collide_single(mass_el, mass_ion,
+			 charge_el, charge_ion,
                          (*map_el2cell(i, j)[fge]),
                          (*map_ion2cell(i, j)[fgi]),
                          density_el, density_ion,
@@ -400,7 +413,8 @@ void CollisionsTA77S::collide ()
         for (unsigned int fgi = 0; fgi < ions_2nd_group; ++fgi)
         {
           int fge = floor(float(fgi) / float(c_i));
-          collide_single(EL_MASS, PROTON_MASS,
+          collide_single(mass_el, mass_ion,
+			 charge_el, charge_ion,
                          (*map_el2cell(i, j)[fge+els_1st_group]),
                          (*map_ion2cell(i, j)[fgi+ions_1st_group]),
                          density_el, density_ion,
@@ -423,7 +437,8 @@ void CollisionsTA77S::collide ()
         for (unsigned int fge = 0; fge < els_1st_group; ++fge)
         {
           int fgi = floor(float(fge) / float(c_i+1));
-          collide_single(EL_MASS, PROTON_MASS,
+          collide_single(mass_el, mass_ion,
+			 charge_el, charge_ion,
                          (*map_el2cell(i, j)[fge]),
                          (*map_ion2cell(i, j)[fgi]),
                          density_el, density_ion,
@@ -433,7 +448,8 @@ void CollisionsTA77S::collide ()
         for (unsigned int fge = 0; fge < els_2nd_group; ++fge)
         {
           int fgi = floor(float(fge) / float(c_i));
-          collide_single(EL_MASS, PROTON_MASS,
+          collide_single(mass_el, mass_ion,
+			 charge_el, charge_ion,
                          (*map_el2cell(i, j)[fge+els_1st_group]),
                          (*map_ion2cell(i, j)[fgi+ions_1st_group]),
                          density_el, density_ion,
@@ -465,8 +481,8 @@ void CollisionsTA77S::correct_velocities()
         double vz = P_VEL_Z((*map_ion2cell(i, j)[k]));
         double v_sq = vr*vr + vphi*vphi + vz*vz;
 
-        double mass = P_MASS((*map_ion2cell(i, j)[k]));
-        double weight = mass / PROTON_MASS;
+        double mass = mass_ion * P_WEIGHT((*map_ion2cell(i, j)[k]));
+        double weight = mass / mass_ion;
         double weighted_m = weight * mass;
 
         moment_new_r_ion += weighted_m * vr;
@@ -482,8 +498,8 @@ void CollisionsTA77S::correct_velocities()
         double vz = P_VEL_Z((*map_el2cell(i, j)[k]));
         double v_sq = vr*vr + vphi*vphi + vz*vz;
 
-        double mass = P_MASS((*map_el2cell(i, j)[k]));
-        double weight = mass / EL_MASS;
+        double mass = mass_el * P_WEIGHT((*map_el2cell(i, j)[k]));
+        double weight = mass / mass_el;
         double weighted_m = weight * mass;
 
         moment_new_r_el += weighted_m * vr;
@@ -493,20 +509,22 @@ void CollisionsTA77S::correct_velocities()
       }
 
       //// calculate delta V components and delta E total
-      double delta_V_r_ion = (moment_new_r_ion - moment_tot_ion[0](i, j)) / mass_tot_ion(i, j);
-      double delta_V_phi_ion = (moment_new_phi_ion - moment_tot_ion[1](i, j)) / mass_tot_ion(i, j);
-      double delta_V_z_ion = (moment_new_z_ion - moment_tot_ion[2](i, j)) / mass_tot_ion(i, j);
-      double delta_V_r_el = (moment_new_r_el - moment_tot_el[0](i, j)) / mass_tot_el(i, j);
-      double delta_V_phi_el = (moment_new_phi_el - moment_tot_el[1](i, j)) / mass_tot_el(i, j);
-      double delta_V_z_el = (moment_new_z_el - moment_tot_el[2](i, j)) / mass_tot_el(i, j);
+      double mass_tot_ion = amount_tot_ion(i, j) * mass_ion;
+      double mass_tot_el = amount_tot_el(i, j) * mass_el;
+      double delta_V_r_ion = (moment_new_r_ion - moment_tot_ion[0](i, j)) / mass_tot_ion;
+      double delta_V_phi_ion = (moment_new_phi_ion - moment_tot_ion[1](i, j)) / mass_tot_ion;
+      double delta_V_z_ion = (moment_new_z_ion - moment_tot_ion[2](i, j)) / mass_tot_ion;
+      double delta_V_r_el = (moment_new_r_el - moment_tot_el[0](i, j)) / mass_tot_el;
+      double delta_V_phi_el = (moment_new_phi_el - moment_tot_el[1](i, j)) / mass_tot_el;
+      double delta_V_z_el = (moment_new_z_el - moment_tot_el[2](i, j)) / mass_tot_el;
 
       //// calculate V_0 components
-      double V_0_r_ion = moment_tot_ion[0](i, j) / mass_tot_ion(i, j);
-      double V_0_phi_ion = moment_tot_ion[1](i, j) / mass_tot_ion(i, j);
-      double V_0_z_ion = moment_tot_ion[2](i, j) / mass_tot_ion(i, j);
-      double V_0_r_el = moment_tot_el[0](i, j) / mass_tot_el(i, j);
-      double V_0_phi_el = moment_tot_el[1](i, j) / mass_tot_el(i, j);
-      double V_0_z_el = moment_tot_el[2](i, j) / mass_tot_el(i, j);
+      double V_0_r_ion = moment_tot_ion[0](i, j) / mass_tot_ion;
+      double V_0_phi_ion = moment_tot_ion[1](i, j) / mass_tot_ion;
+      double V_0_z_ion = moment_tot_ion[2](i, j) / mass_tot_ion;
+      double V_0_r_el = moment_tot_el[0](i, j) / mass_tot_el;
+      double V_0_phi_el = moment_tot_el[1](i, j) / mass_tot_el;
+      double V_0_z_el = moment_tot_el[2](i, j) / mass_tot_el;
       //// calculate delta E total
       double delta_E_tot_ion = E_tot_ion_new - energy_tot_ion(i, j);
       double delta_E_tot_el = E_tot_el_new - energy_tot_el(i, j);
@@ -517,10 +535,10 @@ void CollisionsTA77S::correct_velocities()
       double V_0_sq_el = V_0_r_el*V_0_r_el + V_0_phi_el*V_0_phi_el + V_0_z_el*V_0_z_el;
       /// calculate alpha
       double alpha_ion =
-        ( E_tot_ion - mass_tot_ion(i, j) * V_0_sq_ion / 2 )
+        ( E_tot_ion - mass_tot_ion * V_0_sq_ion / 2 )
         / ( E_tot_ion
             + delta_E_tot_ion
-            - mass_tot_ion(i, j)
+            - mass_tot_ion
             * ( pow(V_0_r_ion + delta_V_r_ion, 2)
                 + pow(V_0_phi_ion + delta_V_phi_ion, 2)
                 + pow(V_0_z_ion + delta_V_z_ion, 2)
@@ -528,10 +546,10 @@ void CollisionsTA77S::correct_velocities()
             / 2
           );
       double alpha_el =
-        ( E_tot_el - mass_tot_el(i, j) * V_0_sq_el / 2 )
+        ( E_tot_el - mass_tot_el * V_0_sq_el / 2 )
         / ( E_tot_el
             + delta_E_tot_el
-            - mass_tot_el(i, j)
+            - mass_tot_el
             * ( pow(V_0_r_el + delta_V_r_el, 2)
                 + pow(V_0_phi_el + delta_V_phi_el, 2)
                 + pow(V_0_z_el + delta_V_z_el, 2)
