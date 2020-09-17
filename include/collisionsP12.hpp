@@ -44,8 +44,7 @@ public:
   CollisionsP12(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
   ~CollisionsP12(void) {};
 
-  void collide_single(double m_real_a, double m_real_b, double m_real_ab, // m_real_ab just for reduce number of calculation
-                      double qq2, // (charge_a * charge_b)^2
+  void collide_single(double m_real_a, double m_real_b,
                       vector<double> &p1, vector<double> &p2,
                       double _density_a, double _density_b, double debye);
 
