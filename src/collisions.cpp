@@ -23,6 +23,22 @@ Collisions::Collisions (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> 
 {
   species_p = _species_p;
 
+  // find electron and ion masses and charges
+  string name = "electrons";
+  string cname = "Electrons";
+
+  for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
+    if (name.compare((**ps).name) == 0 || cname.compare((**ps).name) == 0)
+    {
+      mass_el = (**ps).mass;
+      charge_el = (**ps).charge;
+    }
+    else
+    {
+      mass_ion = (**ps).mass;
+      charge_ion = (**ps).charge;
+    }
+
   map_el2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
   map_ion2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
 

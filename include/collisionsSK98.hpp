@@ -45,6 +45,7 @@ public:
   ~CollisionsSK98(void) {};
 
   void collide_single(double m_real_a, double m_real_b,
+                      double m_real_ab, double qq2,
                       vector<double> &p1, vector<double> &p2,
                       double _density_a, double _density_b, double debye);
 
