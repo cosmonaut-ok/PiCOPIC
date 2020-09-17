@@ -29,7 +29,7 @@ void CollisionsP12::collide_single(double m_real_a, double m_real_b,
 				   double q_real_a, double q_real_b,
                                    vector<double> &pa, vector<double> &pb,
                                    double _density_a, double _density_b,
-                                   double debye)
+                                   double _debye)
 {
   // get required parameters
   double charge_a, mass_a, charge_b, mass_b, w_a, w_b, density_a, density_b;
@@ -148,6 +148,13 @@ void CollisionsP12::collide_single(double m_real_a, double m_real_b,
   if (v_rel_abs < constant::MNZL) return;
   if (!isnormal(density_a)) return;
   if (!isnormal(density_b)) return;
+
+  // take into account relativistic effects
+  double debye;
+  if (v_a.length2() > REL_LIMIT_POW_2 || v_b.length2() > REL_LIMIT_POW_2)
+    debye = _debye * gamma_rel;
+  else
+    debye = _debye;
 
   // get coulomb logarithm
   double L_coulomb = phys::plasma::coulomb_logarithm (mass_a, mass_b, debye, v_rel_abs);
