@@ -485,7 +485,7 @@ void SpecieP::boris_pusher()
 
     // ! \f$ const1 = \frac{q t}{2 m} \f$
     // ! where \f$ q, m \f$ - particle charge and mass, \f$ t = \frac{\Delta t_{step}}{2} \f$
-    const1 = charge * P_WEIGHT((**p)) * time->step / (2 * mass * P_WEIGHT((**p)));
+    const1 = charge * time->step / (2 * mass); // we just shortened particle weight and use only q/m relation
 
     e *= const1;
     b *= const1 * MAGN_CONST;
