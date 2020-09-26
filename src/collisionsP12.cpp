@@ -532,7 +532,7 @@ void CollisionsP12::collide ()
     }
 
   s_mean /= ncol;
-  if (s_mean > 1) // s_mean should not more, than 1 as angles should be small
+  if (s_mean > 1.2) // s_mean should not more, than 1 as angles should be small
   {
     // collect debug stuff
     L_mean /= ncol;
@@ -559,14 +559,14 @@ void CollisionsP12::collide ()
     t_ion /= g_counter;
 
     // print debug info
-    LOG_S(WARNING) << "s_mean value is too large: " << s_mean;
+    LOG_S(WARNING) << "Value of s-parameter for P12 collisions is too large: " << s_mean;
     LOG_S(WARNING) << "\t other helpul info:";
-    LOG_S(WARNING) << "\t domain number (r, z): "
-                   << geometry->domains_by_r << "," << geometry->domains_by_z;
-    LOG_S(WARNING) << "\t L coulomb mean: " << L_mean;
-    LOG_S(WARNING) << "\t Debye length mean: " << L_mean;
-    LOG_S(WARNING) << "\t Density mean (el, ion): " << d_el << "," << d_ion;
-    LOG_S(WARNING) << "\t Temperature mean (el, ion): " << t_el << "," << t_ion;
+    LOG_S(WARNING) << "\t\t domain number (r, z): "
+                   << geometry->bottom_r_grid_number / geometry->r_grid_amount << "," << geometry->left_z_grid_number / geometry->z_grid_amount;
+    LOG_S(WARNING) << "\t\t L coulomb mean: " << L_mean;
+    LOG_S(WARNING) << "\t\t Debye length mean: " << L_mean;
+    LOG_S(WARNING) << "\t\t Density mean (el, ion): " << d_el << "," << d_ion;
+    LOG_S(WARNING) << "\t\t Temperature mean (el, ion): " << t_el << "," << t_ion;
   }
 }
 
