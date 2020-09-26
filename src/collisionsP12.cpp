@@ -282,6 +282,12 @@ void CollisionsP12::collide_single(double m_real_a, double m_real_b,
     v_b_prime *= gamma_b_prime_inv;
   }
 
+  // collect mean values
+  debye_mean += debye;
+  s_mean += s12;
+  L_mean += L_coulomb;
+  ++ncol;
+
   ////
   //// end of main calculation
   ////
@@ -325,6 +331,12 @@ void CollisionsP12::collide_single(double m_real_a, double m_real_b,
 
 void CollisionsP12::collide ()
 {
+  // reset all mean values
+  debye_mean = 0;
+  s_mean = 0;
+  L_mean = 0;
+  ncol = 0;
+
   // pairing
   for (int i = 0; i < geometry->r_grid_amount; ++i)
     for (int j = 0; j < geometry->z_grid_amount; ++j)
@@ -518,6 +530,44 @@ void CollisionsP12::collide ()
         }
       }
     }
+
+  s_mean /= ncol;
+  if (s_mean > 1) // s_mean should not more, than 1 as angles should be small
+  {
+    // collect debug stuff
+    L_mean /= ncol;
+    debye_mean /= ncol;
+
+    double d_el;
+    double d_ion;
+    double t_el;
+    double t_ion;
+    double g_counter;
+    for (int i = 0; i < geometry->r_grid_amount; ++i)
+      for (int j = 0; j < geometry->z_grid_amount; ++j)
+      {
+        // get temperatures, densities and debye length
+        t_el += get_el_temperature(i, j);
+        t_ion += get_ion_temperature(i, j);
+        d_el += get_el_density(i, j);
+        d_ion += get_ion_density(i, j);
+        ++g_counter;
+      }
+    d_el /= g_counter;
+    d_ion /= g_counter;
+    t_el /= g_counter;
+    t_ion /= g_counter;
+
+    // print debug info
+    LOG_S(WARNING) << "s_mean value is too large: " << s_mean;
+    LOG_S(WARNING) << "\t other helpul info:";
+    LOG_S(WARNING) << "\t domain number (r, z): "
+                   << geometry->domains_by_r << "," << geometry->domains_by_z;
+    LOG_S(WARNING) << "\t L coulomb mean: " << L_mean;
+    LOG_S(WARNING) << "\t Debye length mean: " << L_mean;
+    LOG_S(WARNING) << "\t Density mean (el, ion): " << d_el << "," << d_ion;
+    LOG_S(WARNING) << "\t Temperature mean (el, ion): " << t_el << "," << t_ion;
+  }
 }
 
 void CollisionsP12::run ()

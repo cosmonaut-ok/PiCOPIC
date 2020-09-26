@@ -40,12 +40,17 @@
 class CollisionsP12 : public Collisions
 {
 public:
+  double s_mean;
+  double L_mean;
+  double debye_mean;
+  unsigned int ncol;
+
   CollisionsP12(void) {};
   CollisionsP12(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
   ~CollisionsP12(void) {};
 
   void collide_single(double m_real_a, double m_real_b,
-		      double q_real_a, double q_real_b,
+                      double q_real_a, double q_real_b,
                       vector<double> &p1, vector<double> &p2,
                       double _density_a, double _density_b, double debye);
 
@@ -55,14 +60,14 @@ protected:
   void collide();
   double get_rel_p0 (double mass, double sq_vel);
 
-double get_coulomb_logarithm (double m_a, double m_b,
-                              double debye_length,
-                              double v_rel);
+  double get_coulomb_logarithm (double m_a, double m_b,
+                                double debye_length,
+                                double v_rel);
 
-double get_collision_freq (double e_a, double e_b,
-                           double density_lowest,
-                           double L,
-                           double p_rel, double v_rel);
+  double get_collision_freq (double e_a, double e_b,
+                             double density_lowest,
+                             double L,
+                             double p_rel, double v_rel);
 };
 
 #endif // end of _COLLISIONS_P12_HPP_
