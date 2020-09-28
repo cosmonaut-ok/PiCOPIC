@@ -455,7 +455,7 @@ void SpecieP::boris_pusher()
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
     // define vars directly in loop, because of multithreading
-    double const1, const2, sq_velocity;
+    double charge_over_2mass_dt, const2, sq_velocity;
 #ifdef PUSHER_BORIS_ADAPTIVE
     bool use_rel; // use relativistic calculations
 #endif
@@ -483,12 +483,10 @@ void SpecieP::boris_pusher()
     e = field_e->get_field(pos_r, pos_z);
     b = field_h->get_field(pos_r, pos_z);
 
-    // ! \f$ const1 = \frac{q t}{2 m} \f$
-    // ! where \f$ q, m \f$ - particle charge and mass, \f$ t = \frac{\Delta t_{step}}{2} \f$
-    const1 = charge * time->step / (2 * mass); // we just shortened particle weight and use only q/m relation
+    charge_over_2mass_dt = charge * time->step / (2 * mass); // we just shortened particle weight and use only q/m relation
 
-    e *= const1;
-    b *= const1 * MAGN_CONST;
+    e *= charge_over_2mass_dt;
+    b *= charge_over_2mass_dt * MAGN_CONST;
 
     // ! 0. check, if we should use classical calculations.
     // ! Required to increase modeling speed
@@ -581,9 +579,8 @@ void SpecieP::vay_pusher()
     vector3d<double> uplocity; // u prime
     vector3d<double> psm; // pxsm, pysm, pzsm
 
-    double charge = charge * P_WEIGHT((**p));
-    double mass = mass * P_WEIGHT((**p));
-
+    // we don't care, if it is particle's or macroparticle's
+    // charge over mass ratio
     double charge_over_2mass_dt = charge * time->step / (2 * mass);
 
     double pos_r = P_POS_R((**p));
@@ -668,9 +665,8 @@ void SpecieP::hc_pusher()
     vector3d<double> um; // pxsm, pysm, pzsm
     vector3d<double> up; // pxsm, pysm, pzsm
 
-    double charge = charge * P_WEIGHT((**p));
-    double mass = mass * P_WEIGHT((**p));
-
+    // we don't care, if it is particle's or macroparticle's
+    // charge over mass ratio
     double charge_over_2mass_dt = charge * time->step / (2 * mass);
 
     double pos_r = P_POS_R((**p));
@@ -703,15 +699,11 @@ void SpecieP::hc_pusher()
     B2 = b.length2();
 
     // Equivalent of 1/\gamma_{new} in the paper
-    gamma = 1. / sqrt( 0.5*( gfm2 - B2 +
-                             sqrt( pow( gfm2 - B2, 2 )
-                                   + 4.0 * ( B2 + pow( b[0]*um[0]
-                                                       + b[1]*um[1]
-                                                       + b[2]*um[2], 2 )
-                                     )
-                               )
-                         )
-      );
+    gamma = 1. / sqrt ( 0.5*( gfm2 - B2 +
+                              sqrt ( pow( gfm2 - B2, 2 )
+                                     + 4.0 * ( B2 + pow( b[0]*um[0]
+                                                         + b[1]*um[1]
+                                                         + b[2]*um[2], 2 ) ) ) ) );
 
     b *= gamma;
     b2 = b;
