@@ -14,7 +14,7 @@
    viewBox="0 0 118 110"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.1 r15371"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="weighting_temperature.svg">
   <defs
      id="defs2">
@@ -299,16 +299,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="228.32158"
-     inkscape:cy="193.95134"
+     inkscape:zoom="1.3368738"
+     inkscape:cx="177.64995"
+     inkscape:cy="258.13504"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="979"
-     inkscape:window-x="0"
-     inkscape:window-y="36"
+     inkscape:window-width="1756"
+     inkscape:window-height="1159"
+     inkscape:window-x="82"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:snap-bbox="false"
      inkscape:snap-intersection-paths="false"
@@ -321,7 +321,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -518,7 +518,7 @@
              id="rect6472-8" /></flowRegion><flowPara
            id="flowPara6476-8">ξ<flowSpan
    id="flowSpan6502-4"
-   style="font-size:18.66666603px;baseline-shift:sub">i,j+1</flowSpan></flowPara></flowRoot>      <circle
+   style="font-size:18.66666603px;baseline-shift:sub">i+1,j</flowSpan></flowPara></flowRoot>      <circle
          r="1.3096207"
          cy="242.93138"
          cx="60.61673"
@@ -532,5 +532,121 @@
          id="rect6609"
          style="opacity:0.21600001;fill:#00b700;fill-opacity:1;stroke-width:0.57782793;stroke-miterlimit:4;stroke-dasharray:none" />
     </g>
-  </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1108"
+       style="font-style:normal;font-weight:normal;font-size:16.0000002px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="matrix(0.26458333,0,0,0.26458333,-1.1874719,184.62506)"><flowRegion
+         id="flowRegion1110"><rect
+           id="rect1112"
+           width="92.059258"
+           height="28.865372"
+           x="132.39844"
+           y="179.37569" /></flowRegion><flowPara
+         id="flowPara1114">v<flowSpan
+   style="font-size:64.99999762%;baseline-shift:sub"
+   id="flowSpan1116">prtl: i,j+1</flowSpan></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1108-3"
+       style="font-style:normal;font-weight:normal;font-size:21.33333397px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="matrix(0.26458333,0,0,0.26458333,-11.823635,143.21907)"><flowRegion
+         id="flowRegion1110-6"><rect
+           id="rect1112-7"
+           width="116.74372"
+           height="34.101467"
+           x="132.39844"
+           y="179.37569" /></flowRegion><flowPara
+         id="flowPara1114-5"
+         style="font-size:64.99999762%;baseline-shift:sub"><flowSpan
+           style="font-size:29.3333337px"
+           id="flowSpan1278">V</flowSpan><flowSpan
+           style="font-size:;baseline-shift:baseline"
+           id="flowSpan1286">cell: i,j+1</flowSpan></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1108-3-5"
+       style="font-style:normal;font-weight:normal;font-size:21.33333397px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="matrix(0.26458333,0,0,0.26458333,47.738912,142.62533)"><flowRegion
+         id="flowRegion1110-6-6"><rect
+           id="rect1112-7-2"
+           width="106.27152"
+           height="37.841526"
+           x="132.39844"
+           y="179.37569" /></flowRegion><flowPara
+         id="flowPara1114-5-9"
+         style="font-size:29.33333397px;baseline-shift:sub">V<flowSpan
+   style="font-size:13.3333335px;baseline-shift:sub"
+   id="flowSpan1316">cell: i+1,j+1</flowSpan></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1108-3-7"
+       style="font-style:normal;font-weight:normal;font-size:21.33333397px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="matrix(0.26458333,0,0,0.26458333,53.280447,200.0198)"><flowRegion
+         id="flowRegion1110-6-0"><rect
+           id="rect1112-7-9"
+           width="84.579147"
+           height="32.605423"
+           x="132.39844"
+           y="179.37569" /></flowRegion><flowPara
+         id="flowPara1114-5-3"
+         style="font-size:13.33333397px;baseline-shift:sub"><flowSpan
+           style="font-size:29.3333337px"
+           id="flowSpan1308">V</flowSpan><flowSpan
+           style="font-size:;baseline-shift:baseline"
+           id="flowSpan1314">cell: i+1,j</flowSpan></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1108-9"
+       style="font-style:normal;font-weight:normal;font-size:16px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="matrix(0.26458333,0,0,0.26458333,24.394257,185.57224)"><flowRegion
+         id="flowRegion1110-2"><rect
+           id="rect1112-0"
+           width="92.059258"
+           height="28.865372"
+           x="132.39844"
+           y="179.37569" /></flowRegion><flowPara
+         id="flowPara1114-2">v<flowSpan
+   style="font-size:64.99999762%;baseline-shift:sub"
+   id="flowSpan1116-37">prtl: i+1,j+1</flowSpan></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1108-5"
+       style="font-style:normal;font-weight:normal;font-size:16.0000002px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="matrix(0.26458333,0,0,0.26458333,-0.34474029,201.40519)"><flowRegion
+         id="flowRegion1110-9"><rect
+           id="rect1112-2"
+           width="92.059258"
+           height="28.865372"
+           x="132.39844"
+           y="179.37569" /></flowRegion><flowPara
+         id="flowPara1114-28"
+         style="font-size:16.0000002px;fill:#fcff03;fill-opacity:1">v<flowSpan
+   style="font-size:65%;baseline-shift:sub"
+   id="flowSpan1264">prtl: i,j</flowSpan></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1108-7"
+       style="font-style:normal;font-weight:normal;font-size:21.33333397px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="matrix(0.26458333,0,0,0.26458333,26.571288,197.24903)"><flowRegion
+         id="flowRegion1110-3"><rect
+           id="rect1112-6"
+           width="92.059258"
+           height="28.865372"
+           x="132.39844"
+           y="179.37569" /></flowRegion><flowPara
+         id="flowPara1114-1"
+         style="font-size:16px">v<flowSpan
+   style="font-size:64.99999762%;baseline-shift:sub"
+   id="flowSpan1266">prtl: i,j+1</flowSpan></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1108-3-6"
+       style="font-style:normal;font-weight:normal;font-size:21.33333397px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="matrix(0.26458333,0,0,0.26458333,-9.6555611,235.44605)"><flowRegion
+         id="flowRegion1110-6-2"><rect
+           id="rect1112-7-6"
+           width="92.059258"
+           height="28.865372"
+           x="132.39844"
+           y="179.37569" /></flowRegion><flowPara
+         id="flowPara1114-5-1"
+         style="font-size:64.99999762%;baseline-shift:sub"><flowSpan
+           style="font-size:29.3333337px"
+           id="flowSpan1294">V</flowSpan><flowSpan
+           style="font-size:;baseline-shift:baseline"
+           id="flowSpan1300">cell: i,j</flowSpan></flowPara></flowRoot>  </g>
 </svg>
