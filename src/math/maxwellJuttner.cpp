@@ -338,14 +338,14 @@ namespace math::maxwell_juttner
       const double invdU_F = 999./(2.+19.);
       unsigned int index;
       // For each particle
-      for (unsigned int i=0; i<npoints; i++)
+      for (unsigned int i=0; i< npoints; i++)
       {
         // Pick a random number
         U = uniform();
         // Calculate the inverse of F
         lnlnU = log(-log(U));
         if( lnlnU>2. )
-          invF = 3.*sqrt(M_PI)/4. * pow(U,2./3.);
+          invF = constant::THREE_OVER_4 * sqrt(constant::PI) * pow(U, constant::TWO_OVER_3);
         else if ( lnlnU<-19. )
           invF = 1.;
         else {

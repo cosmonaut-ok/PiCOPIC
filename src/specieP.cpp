@@ -336,40 +336,39 @@ void SpecieP::velocity_distribution ()
 
 void SpecieP::thermal_velocity_distribution ()
 {
-  // double therm_vel = lib::sq_rt(2. * EL_CHARGE * temperature / mass);
-
   // Sample the energies in the MJ distribution
   vector<double> energies = math::maxwell_juttner::maxwellJuttner(macro_amount, temperature);
 
   unsigned int macro_count = 0;
 
-  // normalize to $\frac{1}{\sqrt{2}}$
-  double norm = 0.707;
+  double two_over_mass = 2 * EL_CHARGE / mass; // '* EL_CHARGE' - convert eV to J
+  double mc_inv = EL_CHARGE / (mass * LIGHT_VEL); // 'EL_CHARGE /' - convert eV to J
 
-  double shift;
+  // normalize to 1 / sqrt(2).
+  // TODO: I don't know, why, but it returns temperature correct values
+  const double norm = 0.7071067811865475;
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
-    if (P_POS_Z((**p)) > geometry->z_size / 2)
-      shift = 1;
-    else
-      shift = 1;
+    double therm_vel_cmp = energies[macro_count] * mc_inv;
 
-    double therm_vel_el = lib::sq_rt(2 * EL_CHARGE * energies[macro_count] / mass);
+    if (therm_vel_cmp > REL_LIMIT)
+    {
+      double gamma_inv = phys::rel::lorenz_factor_inv(pow(therm_vel_cmp, 2));
+      therm_vel_cmp *= gamma_inv;
+    }
+    else
+      therm_vel_cmp = lib::sq_rt(energies[macro_count] * two_over_mass);
+
+    therm_vel_cmp *= norm;
 
     double rnd_0 = math::random::uniform2();
     double rnd_1 = math::random::uniform2();
     double rnd_2 = math::random::uniform2();
 
-    P_VEL_R((**p)) = rnd_0 * therm_vel_el * norm * shift;
-    P_VEL_PHI((**p)) = rnd_1 * therm_vel_el * norm * shift;
-    P_VEL_Z((**p)) = rnd_2 * therm_vel_el * norm * shift;
-
-    // take into account relativistic factor
-    // maxwellJuttner procedure returns relativistic momentums
-    P_VEL_R((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_R((**p)) * P_VEL_R((**p)));
-    P_VEL_PHI((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_PHI((**p)) * P_VEL_PHI((**p)));
-    P_VEL_Z((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_Z((**p)) * P_VEL_Z((**p)));
+    P_VEL_R((**p)) = rnd_0 * therm_vel_cmp;
+    P_VEL_PHI((**p)) = rnd_1 * therm_vel_cmp;
+    P_VEL_Z((**p)) = rnd_2 * therm_vel_cmp;
 
     ++macro_count;
   }
@@ -377,8 +376,19 @@ void SpecieP::thermal_velocity_distribution ()
 
 void SpecieP::rectangular_velocity_distribution ()
 {
-  // therm velocity for singular velocity component
-  double therm_vel_cmp = lib::sq_rt(2. * EL_CHARGE * temperature / mass / 3.);
+  double two_over_mass = 2 * EL_CHARGE / mass; // '* EL_CHARGE' - convert eV to J
+  double mc_inv = EL_CHARGE / (mass * LIGHT_VEL); // 'EL_CHARGE /' - convert eV to J
+
+  double therm_vel_cmp = temperature * mc_inv;
+  therm_vel_cmp *= 2; // because we want a medium value for temperature
+
+  if (therm_vel_cmp > REL_LIMIT)
+  {
+    double gamma_inv = phys::rel::lorenz_factor_inv(pow(therm_vel_cmp, 2));
+    therm_vel_cmp *= gamma_inv;
+  }
+  else
+    therm_vel_cmp = lib::sq_rt(temperature * two_over_mass);
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
@@ -391,21 +401,25 @@ void SpecieP::rectangular_velocity_distribution ()
     P_VEL_R((**p)) = rnd_0 * therm_vel_cmp;
     P_VEL_PHI((**p)) = rnd_1 * therm_vel_cmp;
     P_VEL_Z((**p)) = rnd_2 * therm_vel_cmp;
-
-    // take into account relativistic factor
-    // maxwellJuttner procedure returns relativistic momentums
-    P_VEL_R((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_R((**p)) * P_VEL_R((**p)));
-    P_VEL_PHI((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_PHI((**p)) * P_VEL_PHI((**p)));
-    P_VEL_Z((**p)) *= phys::rel::lorenz_factor_inv(P_VEL_Z((**p)) * P_VEL_Z((**p)));
   }
 }
 
 void SpecieP::eigen_velocity_distribution ()
 // ! singular velocity distribution
 {
-  double therm_vel_cmp = lib::sq_rt(2. * EL_CHARGE * temperature / mass / 3.);
-  double gamma = phys::rel::lorenz_factor_inv(therm_vel_cmp);
-  therm_vel_cmp *= gamma;
+  double two_over_mass = 2 * EL_CHARGE / mass; // '* EL_CHARGE' - convert eV to J
+  double mc_inv = EL_CHARGE / (mass * LIGHT_VEL); // 'EL_CHARGE /' - convert eV to J
+
+  double therm_vel_cmp = temperature * mc_inv;
+  therm_vel_cmp *= 2; // because we want a medium value for temperature
+
+  if (therm_vel_cmp > REL_LIMIT)
+  {
+    double gamma_inv = phys::rel::lorenz_factor_inv(pow(therm_vel_cmp, 2));
+    therm_vel_cmp *= gamma_inv;
+  }
+  else
+    therm_vel_cmp = lib::sq_rt(temperature * two_over_mass);
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
@@ -421,23 +435,32 @@ void SpecieP::eigen_directed_velocity_distribution (unsigned int dir)
 // ! 1 is for "PHI" direction
 // ! 2 is for "Z" direction
 {
-  double therm_vel = lib::sq_rt(2. * EL_CHARGE * temperature / mass);
-  double gamma = phys::rel::lorenz_factor_inv(therm_vel);
-  therm_vel *= gamma;
+  double two_over_mass = 2 * EL_CHARGE / mass; // '* EL_CHARGE' - convert eV to J
+  double mc_inv = EL_CHARGE / (mass * LIGHT_VEL); // 'EL_CHARGE /' - convert eV to J
+
+  double therm_vel_cmp = temperature * mc_inv;
+
+  if (therm_vel_cmp > REL_LIMIT)
+  {
+    double gamma_inv = phys::rel::lorenz_factor_inv(pow(therm_vel_cmp, 2));
+    therm_vel_cmp *= gamma_inv;
+  }
+  else
+    therm_vel_cmp = lib::sq_rt(temperature * two_over_mass);
 
   switch (dir)
   {
   case 0:
     for (auto p = particles.begin(); p != particles.end(); ++p)
-      P_VEL_R((**p)) = therm_vel;
+      P_VEL_R((**p)) = therm_vel_cmp;
     break;
   case 1:
     for (auto p = particles.begin(); p != particles.end(); ++p)
-      P_VEL_PHI((**p)) = therm_vel;
+      P_VEL_PHI((**p)) = therm_vel_cmp;
     break;
   case 2:
     for (auto p = particles.begin(); p != particles.end(); ++p)
-      P_VEL_Z((**p)) = therm_vel;
+      P_VEL_Z((**p)) = therm_vel_cmp;
     break;
   default:
     LOG_S(FATAL) << "Incorrect switch of rectangular directed velocity component: " << dir;

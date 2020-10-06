@@ -29,17 +29,35 @@ void TemperatureCounted::weight_temperature_cylindrical(string specie)
         unsigned int r_i_shift = r_i - geometry->bottom_r_grid_number;
         unsigned int z_k_shift = z_k - geometry->left_z_grid_number;
 
-        double p_vel_r = P_VEL_R((**i));
-        double p_vel_phi = P_VEL_PHI((**i));
-        double p_vel_z = P_VEL_Z((**i));
+        double vel_r_single = P_VEL_R((**i));
+        double vel_phi_single = P_VEL_PHI((**i));
+        double vel_z_single = P_VEL_Z((**i));
 
-        double velocity = lib::sq_rt(pow(p_vel_r, 2) + pow(p_vel_phi, 2) + pow(p_vel_z, 2));
+        double vel_abs_single = lib::sq_rt(pow(vel_r_single, 2)
+                                           + pow(vel_phi_single, 2)
+                                           + pow(vel_z_single, 2));
 
-        vel_r.inc(r_i_shift, z_k_shift, p_vel_r);
-        vel_phi.inc(r_i_shift, z_k_shift, p_vel_phi);
-        vel_z.inc(r_i_shift, z_k_shift, p_vel_z);
-        vel_full.inc(r_i_shift, z_k_shift, velocity);
-        count.inc(r_i_shift, z_k_shift, 1);
+        double m_weighted = (**ps).mass * P_WEIGHT((**i));
+
+        double p_r_single = m_weighted * vel_r_single;
+        double p_phi_single = m_weighted * vel_phi_single;
+        double p_z_single = m_weighted * vel_z_single;
+        double p_abs_single = m_weighted * vel_abs_single;
+
+        if (vel_abs_single < REL_LIMIT)
+        {
+          double gamma = phys::rel::lorenz_factor(vel_abs_single * vel_abs_single);
+          p_r *= gamma;
+          p_phi *= gamma;
+          p_z *= gamma;
+          p_abs *= gamma;
+        }
+
+        p_r.inc(r_i_shift, z_k_shift, p_r_single);
+        p_phi.inc(r_i_shift, z_k_shift, p_phi_single);
+        p_z.inc(r_i_shift, z_k_shift, p_z_single);
+        p_abs.inc(r_i_shift, z_k_shift, p_abs_single);
+        count.inc(r_i_shift, z_k_shift, P_WEIGHT((**i)));
       }
 }
 
@@ -53,55 +71,51 @@ void TemperatureCounted::calc_temperature_cylindrical(string specie)
       speciep = (*ps);
 
   // clear temperature grid
-  temperature = 0;
-  temperature.overlay_set(0);
+  tmpr = 0;
+  tmpr.overlay_set(0);
 
   // clear velociry components grid
-  vel_r = 0;
-  vel_r.overlay_set(0);
-  vel_phi = 0;
-  vel_phi.overlay_set(0);
-  vel_z = 0;
-  vel_z.overlay_set(0);
+  p_r = 0;
+  p_r.overlay_set(0);
+  p_phi = 0;
+  p_phi.overlay_set(0);
+  p_z = 0;
+  p_z.overlay_set(0);
 
   // clear full velocity grid
-  vel_full = 0;
-  vel_full.overlay_set(0);
+  p_abs = 0;
+  p_abs.overlay_set(0);
 
   // clear count
   count = 0;
   count.overlay_set(0);
 
-  // FIXME: temprary just copy full velocity
-  // to temperature to get output
-  // temperature.copy(vel_full);
-
   weight_temperature_cylindrical(specie);
 
-  /////////////////////// FIXME: Legacy algorithm ////////////////////////////
   for (int r = 0; r < geometry->r_grid_amount; r++)
     for (int z = 0; z < geometry->z_grid_amount; z++)
     {
-      double v_vec_sum_2 = vel_r(r, z) * vel_r(r, z)
-        + vel_phi(r, z) * vel_phi(r, z) + vel_z(r, z) * vel_z(r, z);
+      double p_vec_sum_2 =
+        pow(p_r(r, z), 2)
+        + pow(p_phi(r, z), 2)
+        + pow(p_z(r, z), 2);
 
-      double v_sc_sum_2 = (vel_full(r, z) * vel_full(r, z) - v_vec_sum_2) / (count(r, z) * count(r, z));
+      double p_sc_sum_2 = pow(p_abs(r, z), 2) - p_vec_sum_2;
 
-      if (v_sc_sum_2 < pow(REL_LIMIT, 2))
-        temperature.set(r, z, speciep->mass * v_sc_sum_2 / 2);
-      else
-      {
-        double gamma = phys::rel::lorenz_factor(v_sc_sum_2);
-        temperature.set(r, z, speciep->mass * LIGHT_VEL_POW_2 * (gamma - 1));
-      }
+      // normalize to count and convert Joules to eV
+      p_sc_sum_2 /= pow(count(r, z), 2);
 
-      // convert joules to eV
-      temperature.d_a(r, z, abs(speciep->charge));
+      double energy = phys::rel::energy_m(speciep->mass, p_sc_sum_2);
+
+      // convert Joules to eV
+      energy *= EL_CHARGE_INV;
+
+      tmpr.set(r, z, energy);
     }
 
 #if defined TEMPERATURE_POSTPROC_BILINEAR
-  Grid<double> temperature_src = temperature;
-  lib::bilinear_interpolation<Grid<double>>(temperature_src, temperature);
+  Grid<double> temperature_src = tmpr;
+  lib::bilinear_interpolation<Grid<double>>(temperature_src, tmpr);
 #endif
 
 }

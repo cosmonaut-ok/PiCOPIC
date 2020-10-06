@@ -31,6 +31,7 @@ namespace constant
   const double ONE_OVER_3 = 1. / 3.;
   const double TWO_OVER_3 = 2. / 3.;
   const double FOUR_OVER_3 = 4. / 3.;
+  const double THREE_OVER_4 = 4. / 3.;
   // PI constant
   const double PI = 3.1415926535897932;
   // Vacuum permittivity (electric constant), F*m(e-1)
@@ -39,6 +40,7 @@ namespace constant
   const double EL_MASS = 9.1E-31;
   // Electron charge, coulon
   const double EL_CHARGE = 1.6E-19;
+  const double EL_CHARGE_INV = 1. / EL_CHARGE;
   // light speed in vacuum m/s
   const double LIGHT_VEL = 3.0E8;
   // define C^2 to decrease number of operations

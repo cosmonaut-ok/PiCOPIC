@@ -71,4 +71,32 @@ namespace phys::rel
     return velocity * gamma * mass; // gamma m v
   }
 
+  double energy (double mass, double velocity_2)
+  {
+    double e;
+    if (velocity_2 > REL_LIMIT_POW_2)
+    {
+      double gamma = lorenz_factor(velocity_2);
+      e = ( gamma - 1 ) * mass * LIGHT_VEL_POW_2;
+    }
+    else
+      e = 0.5 * mass * velocity_2;
+
+    return e;
+  }
+
+  double energy_m (double mass, double momentum_2)
+  // ! get energy from momentum
+  {
+    double e;
+    if (momentum_2 > REL_LIMIT_POW_2 * mass * mass)
+    {
+      double e_rest = mass * LIGHT_VEL_POW_2;
+      e = lib::sq_rt(momentum_2 * LIGHT_VEL_POW_2 + pow(e_rest, 2)) - e_rest;
+    }
+    else
+      e = 0.5 * momentum_2 / mass;
+
+    return e;
+  }
 }

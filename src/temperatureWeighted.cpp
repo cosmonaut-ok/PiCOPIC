@@ -23,35 +23,51 @@ void TemperatureWeighted::weight_temperature_cylindrical(string specie)
     if (specie.compare((**ps).name) == 0)
       for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
       {
-	double _mass = (**ps).mass * P_WEIGHT((**i));
-        double p_vel_r = _mass * P_VEL_R((**i));
-        double p_vel_phi = _mass * P_VEL_PHI((**i));
-        double p_vel_z = _mass * P_VEL_Z((**i));
-        double p_vel_full = lib::sq_rt(
-          pow(p_vel_r, 2)
-          + pow(p_vel_phi, 2)
-          + pow(p_vel_z, 2)
+        double vel_r_single = P_VEL_R((**i));
+        double vel_phi_single = P_VEL_PHI((**i));
+        double vel_z_single = P_VEL_Z((**i));
+
+        double vel_abs_single = lib::sq_rt (
+          pow(vel_r_single, 2)
+          + pow(vel_phi_single, 2)
+          + pow(vel_z_single, 2)
           );
 
-        weight_cylindrical<double>(geometry, &vel_r,
-                                   P_POS_R((**i)),
-                                   P_POS_Z((**i)),
-                                   p_vel_r);
+        double m_weighted = (**ps).mass * P_WEIGHT((**i));
 
-        weight_cylindrical<double>(geometry, &vel_phi,
-                                   P_POS_R((**i)),
-                                   P_POS_Z((**i)),
-                                   p_vel_phi);
+        double p_r_single = m_weighted * vel_r_single;
+        double p_phi_single = m_weighted * vel_phi_single;
+        double p_z_single = m_weighted * vel_z_single;
+        double p_abs_single = m_weighted * vel_abs_single;
 
-        weight_cylindrical<double>(geometry, &vel_z,
-                                   P_POS_R((**i)),
-                                   P_POS_Z((**i)),
-                                   p_vel_z);
+        if (vel_abs_single < REL_LIMIT)
+        {
+          double gamma = phys::rel::lorenz_factor(pow(vel_abs_single, 2));
+          p_r_single *= gamma;
+          p_phi_single *= gamma;
+          p_z_single *= gamma;
+          p_abs_single *= gamma;
+        }
 
-        weight_cylindrical<double>(geometry, &vel_full,
+        weight_cylindrical<double>(geometry, &p_r,
                                    P_POS_R((**i)),
                                    P_POS_Z((**i)),
-                                   p_vel_full);
+                                   p_r_single);
+
+        weight_cylindrical<double>(geometry, &p_phi,
+                                   P_POS_R((**i)),
+                                   P_POS_Z((**i)),
+                                   p_phi_single);
+
+        weight_cylindrical<double>(geometry, &p_z,
+                                   P_POS_R((**i)),
+                                   P_POS_Z((**i)),
+                                   p_z_single);
+
+        weight_cylindrical<double>(geometry, &p_abs,
+                                   P_POS_R((**i)),
+                                   P_POS_Z((**i)),
+                                   p_abs_single);
       }
 }
 
@@ -70,53 +86,47 @@ void TemperatureWeighted::calc_temperature_cylindrical(string specie)
   density.calc_density_cylindrical(specie);
 
   // clear temperature grid
-  temperature = 0;
-  temperature.overlay_set(0);
+  tmpr = 0;
+  tmpr.overlay_set(0);
 
   // clear velociry components grid
-  vel_r = 0;
-  vel_r.overlay_set(0);
-  vel_phi = 0;
-  vel_phi.overlay_set(0);
-  vel_z = 0;
-  vel_z.overlay_set(0);
+  p_r = 0;
+  p_r.overlay_set(0);
+  p_phi = 0;
+  p_phi.overlay_set(0);
+  p_z = 0;
+  p_z.overlay_set(0);
 
   // clear full velocity grid
-  vel_full = 0;
-  vel_full.overlay_set(0);
-
-  // FIXME: temprary just copy full velocity
-  // to temperature to get output
-  // temperature.copy(vel_full);
+  p_abs = 0;
+  p_abs.overlay_set(0);
 
   weight_temperature_cylindrical(specie);
 
-  /////////////////////// FIXME: Legacy algorithm ////////////////////////////
   for (int r = 0; r < geometry->r_grid_amount; r++)
     for (int z = 0; z < geometry->z_grid_amount; z++)
     {
-      double p_sum_2 = pow(vel_r(r, z), 2)
-        + pow(vel_phi(r, z), 2) + pow(vel_z(r, z), 2);
+      double p_vec_sum_2 =
+        pow(p_r(r, z), 2)
+        + pow(p_phi(r, z), 2)
+        + pow(p_z(r, z), 2);
 
-      if (p_sum_2 < pow(REL_LIMIT, 2) * pow(speciep->mass, 2))
-        temperature.set(r, z, (pow(vel_full(r, z), 2) - p_sum_2)
-                        / (2. * speciep->mass * pow(density.density(r, z), 2)));
-      else
-      {
-        double mc_2 = speciep->mass * LIGHT_VEL_POW_2;
-        temperature.set(r, z, lib::sq_rt((pow(vel_full(r, z), 2) - p_sum_2)
-                                         * LIGHT_VEL_POW_2
-                                         / pow(density.density(r, z), 2)
-                                         + pow(mc_2, 2)) - mc_2);
-      }
+      double p_sc_sum_2 = pow(p_abs(r, z), 2) - p_vec_sum_2;
 
-      // convert joules to eV
-      temperature.d_a(r, z, abs(speciep->charge));
+      // normalize to density and convert Joules to eV
+      p_sc_sum_2 /= pow(density.density(r, z), 2);
+
+      double energy = phys::rel::energy_m(speciep->mass, p_sc_sum_2);
+
+      // convert Joules to eV
+      energy *= EL_CHARGE_INV;
+
+      tmpr.set(r, z, energy);
     }
 
 #if defined TEMPERATURE_POSTPROC_BILINEAR
-  Grid<double> temperature_src = temperature;
-  lib::bilinear_interpolation<Grid<double>>(temperature_src, temperature);
+  Grid<double> temperature_src = tmpr;
+  lib::bilinear_interpolation<Grid<double>>(temperature_src, tmpr);
 // #elif defined TEMPERATURE_POSTPROC_BICUBIC
 //   lib::bicubic_interpolation(t_src, t, geom->n_grid_r, geom->n_grid_z);
 #endif
