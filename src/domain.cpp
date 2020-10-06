@@ -95,8 +95,8 @@ void Domain::weight_density(string specie)
 
 void Domain::weight_temperature(string specie)
 {
-  temperature->temperature = 0;
-  temperature->temperature.overlay_set(0);
+  temperature->tmpr = 0;
+  temperature->tmpr.overlay_set(0);
   temperature->calc_temperature_cylindrical(specie);
 }
 

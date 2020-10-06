@@ -29,6 +29,7 @@
 // IDRIS
 
 #include <vector>
+#include "constant.hpp"
 #include "math/rand.hpp"
 
 namespace math::maxwell_juttner

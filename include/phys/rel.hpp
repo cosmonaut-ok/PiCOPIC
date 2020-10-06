@@ -31,6 +31,8 @@ namespace phys::rel
 {
   double lorenz_factor (double sq_velocity);
   double lorenz_factor_inv (double sq_velocity);
+  double energy (double mass, double velocity_2); // mass and velocity powered to 2
+  double energy_m (double mass, double momentum_2);  // mass and momentum powered to 2
 
   double momentum_0 (double mass, vector3d<double> velocity);
   vector3d<double> momentum (double mass, vector3d<double> velocity);

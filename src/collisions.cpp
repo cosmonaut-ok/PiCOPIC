@@ -71,11 +71,11 @@ void Collisions::clear()
   moment_tot_ion = 0;
   moment_tot_ion.overlay_set(0);
 
-  temperature_el.temperature = 0;
-  temperature_el.temperature.overlay_set(0);
+  temperature_el.tmpr = 0;
+  temperature_el.tmpr.overlay_set(0);
 
-  temperature_ion.temperature = 0;
-  temperature_ion.temperature.overlay_set(0);
+  temperature_ion.tmpr = 0;
+  temperature_ion.tmpr.overlay_set(0);
 
   for (int i = 0; i < geometry->r_grid_amount; ++i)
     for (int j = 0; j < geometry->z_grid_amount; ++j)
@@ -151,7 +151,7 @@ double Collisions::get_el_temperature(int i, int j)
 {
   double e_tot = energy_tot_el(i, j);
   double amount = amount_tot_el(i, j);
-  return e_tot / amount / EL_CHARGE; // also, convert from J to eV
+  return e_tot / amount * EL_CHARGE_INV; // also, convert from J to eV
 }
 
 double Collisions::get_ion_temperature(int i, int j)
@@ -159,7 +159,7 @@ double Collisions::get_ion_temperature(int i, int j)
   double e_tot = energy_tot_ion(i, j);
   double amount = amount_tot_ion(i, j);
 
-  return e_tot / amount / EL_CHARGE;
+  return e_tot / amount * EL_CHARGE_INV;
 }
 
 double Collisions::geometry_cell_volume(int i)

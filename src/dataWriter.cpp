@@ -264,8 +264,8 @@ void DataWriter::merge_domains(string component, string specie)
         if (component.compare("density") == 0)
           sim_domain->density->density.overlay_x(dst_domain->density->density);
         else if (component.compare("temperature") == 0)
-          sim_domain->temperature->temperature.overlay_x(dst_domain->temperature->temperature);
-	else if (component.compare("charge") == 0)
+          sim_domain->temperature->tmpr.overlay_x(dst_domain->temperature->tmpr);
+        else if (component.compare("charge") == 0)
           sim_domain->charge->density.overlay_x(dst_domain->charge->density);
       }
 
@@ -275,9 +275,9 @@ void DataWriter::merge_domains(string component, string specie)
         if (component.compare("density") == 0)
           sim_domain->density->density.overlay_y(dst_domain->density->density);
         else if (component.compare("temperature") == 0)
-          sim_domain->temperature->temperature.overlay_y(dst_domain->temperature->temperature);
+          sim_domain->temperature->tmpr.overlay_y(dst_domain->temperature->tmpr);
 	else if (component.compare("charge") == 0)
-          sim_domain->charge->density.overlay_y(dst_domain->temperature->temperature);
+          sim_domain->charge->density.overlay_y(dst_domain->temperature->tmpr);
       }
 
       // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
@@ -313,7 +313,7 @@ void DataWriter::merge_domains(string component, string specie)
       else if (component.compare("J_z") == 0)
         value = sim_domain->current->current[2];
       else if (component.compare("temperature") == 0)
-        value = sim_domain->temperature->temperature;
+        value = sim_domain->temperature->tmpr;
       else if (component.compare("density") == 0)
         value = sim_domain->density->density;
       else if (component.compare("charge") == 0)
