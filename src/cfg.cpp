@@ -530,7 +530,7 @@ bool Cfg::method_limitations_check ()
 
   if (time->step > max_time)
   {
-    LOG_S(FATAL) << "Too large time step: ``"
+    LOG_S(ERROR) << "Too large time step: ``"
              << time->step
              << " s.''. Should be less, than ``"
              << max_time
@@ -547,7 +547,7 @@ bool Cfg::method_limitations_check ()
     if (geometry->r_cell_size > debye_length * debye_multiplicator
 	|| geometry->z_cell_size > debye_length * debye_multiplicator)
     {
-      LOG_S(FATAL) << "Too large grid size: ``"
+      LOG_S(ERROR) << "Too large grid size: ``"
 	       << geometry->r_cell_size << " x " << geometry->z_cell_size
 	       << " m.''. Should be less, than ``"
 	       << debye_length * debye_multiplicator
@@ -555,21 +555,21 @@ bool Cfg::method_limitations_check ()
     }
 
     // \f$ L >> R_{debye} \f$
-    // if (geometry->r_size < debye_length * debye_multiplicator
-    // 	|| geometry->z_size < debye_length * debye_multiplicator)
-    // {
-    //   LOG_S(FATAL) << "Too small system size: ``"
-    // 	       << geometry->r_size << " x " << geometry->z_size
-    // 	       << " m.''. Should be more, than ``"
-    // 	       <<  debye_length * debye_multiplicator
-    // 		   << " m.''";
-    // }
+    if (geometry->r_size < debye_length * debye_multiplicator
+    	|| geometry->z_size < debye_length * debye_multiplicator)
+    {
+      LOG_S(ERROR) << "Too small system size: ``"
+    	       << geometry->r_size << " x " << geometry->z_size
+    	       << " m.''. Should be more, than ``"
+    	       <<  debye_length * debye_multiplicator
+    		   << " m.''";
+    }
 
     // \f$ L << N_{particles} * R_{debye} \f$
     if (geometry->r_size > debye_length * full_macro_amount * debye_multiplicator
 	|| geometry->z_size > debye_length * full_macro_amount * debye_multiplicator)
     {
-      LOG_S(FATAL) << "Too large system size: ``"
+      LOG_S(ERROR) << "Too large system size: ``"
 	       << geometry->r_size << " x " << geometry->z_size
 	       << " m.''. Should be less, than ``"
 	       <<  debye_length * full_macro_amount * debye_multiplicator
