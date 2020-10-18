@@ -37,27 +37,20 @@ void TemperatureCounted::weight_temperature_cylindrical(string specie)
                                            + pow(vel_phi_single, 2)
                                            + pow(vel_z_single, 2));
 
-        double m_weighted = (**ps).mass * P_WEIGHT((**i));
-
-        double p_r_single = m_weighted * vel_r_single;
-        double p_phi_single = m_weighted * vel_phi_single;
-        double p_z_single = m_weighted * vel_z_single;
-        double p_abs_single = m_weighted * vel_abs_single;
-
         if (vel_abs_single < REL_LIMIT)
         {
           double gamma = phys::rel::lorenz_factor(vel_abs_single * vel_abs_single);
-          p_r *= gamma;
-          p_phi *= gamma;
-          p_z *= gamma;
-          p_abs *= gamma;
+          vel_r_single *= gamma;
+          vel_phi_single *= gamma;
+          vel_z_single *= gamma;
+          vel_abs_single *= gamma;
         }
 
-        p_r.inc(r_i_shift, z_k_shift, p_r_single);
-        p_phi.inc(r_i_shift, z_k_shift, p_phi_single);
-        p_z.inc(r_i_shift, z_k_shift, p_z_single);
-        p_abs.inc(r_i_shift, z_k_shift, p_abs_single);
-        count.inc(r_i_shift, z_k_shift, P_WEIGHT((**i)));
+        p_r.inc(r_i_shift, z_k_shift, vel_r_single * (**ps).mass);
+        p_phi.inc(r_i_shift, z_k_shift, vel_phi_single * (**ps).mass);
+        p_z.inc(r_i_shift, z_k_shift, vel_z_single * (**ps).mass);
+        p_abs.inc(r_i_shift, z_k_shift, vel_abs_single * (**ps).mass);
+        count.inc(r_i_shift, z_k_shift, 1);
       }
 }
 
