@@ -543,11 +543,13 @@ int main(int argc, char **argv)
   while (sim_time_clock->current <= sim_time_clock->end)
   {
     //! Steps:
-    //! 1. init beam
+    //! efield->calc_field
+    //! == efield overlay ==
     //! 2. hfield->calc_field
     //! == hfield overlay ==
     //! 3. c_current->reset_j
-    //! 6. boris_pusher
+    //! 1. init beam
+    //! 6. push_particles
     //! 7. dump_position_to_old
     //! 8. half_step_pos
     //! 9. back_position_to_rz
@@ -561,33 +563,53 @@ int main(int argc, char **argv)
     //! 14. current_distribution
     //! 15. back_velocity_to_rz
     //! == current overlay ==
-    //! efield->calc_field
-    //! == efield overlay ==
 
     LOG_S(MAX) << "Run calculation loop for timestamp: " << sim_time_clock->current;
 
+//// inject beam
+    if (! cfg.particle_beams.empty())
+    {
+#pragma omp parallel for collapse(2)
+      for (unsigned int i=0; i < r_domains; i++)
+        for (unsigned int j = 0; j < z_domains; j++)
+        {
+          Domain *sim_domain = domains(i, j);
+
+          // ! 1. manage beam
+          sim_domain->manage_beam();
+        }
+    }
+
+//// solve maxwell equations
 #pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_domains; i++)
       for (unsigned int j = 0; j < z_domains; j++)
       {
         Domain *sim_domain = domains(i, j);
 
-        // ! 1. manage beam
-        if (! cfg.particle_beams.empty())
-          sim_domain->manage_beam();
+        // ! 5. Calculate electric field (E)
+        sim_domain->weight_field_e(); // +
+      }
+    field_e_overlay(domains, geometry_global);
+
+#pragma omp parallel for collapse(2)
+    for (unsigned int i=0; i < r_domains; i++)
+      for (unsigned int j = 0; j < z_domains; j++)
+      {
+        Domain *sim_domain = domains(i, j);
 
         // ! 2. Calculate magnetic field (H)
         sim_domain->weight_field_h(); // +
       }
     field_h_overlay(domains, geometry_global);
 
+//// advance particles
 #pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_domains; i++)
       for (unsigned int j = 0; j < z_domains; j++)
       {
         Domain *sim_domain = domains(i, j);
 
-        sim_domain->reset_current();
         // ! 3. Calculate velocity
         sim_domain->push_particles(); // +
 
@@ -600,46 +622,35 @@ int main(int argc, char **argv)
         sim_domain->particles_back_position_to_rz(); // +
 
         sim_domain->reflect();
+
+        sim_domain->particles_back_velocity_to_rz();
+
         sim_domain->bind_cell_numbers();
       }
     particles_runaway_collector(domains, geometry_global);
 
+//// solve currents
 #pragma omp parallel for collapse(2)
     for (unsigned int i=0; i < r_domains; i++)
       for (unsigned int j = 0; j < z_domains; j++)
       {
         Domain *sim_domain = domains(i, j);
 
-        sim_domain->particles_back_velocity_to_rz();
+        sim_domain->reset_current();
         sim_domain->weight_current();
       }
     current_overlay(domains, geometry_global);
 
-#pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_domains; i++)
-      for (unsigned int j = 0; j < z_domains; j++)
-      {
-        Domain *sim_domain = domains(i, j);
-
-        // ! 5. Calculate electric field (E)
-        sim_domain->weight_field_e(); // +
-      }
-    field_e_overlay(domains, geometry_global);
-
-    // dump data
-// #pragma omp parallel for
-    for (unsigned int i=0; i < data_writers.size(); ++i)
-      data_writers[i].go();
+//// output data
+    // for (unsigned int i=0; i < data_writers.size(); ++i)
+    for (auto i = data_writers.begin(); i != data_writers.end(); i++)
+      (*i).go();
 
     sim_time_clock->current += sim_time_clock->step;
   }
 
-  // this is only to finish pretty pringing of data_writers output
-  // if (!DEBUG)
-  // {
 #ifndef DEBUG
-    MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
-  // }
+ MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
 #endif
 
   LOG_S(INFO) << "SIMULATION COMPLETE";
