@@ -343,7 +343,7 @@ int main(int argc, char **argv)
   string cfgname = parse_argv_get_config(argc, argv);
 
   LOG_S(MAX) << "Reading Configuration File ``" << cfgname << "''";
-  Cfg cfg = Cfg(cfgname.c_str());
+  Cfg cfg = Cfg(cfgname);
 
   Geometry* geometry_global = cfg.geometry;
 

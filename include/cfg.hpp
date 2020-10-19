@@ -96,7 +96,7 @@ class Cfg
 {
 public:
   // Cfg(void);
-  Cfg(const char *xml_file_name);
+  Cfg(const std::string json_file_name);
   ~Cfg(void);
 
   string cfg2str();

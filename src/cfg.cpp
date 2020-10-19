@@ -20,7 +20,7 @@
 
 #define MIN_DOMAIN_GRID_AMOUNT 64
 
-Cfg::Cfg(const char *json_file_name)
+Cfg::Cfg(const std::string json_file_name)
 {
   //! read given json file and parse it
   stringstream ss;
@@ -31,7 +31,7 @@ Cfg::Cfg(const char *json_file_name)
   output_data = new save_data();
 
   // Read Json file
-  f.open(json_file_name, ios::binary);
+  f.open(json_file_name.c_str(), ios::binary);
   if (!f.is_open()) exit(1);
   ss << f.rdbuf();
   f.close();
