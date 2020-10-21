@@ -337,7 +337,7 @@ void SpecieP::velocity_distribution ()
 void SpecieP::thermal_velocity_distribution ()
 {
   // Sample the energies in the MJ distribution
-  vector<double> energies = math::maxwell_juttner::maxwellJuttner(macro_amount, temperature);
+  vector<double> energies = math::maxwell_juettner::maxwellJuettner(macro_amount, temperature);
 
   unsigned int macro_count = 0;
 

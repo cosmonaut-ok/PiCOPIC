@@ -38,7 +38,7 @@
 #include <string>
 
 #include "math/rand.hpp"
-#include "math/maxwellJuttner.hpp"
+#include "math/maxwellJuettner.hpp"
 
 #include "geometry.hpp"
 #include "grid.hpp"

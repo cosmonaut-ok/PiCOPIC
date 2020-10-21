@@ -29,7 +29,7 @@
 #include "timeSim.hpp"
 
 #include "math/rand.hpp"
-#include "math/maxwellJuttner.hpp"
+#include "math/maxwellJuettner.hpp"
 #include "math/vector3d.hpp"
 
 //! define service constant "particle`s vector size"

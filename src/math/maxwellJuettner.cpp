@@ -24,15 +24,15 @@
 //!
 //! License: http://www.maisondelasimulation.fr/smilei/licence.html
 
-#include "math/maxwellJuttner.hpp"
+#include "math/maxwellJuettner.hpp"
 
 using namespace std;
 using namespace math::random;
 
-namespace math::maxwell_juttner
+namespace math::maxwell_juettner
 {
 
-// Array used in the Maxwell-Juttner sampling
+// Array used in the Maxwell-Juettner sampling
   const double lnInvF[1000] = {
     3.028113261189336214e+00, 3.027071073732334305e+00, 3.026027773526156039e+00, 3.024983358705674252e+00, 3.023937826984889554e+00, 3.022891176588271556e+00, 3.021843405329281751e+00,
     3.020794508115738797e+00, 3.019744485967266634e+00, 3.018693334699208197e+00, 3.017641052204572016e+00, 3.016587635695088032e+00, 3.015533082181309776e+00, 3.014477390819529479e+00,
@@ -179,7 +179,7 @@ namespace math::maxwell_juttner
     -4.239013601260967157e+00, -4.333739937229747596e+00, -4.430429907939251954e+00, -4.529127870514209953e+00, -4.629879064442645742e+00, -4.732729626089497543e+00
   };
 
-// Array used in the Maxwell-Juttner sampling
+// Array used in the Maxwell-Juettner sampling
   const double lnInvH[1000] = {
     -9.402756483482924921e+00, -9.388318921346392898e+00, -9.374883046130019437e+00, -9.360818128319227327e+00, -9.346352500952018971e+00, -9.332609535599788231e+00, -9.318636378401940590e+00,
     -9.304555775711108367e+00, -9.290525531420621874e+00, -9.276495588326515218e+00, -9.262659647248140615e+00, -9.248642923366197977e+00, -9.234537986282660427e+00, -9.220440348595868585e+00,
@@ -326,8 +326,8 @@ namespace math::maxwell_juttner
     1.178996329265322451e+01, 1.183199880312684549e+01, 1.187403455731502611e+01, 1.191607054622200579e+01, 1.195810676117958415e+01, 1.200014319383540240e+01
   };
 
-// Provides a Maxwell-Juttner distribution of velocities (not energies)
-  vector<double> maxwellJuttner(unsigned int npoints, double temperature)
+// Provides a Maxwell-Juettner distribution of velocities (not energies)
+  vector<double> maxwellJuettner(unsigned int npoints, double temperature)
   {
     vector<double> energies(npoints);
 
@@ -358,7 +358,7 @@ namespace math::maxwell_juttner
         energies[i] = temperature * invF;
       }
     }
-    else // Relativistic case: Maxwell-Juttner
+    else // Relativistic case: Maxwell-Juettner
     {
       double U, lnU, invH, I, remainder, gamma;
       const double invdU_H = 999./(12.+30.);

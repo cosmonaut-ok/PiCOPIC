@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAXWELL_JUTTNER_HPP_
-#define _MAXWELL_JUTTNER_HPP_
+#ifndef _MAXWELL_JUETTNER_HPP_
+#define _MAXWELL_JUETTNER_HPP_
 
 #include <cmath>
 #include <ctime>
@@ -32,9 +32,9 @@
 #include "constant.hpp"
 #include "math/rand.hpp"
 
-namespace math::maxwell_juttner
+namespace math::maxwell_juettner
 {
-  vector<double> maxwellJuttner(unsigned int npoints, double temperature);
+  vector<double> maxwellJuettner(unsigned int npoints, double temperature);
 }
 
-#endif // end of _MAXWELL_JUTTNER_HPP_
+#endif // end of _MAXWELL_JUETTNER_HPP_
