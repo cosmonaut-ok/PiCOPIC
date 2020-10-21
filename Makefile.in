@@ -6,7 +6,7 @@ OBJDIR                = $(TARGETDIR)/obj
 INCLUDEDIR            = $(ROOTDIR)/include
 SUBDIRS               =
 TESTSUBDIRS           = test/unit
-EXES                  = PiCOPIC
+EXES                  = PiCoPiC
 TESTDIR               = testingdir
 ### Common settings
 CEXTRA                =
@@ -21,22 +21,22 @@ DOXYGEN_FORMATS       = @DOXYGEN_FORMATS@
 DOXYGEN_DIRS          = doc/app doc/lib doc/vis
 RELEASE               = @RELEASE@
 
-### PiCOPIC sources and settings
-PiCOPIC_MODULE           = PiCOPIC
-PiCOPIC_C_SRCS           =
+### PiCoPiC sources and settings
+PiCoPiC_MODULE           = PiCoPiC
+PiCoPiC_C_SRCS           =
 
-PiCOPIC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp) $(wildcard $(SRCDIR)/phys/*.cpp)
+PiCoPiC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp) $(wildcard $(SRCDIR)/phys/*.cpp)
 
-PiCOPIC_LDFLAGS          = @LDFLAGS_ADDITIONAL@
-PiCOPIC_ARFLAGS          =
-PiCOPIC_LIBRARY_PATH     =
-PiCOPIC_LIBRARIES        = $(LIBRARIES)
+PiCoPiC_LDFLAGS          = @LDFLAGS_ADDITIONAL@
+PiCoPiC_ARFLAGS          =
+PiCoPiC_LIBRARY_PATH     =
+PiCoPiC_LIBRARIES        = $(LIBRARIES)
 
 ### picojson sources and settings
 picojson_SUBDIR := $(ROOTDIR)/lib/picojson
 INCLUDE_PATH += -I$(picojson_SUBDIR)
 SUBDIRS += $(picojson_SUBDIR)
-# PiCOPIC_LIBRARIES += picojson
+# PiCoPiC_LIBRARIES += picojson
 # LDFLAGS += -L$(picojson_SUBDIR)
 
 ### loguru sources and settings
@@ -44,27 +44,27 @@ loguru_SUBDIR := $(ROOTDIR)/lib/loguru
 INCLUDE_PATH += -I$(loguru_SUBDIR)
 # SUBDIRS += $(loguru_SUBDIR)
 LDFLAGS += -L$(loguru_SUBDIR)
-PiCOPIC_LIBRARIES += pthread
-PiCOPIC_LIBRARIES += dl
+PiCoPiC_LIBRARIES += pthread
+PiCoPiC_LIBRARIES += dl
 loguru_DEFINES := -DLOGURU_WITH_STREAMS=1
 
 ### link hdf5 library
 ifeq (@HDF5_OPTION@, true)
-PiCOPIC_LIBRARIES += hdf5
-PiCOPIC_LIBRARIES += hdf5_cpp
+PiCoPiC_LIBRARIES += hdf5
+PiCoPiC_LIBRARIES += hdf5_cpp
 else
-PiCOPIC_CXX_SRCS_TMP := $(PiCOPIC_CXX_SRCS)
-PiCOPIC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngineHDF5.cpp, $(PiCOPIC_CXX_SRCS_TMP))
+PiCoPiC_CXX_SRCS_TMP := $(PiCoPiC_CXX_SRCS)
+PiCoPiC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngineHDF5.cpp, $(PiCoPiC_CXX_SRCS_TMP))
 endif
 
-PiCOPIC_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PiCOPIC_CXX_SRCS))
-PiCOPIC_OBJS += $(loguru_SUBDIR)/loguru.o
+PiCoPiC_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PiCoPiC_CXX_SRCS))
+PiCoPiC_OBJS += $(loguru_SUBDIR)/loguru.o
 
-LDFLAGS += $(PiCOPIC_LDFLAGS)
+LDFLAGS += $(PiCoPiC_LDFLAGS)
 
 ### Global source lists
-C_SRCS                = $(PiCOPIC_C_SRCS)
-CXX_SRCS              = $(PiCOPIC_CXX_SRCS)
+C_SRCS                = $(PiCoPiC_C_SRCS)
+CXX_SRCS              = $(PiCoPiC_CXX_SRCS)
 
 ### Tools
 CC ?= gcc
@@ -113,7 +113,7 @@ space +=
 comma :=,
 
 clean: $(SUBDIRS:%=%/__clean__) $(EXTRASUBDIRS:%=%/__clean__) $(TESTSUBDIRS:%=%/__clean__) $(DOXYGEN_FORMATS:%=%/__clean__)
-	$(RM) $(PiCOPIC_OBJS) $(CLEAN_FILES)
+	$(RM) $(PiCoPiC_OBJS) $(CLEAN_FILES)
 	$(RM) $(LIBS) $(EXES) $(EXES:%=%.so)
 	$(RM) -r $(ROOTDIR)/tools/__pycache__/
 	$(RM) -r $(DOXYGEN_DIRS)
@@ -136,8 +136,8 @@ $(EXTRASUBDIRS:%=%/__clean__): dummy
 $(TESTSUBDIRS:%=%/__clean__): dummy
 	-cd `dirname $@` && $(MAKE) clean
 
-$(PiCOPIC_MODULE): $(PiCOPIC_OBJS)
-	$(CXX) $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) $(LDFLAGS) -o $@ $(PiCOPIC_OBJS) $(PiCOPIC_LIBRARY_PATH) $(PiCOPIC_LIBRARIES:%=-l%)
+$(PiCoPiC_MODULE): $(PiCoPiC_OBJS)
+	$(CXX) $(CXXFLAGS) $(CXXEXTRA) $(DEFINCL) $(LDFLAGS) -o $@ $(PiCoPiC_OBJS) $(PiCoPiC_LIBRARY_PATH) $(PiCoPiC_LIBRARIES:%=-l%)
 
 distclean: clean
 	$(RM) -r *.avi *.png $(BUILD_DIRS) $(RELEASE) $(RELEASE).zip autom4te.cache config.log config.status configure Makefile scripts/*.sh simulation_result/
@@ -165,7 +165,7 @@ test-perf:
 test-full: test-unit test-perf test
 
 check-syntax:
-	$(CXX) $(LIBRARY_PATH) $(INCLUDE_PATH) $(CXXFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(PiCOPIC_CXX_SRCS)
+	$(CXX) $(LIBRARY_PATH) $(INCLUDE_PATH) $(CXXFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(PiCoPiC_CXX_SRCS)
 
 prepare:
 	@$(MKDIR) -p $(BUILD_DIRS)
@@ -177,11 +177,11 @@ doxygen:
 doc: doxygen $(DOXYGEN_FORMATS)
 
 # dist: all doc
-# 	cp PiCOPIC $(RELEASE)
+# 	cp PiCoPiC $(RELEASE)
 # 	cp -r CHANGELOG.md $(RELEASE)
 # 	cp -r tools $(RELEASE)/tools
 # 	$(MKDIR) -p $(RELEASE)/doc
-# 	cp doc/app/latex/refman.pdf $(RELEASE)/doc/PiCOPIC.pdf
+# 	cp doc/app/latex/refman.pdf $(RELEASE)/doc/PiCoPiC.pdf
 # 	cp doc/vis/latex/refman.pdf $(RELEASE)/doc/visualization.pdf
 # 	zip -r `basename $(RELEASE)`.zip $(RELEASE)
 
@@ -203,4 +203,4 @@ python:
 	python setup.py install
 
 pack-release:
-	@tar -czpf PiCOPIC_$(RELEASE).tar.gz ./PiCOPIC ./PiCOPIC.json lib/python/picopic/ tools/ doc/app/html/ doc/app/latex/refman.pdf doc/vis/html/ doc/vis/latex/refman.pdf
+	@tar -czpf PiCoPiC_$(RELEASE).tar.gz ./PiCoPiC ./PiCoPiC.json lib/python/picopic/ tools/ doc/app/html/ doc/app/latex/refman.pdf doc/vis/html/ doc/vis/latex/refman.pdf

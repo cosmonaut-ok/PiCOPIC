@@ -33,7 +33,7 @@ LDFLAGS += -L$(USER_SRC_DIR) -L../../lib/picojson -L../../lib/loguru
 LIBRARIES =
 LIBRARIES += dl
 LIBRARIES += pthread
-LIBRARIES += $(PiCOPIC_LIBRARIES)
+LIBRARIES += $(PiCoPiC_LIBRARIES)
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.

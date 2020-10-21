@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-PiCOPIC
+PiCoPiC
 Copyright (C) 2020 Alexander Vynnyk
 
 This file is part of picopic python data processing helper library.

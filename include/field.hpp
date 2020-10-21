@@ -1,5 +1,5 @@
 /* 
- * This file is part of the PiCOPIC distribution (https://github.com/cosmonaut-ok/PiCOPIC).
+ * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
  * Copyright (c) 2020 Alexander Vynnyk.
  * 
  * This program is free software: you can redistribute it and/or modify  

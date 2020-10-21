@@ -1,7 +1,6 @@
-# PiCOPIC
+# PiCoPiC
 
-*PiCOPIC* - PiCOPIC Is Code (Computer/Calculator) Of Particle In Cell
-
+*PiCoPiC* - PiCoPiC is a Code of Particle in Cell
 
 [![Gitlab Pipeline Status](https://gitlab.com/my-funny-plasma/PIC/picopic/badges/master/pipeline.svg)](https://gitlab.com/my-funny-plasma/PIC/picopic/commits/master)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -10,10 +9,10 @@
 
 ## Motivation
 
-*PiCOPIC* is a successor of *[PDP3](https://github.com/knuniv/pdp3)* (and its further [incarnation](https://github.com/cosmonaut-ok/pdp3)) project. Developed as electromagnetic particle-in-cell code for collisionless plasma simulation, PDP3 designed as single-thread code. Late versions of PDP3 are partially parallelized, but it can not be fully parallelized and can not be pupulated to large number of threads (it still effective with 2-8 threads). Such critical limitation of PDP3 was a motivation to replace the project as new fully parallel PIC code, called PiCOPIC.
+*PiCoPiC* is a successor of *[PDP3](https://github.com/knuniv/pdp3)* (and its further [incarnation](https://github.com/cosmonaut-ok/pdp3)) project. Developed as electromagnetic particle-in-cell code for collisionless plasma simulation, PDP3 designed as single-thread code. Late versions of PDP3 are partially parallelized, but it can not be fully parallelized and can not be pupulated to large number of threads (it still effective with 2-8 threads). Such critical limitation of PDP3 was a motivation to replace the project as new fully parallel PIC code, called PiCoPiC.
 
 ## General Description
-PiCOPIC still uses same algorithms as PDP3, but separates the simulation area to numerous domains, which are fully independent from each other, except synchronization points, when edges of their currents and fields are "stitched" with overlaying.
+PiCoPiC still uses same algorithms as PDP3, but separates the simulation area to numerous domains, which are fully independent from each other, except synchronization points, when edges of their currents and fields are "stitched" with overlaying.
 
 ## Build
 
@@ -31,11 +30,11 @@ $ make test
 
 ## Configuration
 
-*PiCOPIC* uses JSON format of configuration files (default configfile is `PiCOPIC.json`). Example of config located in the root of this repository.
+*PiCoPiC* uses JSON format of configuration files (default configfile is `PiCoPiC.json`). Example of config located in the root of this repository.
 
 ## Output and data analysis
 
-PiCOPIC follows the same principles for data output, as PDP3 data array output and python library and tools collection (python scripts and jupyter notebooks) for analysis of such data. Python library can be found in lib/python/picopic subdir and tools collection - in `tools` directory.
+PiCoPiC follows the same principles for data output, as PDP3 data array output and python library and tools collection (python scripts and jupyter notebooks) for analysis of such data. Python library can be found in lib/python/picopic subdir and tools collection - in `tools` directory.
 
 ### System And Software Requirements
 
@@ -113,12 +112,12 @@ user@host$ make test-unit
 
 #### 4. **RUN**
 
-After compilation finished, you just need binary file `PiCOPIC` and `PiCOPIC.json`. You can copy this files to somewhere (if you skipped installation), edit `PiCOPIC.json` and run `./PiCOPIC`.
+After compilation finished, you just need binary file `PiCoPiC` and `PiCoPiC.json`. You can copy this files to somewhere (if you skipped installation), edit `PiCoPiC.json` and run `./PiCoPiC`.
 
 ``` shell
-user@host$ /path/to/PiCOPIC [ -h ] | [ -f /path/to/PiCOPIC.json ] # used PiCOPIC.json from current directory, if calling without any options
+user@host$ /path/to/PiCoPiC [ -h ] | [ -f /path/to/PiCoPiC.json ] # used PiCoPiC.json from current directory, if calling without any options
 # or (much better), launch it as high-priority process
-user@host$ nice -20 /path/to/PiCOPIC [ -h ] | [ -f /path/to/PiCOPIC.json ] # give some power to PiCOPIC!
+user@host$ nice -20 /path/to/PiCoPiC [ -h ] | [ -f /path/to/PiCoPiC.json ] # give some power to PiCoPiC!
 ```
 > NOTE: it can take several days or weeks, and several hundred gigabytes of diskspace (yep, it is science, my deer friend).
 
@@ -150,7 +149,7 @@ user@host$ /path/to/repository/with/picopic/tools/movie_3_E_RHObeam_r_z_map.py /
 Data analysis tools made as jupyter (ipython) notebooks. You can find them in `tools` subdir. Please, run jupyter from `tools` dir also
 
 ``` shell
-user@host$ cd /path/to/PiCOPIC
+user@host$ cd /path/to/PiCoPiC
 user@host$ jupyter <notebook|lab> [tools/<notebook name>.ipynb]
 ```
 
@@ -159,7 +158,7 @@ user@host$ jupyter <notebook|lab> [tools/<notebook name>.ipynb]
 
 To run python notebook in non-interactive mode, please, use script `tools/nbrun.sh` from project root directory
 ``` shell
-user@host$ /path/to/PiCOPIC/tools/nbrun.sh /path/to/PiCOPIC/tools/<notebook name`>.ipynb [data_path=\'/path/to/data/directory\'] [other_notebook_variable=other_notebook_value]
+user@host$ /path/to/PiCoPiC/tools/nbrun.sh /path/to/PiCoPiC/tools/<notebook name`>.ipynb [data_path=\'/path/to/data/directory\'] [other_notebook_variable=other_notebook_value]
 ```
 
 #### 6. **DOCUMENTATION GENERATION** (optional)
@@ -211,7 +210,7 @@ Find documentation in:
 ``` shell
 user@host$ git status
 ```
-> NOTE: If you have such files, you commit, remove or move out of your working directory (with PiCOPIC), than reset repository
+> NOTE: If you have such files, you commit, remove or move out of your working directory (with PiCoPiC), than reset repository
 > Also, you can just reset repository, or remove your local changes in other way
 ``` shell
 user@host$ git reset --hard
@@ -265,7 +264,7 @@ user@host$ ./autogen.sh && ./configure --enable-debug && make
 2. run with gdb
 
 ``` shell
-user@host$ gdb ./PiCOPIC
+user@host$ gdb ./PiCoPiC
 (gdb) run ## or perform some modifications first than run, e.g. set breakpoints
 ```
 3. use experimental features
@@ -278,9 +277,9 @@ user@host$ ./confugure --enable-experimental [other options] && make
 
 #### Tools
 
-Quick analytic calculator of plasma (aka Langmur) frequency, wake wavelength, Debye length etc. from PiCOPIC.json file
+Quick analytic calculator of plasma (aka Langmur) frequency, wake wavelength, Debye length etc. from PiCoPiC.json file
 ``` shell
-user@host$ ./tools/quick_parameters_calculator.py <path/to/PiCOPIC.json>
+user@host$ ./tools/quick_parameters_calculator.py <path/to/PiCoPiC.json>
 ```
 See **VISUALIZATION** section also
 
@@ -288,7 +287,7 @@ You can edit jupyter notebooks with jupyter browser editor (opens with `jupyter 
 
 #### Bugs/Workarounds
 
-> NOTE: It's recommended to disable HDF data file locking to avoid unreadable files, during incorrect application exit or other emergency stuff. Use `export HDF5_USE_FILE_LOCKING=FALSE` before launching PiCOPIC, jupyter or other tools to disable locking.
+> NOTE: It's recommended to disable HDF data file locking to avoid unreadable files, during incorrect application exit or other emergency stuff. Use `export HDF5_USE_FILE_LOCKING=FALSE` before launching PiCoPiC, jupyter or other tools to disable locking.
 
 #### Known Issues
 

@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT(PiCOPIC, esyscmd(git log --pretty=%h -1 | tr -d \\n), alexander.vynnyk@protonmail.com)
+AC_INIT(PiCoPiC, esyscmd(git log --pretty=%h -1 | tr -d \\n), alexander.vynnyk@protonmail.com)
 
 AC_CONFIG_HEADERS([include/defines.hpp])
 

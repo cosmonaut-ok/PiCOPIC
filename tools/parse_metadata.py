@@ -126,7 +126,7 @@ def phys_info(properties_path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Parser of output files metadata for PiCOPIC.')
+    parser = argparse.ArgumentParser(description='Parser of output files metadata for PiCoPiC.')
     parser.add_argument('properties_path', metavar='properties_path', type=str,
                         help='Full path to properties.xml')
     parser.add_argument('--subtree', type=str,
@@ -139,7 +139,7 @@ def main():
                         help='Make metadata output colorful',
                         default=False)
     parser.add_argument('--bo', action='store_true',
-                        help='Display build options of PiCOPIC package, generated the data. Shortcut for `--subtree=[build_options]`',
+                        help='Display build options of PiCoPiC package, generated the data. Shortcut for `--subtree=[build_options]`',
                         default=False)
     parser.add_argument('--phys-info', action='store_true',
                         help='Display useful physical info about background plasma and particle beams',

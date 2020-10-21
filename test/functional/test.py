@@ -103,7 +103,7 @@ class bootstrap ():
             utils.cliexec('./configure --disable-hdf5 --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
         utils.cliexec('make build', cwd=self.rootdir, view=self.verbose, wait=True)
 
-        picopic_file = os.path.join(self.rootdir, 'PiCOPIC')
+        picopic_file = os.path.join(self.rootdir, 'PiCoPiC')
         tools_dir = os.path.join(self.rootdir, 'tools')
 
         print("Copying files to testing directory")
@@ -120,14 +120,14 @@ class bootstrap ():
             macro_amount=2.1e5
             )
 
-        with open(os.path.join(self.testdir, 'PiCOPIC.json'), "w") as f:
+        with open(os.path.join(self.testdir, 'PiCoPiC.json'), "w") as f:
             f.write(rendered_tmpl)
 
         print("Launching application to prepare data for testing")
 
         if self.verbose: print("\nApplication Output:\n===================\n")
         start_time = time.time()
-        utils.cliexec(os.path.join(self.testdir, 'PiCOPIC'), cwd=self.testdir, view=self.verbose, wait=True)
+        utils.cliexec(os.path.join(self.testdir, 'PiCoPiC'), cwd=self.testdir, view=self.verbose, wait=True)
         end_time = time.time()
         if self.verbose: print("\nEnd of application Output.\n==========================\n")
         ## print time report
@@ -205,7 +205,7 @@ def test_example(template_name, number, accept_ieee=True,
                   verbose=verbose,
                   debug=debug)
 
-    t = picopicTest(os.path.join(b.testdir, 'PiCOPIC.json'),
+    t = picopicTest(os.path.join(b.testdir, 'PiCoPiC.json'),
                  rel_tolerance=rel_tolerance,
                  abs_tolerance=0) # use abs tolerance to avoid comparing of very small numbers
     t.verbose = verbose
@@ -250,7 +250,7 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
 
     utils = Util()
 
-    meta = MetaReader(os.path.join(b.testdir, 'PiCOPIC.json'))
+    meta = MetaReader(os.path.join(b.testdir, 'PiCoPiC.json'))
 
     el_charge = 1.6e-19
     rho_beam_scale = 1

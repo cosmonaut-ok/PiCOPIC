@@ -1,5 +1,5 @@
 /*
- * This file is part of the PiCOPIC distribution (https://github.com/cosmonaut-ok/PiCOPIC).
+ * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
  * Copyright (c) 2020 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -59,7 +59,7 @@ string parse_argv_get_config(int argc, char **argv)
 
   if (lib::cmd_option_exists(argv, argv+argc, "-h"))
   {
-    cerr << "USAGE:" << endl << "  picopic [ --version | -f path/to/PiCOPIC.json ]" << endl;
+    cerr << "USAGE:" << endl << "  picopic [ --version | -f path/to/PiCoPiC.json ]" << endl;
     exit(1);
   }
 

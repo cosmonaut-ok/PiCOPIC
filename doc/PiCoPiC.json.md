@@ -5,7 +5,7 @@
 - bool: `"debug": true/false` - set or unset debugging output (not implemented yet. Only as compile option)
 - bool: `"hdf5": true/false`, - enable or disable HDF5 output (not implemented yet. Only as compile option)
 - float: `"macro_amount": 1e6` - set full amount of macroparticles (for all particle species and beams)
-- integer: `"beam_plasma_macro_size_ratio": 2` - by default PiCOPIC makes that all of the macroparticles represents the same number of real particles. But, sometimes, lighter macroparticles for beams required (in this case larger number os such macroparticles should be present in the simulation domain). This option allows to set ratio, between background plasma and beam macroparticles.
+- integer: `"beam_plasma_macro_size_ratio": 2` - by default PiCoPiC makes that all of the macroparticles represents the same number of real particles. But, sometimes, lighter macroparticles for beams required (in this case larger number os such macroparticles should be present in the simulation domain). This option allows to set ratio, between background plasma and beam macroparticles.
 
 ### geometry
 - float `"radius": 0.075` - simulation domain radius

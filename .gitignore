@@ -15,7 +15,7 @@ doc/*.html
 doc/app/
 doc/vis/
 doc/lib/
-PiCOPIC
+PiCoPiC
 simulation_result/
 .ipynb_checkpoints
 __pycache__
@@ -28,4 +28,4 @@ lib/python/picopic/picopic.egg-info/
 *main
 .nbrun[0-9,a-z,A-Z]*ipynb*
 *.h5
-PiCOPIC.log
+PiCoPiC.log
