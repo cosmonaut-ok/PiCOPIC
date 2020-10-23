@@ -424,6 +424,7 @@ void Cfg::weight_macro_amount()
 
   // message about coulomb colisions
 #ifdef COLLISIONS
+  LOG_S(WARNING) << "Particle collisions are enabled. This is still development feature. Ensure, that you know, what you doing";
 #ifdef COULOMB_COLLISIONS_TA77S
   LOG_S(INFO) << "Using Takizuka and Abe Coulomb collisions scheme";
   LOG_S(INFO) << "\twith symmetric weighted particles correction [10.1002/ctpp.201700121]";
