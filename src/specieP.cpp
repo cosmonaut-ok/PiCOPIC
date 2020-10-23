@@ -792,28 +792,43 @@ void SpecieP::reflect ()
     double pos_r = P_POS_R((**p)) - r_shift;
     double pos_z = P_POS_Z((**p)) - z_shift;
 
-    if (pos_r > radius_wall && geometry->walls[2])
+    while ( // catch multiple reflections
+      isnormal(pos_r) && isnormal(pos_z) && // ensure, that position components are not NANs
+      (
+        (pos_r > radius_wall && geometry->walls[2])
+        || (pos_z > longitude_wall && geometry->walls[3])
+        || (pos_r < half_dr && geometry->walls[0])
+        || (pos_z < half_dz && geometry->walls[1])
+        )
+      )
     {
-      P_POS_R((**p)) = radius_wallX2 - pos_r + r_shift;
-      P_VEL_R((**p)) = - P_VEL_R((**p));
-    }
+      if (pos_r > radius_wall && geometry->walls[2])
+      {
+        P_POS_R((**p)) = radius_wallX2 - pos_r + r_shift;
+        P_VEL_R((**p)) = - P_VEL_R((**p));
+        pos_r = P_POS_R((**p)) - r_shift;
+      }
 
-    if (pos_z > longitude_wall && geometry->walls[3])
-    {
-      P_POS_Z((**p)) = longitude_wallX2 - pos_z + z_shift;
-      P_VEL_Z((**p)) = - P_VEL_Z((**p));
-    }
+      if (pos_z > longitude_wall && geometry->walls[3])
+      {
+        P_POS_Z((**p)) = longitude_wallX2 - pos_z + z_shift;
+        P_VEL_Z((**p)) = - P_VEL_Z((**p));
+        pos_z = P_POS_Z((**p)) - z_shift;
+      }
 
-    if (pos_r < half_dr && geometry->walls[0])
-    {
-      P_POS_R((**p)) = dr - pos_r + r_shift;
-      P_VEL_R((**p)) = - P_VEL_R((**p));
-    }
+      if (pos_r < half_dr && geometry->walls[0])
+      {
+        P_POS_R((**p)) = dr - pos_r + r_shift;
+        P_VEL_R((**p)) = - P_VEL_R((**p));
+        pos_r = P_POS_R((**p)) - r_shift;
+      }
 
-    if (pos_z < half_dz && geometry->walls[1])
-    {
-      P_POS_Z((**p)) = dr - pos_z + z_shift;
-      P_VEL_Z((**p)) = - P_VEL_Z((**p));
+      if (pos_z < half_dz && geometry->walls[1])
+      {
+        P_POS_Z((**p)) = dr - pos_z + z_shift;
+        P_VEL_Z((**p)) = - P_VEL_Z((**p));
+        pos_z = P_POS_Z((**p)) - z_shift;
+      }
     }
   }
 }
