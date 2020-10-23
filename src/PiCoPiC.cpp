@@ -493,7 +493,8 @@ int main(int argc, char **argv)
         }
       else
       {
-        LOG_S(WARNING) << "There is no particle beams";
+	if (i == 0 && j == 0)
+	  LOG_S(INFO) << "There is no particle beams to inject";
       }
       Domain *sim_domain = new Domain(*geom_domain, species_p, sim_time_clock);
       domains.set(i, j, sim_domain);
@@ -510,7 +511,7 @@ int main(int argc, char **argv)
       sim_domain->distribute(); // spatial and velocity distribution
     }
 
-  LOG_S(MAX) << "Initializing Boundary Conditions (TBD)";
+  // LOG_S(MAX) << "Initializing Boundary Conditions (TBD)";
   // TODO: this is legacy PDP3 code. Need to update it
 //   void LoadInitParam::init_boundary ()
 // {
