@@ -26,10 +26,6 @@
 // #define omp_get_thread_num() 0
 #endif
 
-// #ifdef USE_HDF5
-// #include "ioHDF5.h"
-// #endif
-
 #include "defines.hpp"
 #include "msg.hpp"
 #include "cfg.hpp"
@@ -105,104 +101,100 @@ void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_glob
           for (auto ps = sim_domain->species_p.begin(); ps != sim_domain->species_p.end(); ++ps)
           {
             (**ps).particles.erase(
-              std::remove_if((**ps).particles.begin(), (**ps).particles.end(),
-                             [&j_c, &r_c, &ps, &domains, &sim_domain, &i, &j, &geometry_global](vector <double> * & o)
-                             {
-                               bool res = false;
+              std::remove_if(
+                (**ps).particles.begin(), (**ps).particles.end(),
+                [ &j_c, &r_c, &ps, &domains, &sim_domain, &i, &j,
+                  &geometry_global ] ( vector <double> * & o )
+                {
+                  bool res = false;
 
-                               // not unsigned, because it could be less, than zero
-                               // int r_cell = CELL_NUMBER(P_POS_R((*o)), sim_domain->geometry.r_cell_size);
-                               // int z_cell = CELL_NUMBER(P_POS_Z((*o)), sim_domain->geometry.z_cell_size);
-			       int r_cell = P_CELL_R((*o));
-			       int z_cell = P_CELL_Z((*o));
+                  // not unsigned, because it could be less, than zero
+                  int r_cell = P_CELL_R((*o));
+                  int z_cell = P_CELL_Z((*o));
 
-                               unsigned int i_dst = (unsigned int)ceil(r_cell / sim_domain->geometry.r_grid_amount);
-                               unsigned int j_dst = (unsigned int)ceil(z_cell / sim_domain->geometry.z_grid_amount);
+                  unsigned int i_dst = (unsigned int)ceil(r_cell / sim_domain->geometry.r_grid_amount);
+                  unsigned int j_dst = (unsigned int)ceil(z_cell / sim_domain->geometry.z_grid_amount);
 
-                               if (r_cell < 0 || z_cell < 0)
-                               {
-                                 LOG_S(ERROR) << "Particle's position is less, than 0. Position is: ["
-                                         << P_POS_R((*o)) << ", "
-                                         << P_POS_Z((*o)) << "]. Removing";
-                                 ++r_c;
-                                 res = true;
-                               }
+                  if (r_cell < 0 || z_cell < 0)
+                  {
+                    LOG_S(ERROR) << "Particle's position is less, than 0. Position is: ["
+                                 << P_POS_R((*o)) << ", "
+                                 << P_POS_Z((*o)) << "]. Removing";
+                    ++r_c;
+                    res = true;
+                  }
 
-                               else if (r_cell >= geometry_global->r_grid_amount)
-                               {
-                                 if ((**ps).id >= BEAM_ID_START)
-                                 {
-                                   LOG_S(MAX) << "Beam particle is out of simulation domain: ["
-                                           << P_POS_R((*o)) << ", "
-                                           << P_POS_Z((*o)) << "]. Removing";
-                                 }
-                                 else
-                                 {
-                                   LOG_S(ERROR) << "Particle's r-position is more, than geometry r-size: "
-                                           << geometry_global->r_grid_amount
-                                           << ". Position is: ["
-                                           << P_POS_R((*o)) << ", "
-                                           << P_POS_Z((*o)) << "]. Removing";
-                                 }
-                                 ++r_c;
-                                 res = true;
-                               }
+                  else if (r_cell >= geometry_global->r_grid_amount)
+                  {
+                    if ((**ps).id >= BEAM_ID_START)
+                    {
+                      LOG_S(MAX) << "Beam particle is out of simulation domain: ["
+                                 << P_POS_R((*o)) << ", "
+                                 << P_POS_Z((*o)) << "]. Removing";
+                    }
+                    else
+                    {
+                      LOG_S(ERROR) << "Particle's r-position is more, than geometry r-size: "
+                                   << geometry_global->r_grid_amount
+                                   << ". Position is: ["
+                                   << P_POS_R((*o)) << ", "
+                                   << P_POS_Z((*o)) << "]. Removing";
+                    }
+                    ++r_c;
+                    res = true;
+                  }
 
-                               // remove out-of-simulation particles
-                               else if (z_cell >= geometry_global->z_grid_amount)
-                               {
-                                 if ((**ps).id >= BEAM_ID_START)
-                                 {
-                                   LOG_S(MAX) << "Beam particle is out of simulation domain: ["
-                                           << P_POS_R((*o)) << ", "
-                                           << P_POS_Z((*o)) << "]. Removing";
-                                 }
-                                 else
-                                 {
-                                   LOG_S(ERROR) << "Particle's z-position is more, than geometry z-size: "
-                                           << geometry_global->z_grid_amount
-                                           << ". Position is: ["
-                                           << P_POS_R((*o)) << ", "
-                                           << P_POS_Z((*o)) << "]. Removing";
-                                 }
-                                 ++r_c;
-                                 res = true;
-                               }
+                  // remove out-of-simulation particles
+                  else if (z_cell >= geometry_global->z_grid_amount)
+                  {
+                    if ((**ps).id >= BEAM_ID_START)
+                    {
+                      LOG_S(MAX) << "Beam particle is out of simulation domain: ["
+                                 << P_POS_R((*o)) << ", "
+                                 << P_POS_Z((*o)) << "]. Removing";
+                    }
+                    else
+                    {
+                      LOG_S(ERROR) << "Particle's z-position is more, than geometry z-size: "
+                                   << geometry_global->z_grid_amount
+                                   << ". Position is: ["
+                                   << P_POS_R((*o)) << ", "
+                                   << P_POS_Z((*o)) << "]. Removing";
+                    }
+                    ++r_c;
+                    res = true;
+                  }
 
-                               // move particles between cells
-                               else if (i_dst != i || j_dst != j) // check that destination domain is different, than source
-                               {
-                                 ++j_c;
+                  // move particles between cells
+                  else if (i_dst != i || j_dst != j) // check that destination domain is different, than source
+                  {
+                    ++j_c;
 
-                                 Domain *dst_domain = domains(i_dst, j_dst);
-                                 for (auto pd = dst_domain->species_p.begin(); pd != dst_domain->species_p.end(); ++pd)
-                                   if ((**pd).id == (**ps).id)
-                                   {
-                                     LOG_S(MAX) << "Particle with specie "
-                                             << (**ps).id
-                                             << " jump from domain "
-                                             << i << "," << j
-                                             << " to domain "
-                                             << i_dst << "," << j_dst;
-                                     (**pd).particles.push_back(o);
-                                   }
+                    Domain *dst_domain = domains(i_dst, j_dst);
+                    for (auto pd = dst_domain->species_p.begin(); pd != dst_domain->species_p.end(); ++pd)
+                      if ((**pd).id == (**ps).id)
+                      {
+                        LOG_S(MAX) << "Particle with specie "
+                                   << (**ps).id
+                                   << " jump from domain "
+                                   << i << "," << j
+                                   << " to domain "
+                                   << i_dst << "," << j_dst;
+                        (**pd).particles.push_back(o);
+                      }
 
-                                 res = true;
-                               }
-                               return res;
-                             }),
+                    res = true;
+                  }
+                  return res;
+                }),
               (**ps).particles.end());
           }
         }
     }
   if (j_c > 0)
-  {
     LOG_S(MAX) << "Amount of particles to jump between domains: " << j_c;
-  }
   if (r_c > 0)
-  {
     LOG_S(MAX) << "Amount of particles to remove: " << r_c;
-  }
 }
 
 void current_overlay (Grid<Domain*> domains, Geometry *geometry_global)
@@ -491,11 +483,7 @@ int main(int argc, char **argv)
           }
           ++b_id_counter;
         }
-      else
-      {
-	if (i == 0 && j == 0)
-	  LOG_S(INFO) << "There is no particle beams to inject";
-      }
+
       Domain *sim_domain = new Domain(*geom_domain, species_p, sim_time_clock);
       domains.set(i, j, sim_domain);
     };
@@ -510,29 +498,6 @@ int main(int argc, char **argv)
 
       sim_domain->distribute(); // spatial and velocity distribution
     }
-
-  // LOG_S(MAX) << "Initializing Boundary Conditions (TBD)";
-  // TODO: this is legacy PDP3 code. Need to update it
-//   void LoadInitParam::init_boundary ()
-// {
-//   //! initialize boundaries and boundary conditions
-
-//   // Maxwell initial conditions
-//   BoundaryMaxwellConditions maxwell_rad(efield); // TODO: WTF?
-//   maxwell_rad.specify_initial_field(params->geom,
-//                                     params->boundary_maxwell_e_phi_upper,
-//                                     params->boundary_maxwell_e_phi_left,
-//                                     params->boundary_maxwell_e_phi_right);
-
-//   if (params->boundary_conditions == 0)
-//   {
-//     p_list->charge_weighting(c_rho_new);
-
-//     // Seems: https://en.wikipedia.org/wiki/Dirichlet_distribution
-//     PoissonDirichlet dirih(params->geom);
-//     dirih.poisson_solve(efield, c_rho_new);
-//   }
-// }
 
   //! Main calculation loop
   LOG_S(INFO) << "Launching calculation";

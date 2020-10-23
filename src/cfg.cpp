@@ -280,28 +280,30 @@ void Cfg::init_beam()
 
   if (! particle_beams_list.empty())
     for (auto i=particle_beams_list.begin(); i != particle_beams_list.end(); ++i)
-      {
-	particle_beam p_b;
+    {
+      particle_beam p_b;
 
-	object& o = i->get<object>();
-	object& b_o = o["bunch"].get<object>();
+      object& o = i->get<object>();
+      object& b_o = o["bunch"].get<object>();
 
-	p_b.name = (char*)o["name"].get<string>().c_str();
-	p_b.mass = (int)o["mass"].get<double>();
-	p_b.charge = (int)o["charge"].get<double>();
-	p_b.start_time = o["start_time"].get<double>();
-	p_b.velocity = o["velocity"].get<double>();
-	p_b.bunches_amount = b_o["amount"].get<double>();
-	p_b.bunches_distance = b_o["distance"].get<double>();
-	p_b.bunch_length = b_o["length"].get<double>();
-	p_b.bunch_radius = b_o["radius"].get<double>();
-	p_b.density = b_o["density"].get<double>();
-	// p_b.macro_amount = b_o["macro_amount"].get<double>();
+      p_b.name = (char*)o["name"].get<string>().c_str();
+      p_b.mass = (int)o["mass"].get<double>();
+      p_b.charge = (int)o["charge"].get<double>();
+      p_b.start_time = o["start_time"].get<double>();
+      p_b.velocity = o["velocity"].get<double>();
+      p_b.bunches_amount = b_o["amount"].get<double>();
+      p_b.bunches_distance = b_o["distance"].get<double>();
+      p_b.bunch_length = b_o["length"].get<double>();
+      p_b.bunch_radius = b_o["radius"].get<double>();
+      p_b.density = b_o["density"].get<double>();
+      // p_b.macro_amount = b_o["macro_amount"].get<double>();
 
-	p_b.current_bunch_number = 0;
+      p_b.current_bunch_number = 0;
 
-	particle_beams.push_back(p_b);
-      }
+      particle_beams.push_back(p_b);
+    }
+  else
+    LOG_S(INFO) << "There is no particle beams to inject";
 }
 
 // void Cfg::init_boundary ()
