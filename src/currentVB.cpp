@@ -194,8 +194,14 @@ void CurrentVB::rz_current_distribution()
 
       int res_cell = abs(i_n - i_o) + abs(k_n - k_o);
 
-      if ((abs(P_POS_R((**i)) - P_POS_OLD_R((**i))) < MNZL)
-          || (abs(P_POS_Z((**i)) - P_POS_OLD_Z((**i))) < MNZL))
+      if (abs (i_n - i_o) > 1 || abs (i_n - i_o) > 1)
+      {
+        LOG_S(ERROR) << "rz_current_distribution: can not weight particle's currents. It moved to more than one grid cell. Particle's position (r_old:r_new, z_old:z_new): "
+                     << i_o << ":" << i_n << ", "
+                     << k_o << ":" << k_n;
+      }
+      else if ((abs(P_POS_R((**i)) - P_POS_OLD_R((**i))) < MNZL)
+               || (abs(P_POS_Z((**i)) - P_POS_OLD_Z((**i))) < MNZL))
         strict_motion_distribution(P_POS_R((**i)), P_POS_Z((**i)),
                                    P_POS_OLD_R((**i)), P_POS_OLD_Z((**i)),
                                    p_charge);
