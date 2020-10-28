@@ -105,7 +105,7 @@ void BeamP::inject()
         double rand_r = math::random::uniform();
         double rand_z = math::random::uniform();
 
-        double pos_r = (domain_radius - dr) * rand_r + dr / 2;
+        double pos_r = (domain_radius - dr) * rand_r + dr / 2 geometry->bottom_r_grid_number * geometry->r_cell_size;
         // 1. set pos_r
         P_POS_R((*v)) = pos_r;
         // 2. set pos_phi
