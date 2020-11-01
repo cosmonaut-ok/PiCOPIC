@@ -132,6 +132,13 @@ void BeamP::inject()
         // 7. set charge
         P_WEIGHT((*v)) = n_per_macro;
 
+        // set cell numbers
+        int r_cell = CELL_NUMBER(P_POS_R((*v)), geometry->r_cell_size);
+        int z_cell = CELL_NUMBER(P_POS_R((*v)), geometry->z_cell_size);
+
+        P_CELL_R((*v)) = r_cell;
+        P_CELL_Z((*v)) = z_cell;
+
         // push particle to particles beam vector
         particles.push_back(v);
         // particles_old.push_back(v_old);
