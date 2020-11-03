@@ -17,15 +17,15 @@ PiCoPiC still uses same algorithms as PDP3, but separates the simulation area to
 ## Build
 
 ```bash
-$ ./autogen.sh
-$ ./configure [OPTIONS]
-$ make
+user@host$ ./autogen.sh
+user@host$ ./configure [OPTIONS]
+user@host$ make
 ```
 
 ### Blackbox Tests
 
 ```bash
-$ make test
+user@host$ make test
 ```
 
 ## Configuration
@@ -53,7 +53,7 @@ PiCoPiC follows the same principles for data output, as PDP3 data array output a
 
 **Install prerequired software with standard package management system**:
 
-``` shell
+```bash
 root@host# apt-get install build-essential autoconf
 ```
 
@@ -64,20 +64,20 @@ If you going to use HDF5 format, you should build HDF5 library as prerequirement
 <u>**WARNING!** HDF5 is default picopic output format. You must take care about HDF5 library presence (see below) or switch to plaintext format with `./configure` script (see "CONFIGURE AND BUILD PROJECT").</u>
 
 * 0.a. install HDF5 with package management system (perform 0.a, 0.b or install in some other way, at your option):
-``` shell
+```bash
 user@host$ sudo apt-get install libhdf5-cpp-100 libhdf5-dev
 ```
 
 * 0.b. install HDF5 globally with "make" helper (perform project configuration first. See **CONFIGURE AND BUILD PROJECT** section):
 
-``` shell
+```bash
 user@host$ sudo apt-get install wget
 user@host$ sudo make hdf5-install
 ```
 
 #### 1. **GIT CLONE PROJECT**
 
-``` shell
+```bash
 user@host$ git clone https://gitlab.com/my-funny-plasma/PIC/picopic.git
 user@host$ cd picopic
 user@host$ git submodule update --init # require to enable external libraries
@@ -85,7 +85,7 @@ user@host$ git submodule update --init # require to enable external libraries
 
 #### 2. **CONFIGURE AND BUILD PROJECT**
 
-``` shell
+```bash
 # change your current directory to project's root directory
 user@host$ cd /path/to/picopic/
 user@host$ ./autogen.sh
@@ -101,12 +101,12 @@ user@host$ make [COMPILE FLAGS] # see below about COMPILE FLAGS
 #### 3. **TEST (optional)**
 
 * Functional (end-to-end) testing:
-```shell
+```bash
 user@host$ make test
 ```
 
 * Unit testing (not implemented yet):
-```shell
+```bash
 user@host$ make test-unit
 ```
 
@@ -114,7 +114,7 @@ user@host$ make test-unit
 
 After compilation finished, you just need binary file `PiCoPiC` and `PiCoPiC.json`. You can copy this files to somewhere (if you skipped installation), edit `PiCoPiC.json` and run `./PiCoPiC`.
 
-``` shell
+```bash
 user@host$ /path/to/PiCoPiC [ -h ] | [ -f /path/to/PiCoPiC.json ] # used PiCoPiC.json from current directory, if calling without any options
 # or (much better), launch it as high-priority process
 user@host$ nice -20 /path/to/PiCoPiC [ -h ] | [ -f /path/to/PiCoPiC.json ] # give some power to PiCoPiC!
@@ -127,19 +127,19 @@ After your application finished modeling, you can build some visual model from g
 
 **...but... if you don't want to use anaconda...:**
 
-``` shell
+```bash
 root@host# apt-get install python3 python3-matplotlib python3-numpy python3-scipy
 ```
 
 **Pre-required software (for animation):**
 
-``` shell
+```bash
 root@host# apt-get install ffmpeg
 ```
 
 **Animation generation:**
 
-``` shell
+```bash
 user@host$ /path/to/repository/with/picopic/tools/movie_3_E_RHObeam_r_z_map.py /path/to/data/directory [OPTIONS] # --help to get list of available options
 
 ```
@@ -148,7 +148,7 @@ user@host$ /path/to/repository/with/picopic/tools/movie_3_E_RHObeam_r_z_map.py /
 
 Data analysis tools made as jupyter (ipython) notebooks. You can find them in `tools` subdir. Please, run jupyter from `tools` dir also
 
-``` shell
+```bash
 user@host$ cd /path/to/PiCoPiC
 user@host$ jupyter <notebook|lab> [tools/<notebook name>.ipynb]
 ```
@@ -157,7 +157,7 @@ user@host$ jupyter <notebook|lab> [tools/<notebook name>.ipynb]
 **Non-interactive notebook launch:**
 
 To run python notebook in non-interactive mode, please, use script `tools/nbrun.sh` from project root directory
-``` shell
+```bash
 user@host$ /path/to/PiCoPiC/tools/nbrun.sh /path/to/PiCoPiC/tools/<notebook name`>.ipynb [data_path=\'/path/to/data/directory\'] [other_notebook_variable=other_notebook_value]
 ```
 
@@ -165,12 +165,12 @@ user@host$ /path/to/PiCoPiC/tools/nbrun.sh /path/to/PiCoPiC/tools/<notebook name
 
 **Pre-required software:**
 
-``` shell
+```bash
 root@host# doxygen texlive-latex-base texlive-latex-extra imagemagick graphviz
 ```
 **Generate:**
 
-``` shell
+```bash
 user@host$ make doc
 ```
 Find documentation in:
@@ -206,35 +206,28 @@ Find documentation in:
 ##### Before working
 
 1. Make sure, that you have clean repository and there are no unstaged untracked and uncommited files.
-
-``` shell
+```bash
 user@host$ git status
 ```
 > NOTE: If you have such files, you commit, remove or move out of your working directory (with PiCoPiC), than reset repository
 > Also, you can just reset repository, or remove your local changes in other way
-``` shell
+```bash
 user@host$ git reset --hard
 ```
-
 2. Sync with upstream
-
-``` shell
+```bash
 user@host$ git fetch origin
 ```
 
 ##### Working
 
 1. Checkout to new branch
-
-``` shell
+```bash
 user@host$ git checkout -b <your-branch-name> # use only `-` as word delimiters for better compatability
 ```
-
 2. Make changes, write new code, add new features, experiment etc.
-
 3. Commit your changes (do it as often, as you press `Ctrl+s` ;) ) and push to upstream
-
-``` shell
+```bash
 user@host$ git add . # or git add your/selected/files
 user@host$ git commit -m "<your comment>"
 user@host$ git push origin <your-branch-name>
@@ -257,28 +250,34 @@ When you finish some logical step of your work, you should merge your changes to
 **Linux:**
 
 1. build project with DEBUG option
-``` shell
+```bash
 user@host$ ./autogen.sh && ./configure --enable-debug && make
 ```
-
 2. run with gdb
-
-``` shell
+```bash
 user@host$ gdb ./PiCoPiC
 (gdb) run ## or perform some modifications first than run, e.g. set breakpoints
 ```
-3. use experimental features
-
+3. view data during simulation run
+HDF5 format does not allow access to data, when it opened in read-write mode by other application. *PiCoPiC* allows to pause the simulation and unlock HDF5 data file. It accepts user signals SIGUSR1 and SIGUSR2 to pause-unlock and unpause-lock data file. The algorithm to do it is:
+```bash
+use@host $ killall -USR1 PiCoPiC // pause simulation-unlock
+2020-10-10 19:19:19.42 ( 346.397s) [main thread     ]            PiCoPiC.cpp:70    INFO| Paused, unlocking data file
+...........
+## use PiCoPiC's visualization tools, HDFCompass or other tools to operate with HDF5 format etc
+use@host $ killall -USR1 PiCoPiC
+2020-10-10 19:19:42.19 ( 361.530s) [main thread     ]            PiCoPiC.cpp:77    INFO| Continue, locking data file
+```
+4. use experimental features
 If you want to experiment and use unsafe features, disabled by default, use "--enable-experimental" key during configuration:
-
-``` shell
+```bash
 user@host$ ./confugure --enable-experimental [other options] && make
 ```
 
 #### Tools
 
 Quick analytic calculator of plasma (aka Langmur) frequency, wake wavelength, Debye length etc. from PiCoPiC.json file
-``` shell
+```bash
 user@host$ ./tools/quick_parameters_calculator.py <path/to/PiCoPiC.json>
 ```
 See **VISUALIZATION** section also

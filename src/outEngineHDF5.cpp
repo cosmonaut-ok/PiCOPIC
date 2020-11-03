@@ -21,30 +21,13 @@
 
 #include "outEngineHDF5.hpp"
 
-using namespace H5;
-
-OutEngineHDF5::OutEngineHDF5 (string a_path, string a_subpath, unsigned int a_shape, int *a_size,
-                                bool a_append, bool a_compress, unsigned int a_compress_level)
+OutEngineHDF5::OutEngineHDF5 (H5File* a_file, string a_path, string a_subpath,
+                              unsigned int a_shape, int *a_size,
+                              bool a_append, bool a_compress,
+                              unsigned int a_compress_level)
   : OutEngine (a_path, a_subpath, a_shape, a_size, a_append, a_compress, a_compress_level)
 {
-  datafile_name = "data.h5";
-  // make root directory
-  lib::make_directory(path);
-
-  Exception::dontPrint();
-
-  // Exception::dontPrint();
-  H5File file;
-  string fname = path + "/" + datafile_name;
-
-  try
-  {
-    file = H5File(fname.c_str(), H5F_ACC_RDWR);
-  }
-  catch (const FileIException&)
-  {
-    file = H5File(fname.c_str(), H5F_ACC_TRUNC);
-  }
+  out_file = a_file;
 
   // create group with subpath name recursively
   std::vector<std::string> group_array;
@@ -52,22 +35,24 @@ OutEngineHDF5::OutEngineHDF5 (string a_path, string a_subpath, unsigned int a_sh
   lib::splitstr(subpath, delim, group_array);
 
   string group_name;
+
   for (auto i = group_array.begin(); i != group_array.end(); ++i)
   {
     group_name += delim;
     group_name += (*i);
+
     try
     {
-      LOG_S(MAX) << "Creating group " << group_name;
-      file.createGroup(group_name.c_str());
+      LOG_S(MAX) << "Creating group ``" << group_name << "''";
+      H5::Exception::dontPrint();
+      Group g = out_file->createGroup(group_name.c_str());
+      LOG_S(MAX) << "Group ``" << group_name << "'' created";
     }
     catch (const FileIException&)
     {
-      LOG_S(MAX) << "Group " << group_name << " already exists. Skipping";
+      LOG_S(MAX) << "Group ``" << group_name << "'' already exists. Skipping";
     }
   }
-
-  file.close();
 
   if (compress)
     LOG_S(WARNING) << "compression is not supported by plaintext output engine";
@@ -93,11 +78,7 @@ void OutEngineHDF5::write_rec(string a_name, Grid<double> data)
 
   try
   {
-    Exception::dontPrint();
-
-    H5File file(path + "/" + datafile_name, H5F_ACC_RDWR );
-
-    Group group(file.openGroup('/' + subpath));
+    Group group(out_file->openGroup('/' + subpath));
 
     // Create property list for a dataset and set up fill values.
     int fillvalue = 0; // Fill value for the dataset
@@ -108,9 +89,9 @@ void OutEngineHDF5::write_rec(string a_name, Grid<double> data)
     hsize_t fdim[] = {size_x, size_y};
     DataSpace fspace( 2, fdim );
 
-    DataSet dataset (group.createDataSet(
-                       a_name,
-                       PredType::NATIVE_DOUBLE, fspace, plist));
+    DataSet dataset ( group.createDataSet (
+                        a_name,
+                        PredType::NATIVE_DOUBLE, fspace, plist));
 
     double tmparr[size_x][size_y];
     for (unsigned int i = 0; i < size_x; ++i)
@@ -119,15 +100,21 @@ void OutEngineHDF5::write_rec(string a_name, Grid<double> data)
 
     dataset.write(tmparr, PredType::NATIVE_DOUBLE);
 
-    file.close();
+    group.close();
   }
-  catch(FileIException error)
+  catch (FileIException& error)
   {
     error.printErrorStack();
   }
 
+  catch (GroupIException& error)
+  {
+    error.printErrorStack();
+    LOG_S(FATAL) << "Can not write dataset ``" << a_name << "'' to group ``/" << subpath << "''";
+  }
+
   // catch failure caused by the DataSet operations
-  catch(DataSetIException error)
+  catch (DataSetIException& error)
   {
     error.printErrorStack();
   }
@@ -136,13 +123,9 @@ void OutEngineHDF5::write_rec(string a_name, Grid<double> data)
 void OutEngineHDF5::write_vec(string a_name, Grid<double> data)
 {
   MSG_FIXME("OutEngineHDF5::write_vec: is not implemented");
-try
+  try
   {
-    Exception::dontPrint();
-
-    H5File file(path + "/" + datafile_name, H5F_ACC_RDWR );
-
-    Group group(file.openGroup('/' + subpath));
+    Group group(out_file->openGroup('/' + subpath));
 
     hsize_t fdim[2];
 
@@ -163,7 +146,7 @@ try
 
     double arr[fdim[0]];
 
-    for (int i = 0; i < fdim[0]; ++i)
+    for (hsize_t i = 0; i < fdim[0]; ++i)
       if (fdim[0] == data.y_size)
         arr[i] = data(size[2]-1, i);
       else if (fdim[0] == data.x_size)
@@ -177,16 +160,22 @@ try
 
     dataset.write(arr, PredType::NATIVE_DOUBLE);
 
-    file.close();
+    group.close();
   }
 
-  catch(FileIException error)
+  catch(FileIException& error)
   {
     error.printErrorStack();
   }
 
+  catch (GroupIException& error)
+  {
+    error.printErrorStack();
+    LOG_S(FATAL) << "Can not write dataset ``" << a_name << "'' to group ``/" << subpath << "''";
+  }
+
   // catch failure caused by the DataSet operations
-  catch(DataSetIException error)
+  catch(DataSetIException& error)
   {
     error.printErrorStack();
   }
@@ -196,11 +185,7 @@ void OutEngineHDF5::write_dot(string a_name, Grid<double> data)
 {
   try
   {
-    Exception::dontPrint();
-
-    H5File file(path + "/" + datafile_name, H5F_ACC_RDWR );
-
-    Group group(file.openGroup('/' + subpath));
+    Group group(out_file->openGroup('/' + subpath));
 
     // Create property list for a dataset and set up fill values.
     int fillvalue = 0;   /* Fill value for the dataset */
@@ -218,15 +203,21 @@ void OutEngineHDF5::write_dot(string a_name, Grid<double> data)
     double ds[] = {data(size[2], size[3])};
     dataset.write(ds, PredType::NATIVE_DOUBLE);
 
-    file.close();
+    group.close();
   }
-  catch(FileIException error)
+  catch(FileIException& error)
   {
     error.printErrorStack();
   }
 
+  catch (GroupIException& error)
+  {
+    error.printErrorStack();
+    LOG_S(FATAL) << "Can not write dataset ``" << a_name << "'' to group ``/" << subpath << "''";
+  }
+
   // catch failure caused by the DataSet operations
-  catch(DataSetIException error)
+  catch(DataSetIException& error)
   {
     error.printErrorStack();
   }
@@ -241,11 +232,7 @@ void OutEngineHDF5::write_1d_vector(string a_name, vector<double> data)
 
   try
   {
-    // Exception::dontPrint();
-
-    H5File file(path + "/" + datafile_name, H5F_ACC_RDWR );
-
-    Group group(file.openGroup('/' + subpath));
+    Group group(out_file->openGroup('/' + subpath));
 
     // Create property list for a dataset and set up fill values.
     int fillvalue = 0;   /* Fill value for the dataset */
@@ -256,21 +243,27 @@ void OutEngineHDF5::write_1d_vector(string a_name, vector<double> data)
     hsize_t fdim[] = {data.size()};
     DataSpace fspace( 1, fdim );
 
-    DataSet dataset(group.createDataSet(
-                      a_name,
-                      PredType::NATIVE_DOUBLE, fspace, plist));
+    DataSet dataset ( group.createDataSet (
+                        a_name,
+                        PredType::NATIVE_DOUBLE, fspace, plist));
 
     dataset.write(arr, PredType::NATIVE_DOUBLE);
 
-    file.close();
+    group.close();
   }
-  catch(FileIException error)
+  catch(FileIException& error)
   {
     error.printErrorStack();
   }
 
+  catch(GroupIException& error)
+  {
+    error.printErrorStack();
+    LOG_S(FATAL) << "Can not write dataset ``" << a_name << "'' to group ``/" << subpath << "''";
+  }
+
   // catch failure caused by the DataSet operations
-  catch(DataSetIException error)
+  catch(DataSetIException& error)
   {
     error.printErrorStack();
   }
@@ -280,12 +273,12 @@ void OutEngineHDF5::write_metadata(string metadata)
 {
   try
   {
-    Exception::dontPrint();
+    LOG_S(MAX) << "Creating group ``/metadata''";
+    H5::Exception::dontPrint();
+    Group dataset = out_file->createGroup("/metadata");
+    LOG_S(MAX) << "Group ``/metadata'' created";
 
-    H5File file(path + "/" + datafile_name, H5F_ACC_RDWR );
-
-    Group dataset = file.createGroup("/metadata");
-
+    LOG_S(MAX) << "Writing metadata";
     DataSpace attr_dataspace = DataSpace(H5S_SCALAR);
     StrType datatype(PredType::C_S1, metadata.size());
 
@@ -295,16 +288,16 @@ void OutEngineHDF5::write_metadata(string metadata)
     // Write the attribute data.
     attribute.write(datatype, metadata);
 
-    file.close();
+    dataset.close();
   }
-  catch(FileIException error)
+  catch(FileIException& error)
   {
-    error.printErrorStack();
+    LOG_S(MAX) << "Group ``metadata'' already exists. Skipping";
   }
 
-  // catch failure caused by the DataSet operations
-  catch(DataSetIException error)
+  catch(DataSetIException& error)
   {
-    error.printErrorStack();
+    LOG_S(MAX) << "metadata already exists. Skipping";
+    // error.printErrorStack();
   }
 }

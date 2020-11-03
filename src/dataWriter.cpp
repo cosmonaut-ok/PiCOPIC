@@ -110,18 +110,27 @@ DataWriter::DataWriter(string a_path, string a_component,
     break;
   }
 
-#ifdef USE_HDF5
-  engine = OutEngineHDF5 (path, name, shape, size, true, compress, compress_level);
-#else
-  engine = OutEnginePlain (path, name, shape, size, true, compress, compress_level);
-#endif // USE_HDF5
+#ifndef USE_HDF5
+  engine = OutEnginePlain (path, name, shape, size, true,
+                           compress, compress_level);
 
+  // engine.write_metadata(a_metadata);
+#endif // USE_HDF5
+}
+
+#ifdef USE_HDF5
+void DataWriter::hdf5_init(string a_metadata)
+{
+  engine = OutEngineHDF5 (hdf5_file, path, name, shape, size, true,
+                          compress, compress_level);
   engine.write_metadata(a_metadata);
 }
+#endif
 
 void DataWriter::go()
 {
-  int current_time_step = (int)(time->current / time->step);
+
+  int current_time_step = ceil(time->current / time->step);
   int is_run = current_time_step % schedule;
 
   if (is_run == 0)

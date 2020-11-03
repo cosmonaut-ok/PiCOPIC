@@ -32,7 +32,8 @@ Cfg::Cfg(const std::string json_file_name)
 
   // Read Json file
   f.open(json_file_name.c_str(), ios::binary);
-  if (!f.is_open()) exit(1);
+  if (!f.is_open())
+    LOG_S(FATAL) << "Can not read configuration file ``" << json_file_name.c_str() << "''";
   ss << f.rdbuf();
   f.close();
 

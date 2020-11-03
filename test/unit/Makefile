@@ -23,7 +23,7 @@ USER_INC_DIR = ../../include
 # Flags passed to the preprocessor.
 # Set Google Test's header directory as a system directory, such that
 # the compiler doesn't generate warnings in Google Test headers.
-CPPFLAGS += -isystem $(GTEST_DIR)/include -I$(USER_INC_DIR) -I$(USER_SRC_DIR) -I../../lib/picojson -I../../lib/loguru -DLOGURU_WITH_STREAMS=1 -DLOGURU_CATCH_SIGABRT=0 -fopenmp
+CPPFLAGS += -isystem $(GTEST_DIR)/include -I$(USER_INC_DIR) -I$(USER_SRC_DIR) -I../../lib/picojson -I../../lib/loguru -DLOGURU_WITH_STREAMS=1 -fopenmp
 
 # Flags passed to the C++ compiler.
 CXXFLAGS += -g -Wall -Wextra -pthread

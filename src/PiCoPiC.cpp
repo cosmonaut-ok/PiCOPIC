@@ -17,6 +17,8 @@
 
 // enable openmp optional
 #include <typeinfo>
+#include <signal.h>
+#include <unistd.h>
 
 #include "msg.hpp"
 
@@ -49,6 +51,54 @@ using namespace std;
 
 #define BEAM_ID_START 1000
 
+#ifdef USE_HDF5
+#include "H5Cpp.h"
+
+bool lock_;
+bool recreate_writers_;
+
+string hdf5_filepath;
+
+H5::H5File *file;
+#endif // USE_HDF5
+
+void signalHandler( int signum )
+{
+#ifdef USE_HDF5
+  if (signum == SIGUSR1 && !lock_)
+  {
+    LOG_S(INFO) << "Paused, unlocking data file";
+    file->close();
+    lock_ = true;
+  }
+  else if (signum == SIGUSR2 && lock_) // reopen
+  {
+    cout << endl;
+    LOG_S(INFO) << "Continue, locking data file";
+    recreate_writers_ = true;
+  }
+#endif // USE_HDF5
+
+  // exit
+  if ( signum == SIGINT
+       || signum == SIGQUIT
+       || signum == SIGPIPE
+       || signum == SIGTERM
+       || signum == SIGTSTP
+       || signum == SIGABRT
+       || signum == SIGBUS
+       || signum == SIGFPE
+       || signum == SIGILL
+       || signum == SIGSEGV )
+  {
+#ifdef USE_HDF5
+    file->close();
+#endif // USE_HDF5
+    LOG_S(ERROR) << "Signal ``" << signum << "'' received. Exiting";
+    exit(signum);
+  }
+}
+
 string parse_argv_get_config(int argc, char **argv)
 {
   string filename;
@@ -68,14 +118,13 @@ string parse_argv_get_config(int argc, char **argv)
   if (lib::cmd_option_exists(argv, argv+argc, "-f"))
   {
     filename = lib::get_cmd_option(argv, argv + argc, "-f");
-    if (filename.empty())
-    {
-      cerr << "ERROR: configuration path is not specified" << endl;
-      exit(1);
-    }
   }
   else
+  {
     filename = std::string(PACKAGE_NAME) + std::string(".json");
+  }
+  if (filename.empty())
+    LOG_S(FATAL) << "Can not open configuration file ``" << filename << "''";
 
   return filename;
 }
@@ -310,7 +359,41 @@ void field_e_overlay (Grid<Domain*> domains, Geometry *geometry_global)
 
 int main(int argc, char **argv)
 {
-  loguru::init(argc, argv);
+#ifdef USE_HDF5
+  lock_ = false;
+  recreate_writers_ = false;
+#endif
+
+  // handle signals
+  signal(SIGUSR1, signalHandler);
+  signal(SIGUSR2, signalHandler);
+  signal(SIGTERM, signalHandler); // kill
+  signal(SIGINT, signalHandler);  // control+c
+  signal(SIGQUIT, signalHandler);
+  signal(SIGPIPE, signalHandler);
+  signal(SIGTSTP, signalHandler);
+  signal(SIGABRT, signalHandler);
+  signal(SIGBUS, signalHandler);
+  signal(SIGFPE, signalHandler);
+  signal(SIGILL, signalHandler);
+  signal(SIGSEGV, signalHandler);
+
+
+  // do not handle signals by Loguru
+  static loguru::SignalOptions s_options = loguru::SignalOptions();
+  s_options.unsafe_signal_handler = false;
+  s_options.sigabrt = false;
+  s_options.sigbus = false;
+  s_options.sigfpe = false;
+  s_options.sigill = false;
+  s_options.sigint = false;
+  s_options.sigsegv = false;
+  s_options.sigterm = false;
+
+  static loguru::Options options = loguru::Options();
+  options.signals = s_options;
+
+  loguru::init(argc, argv, options);
 
 #ifdef _OPENMP
 #ifdef OPENMP_DYNAMIC_THREADS
@@ -347,6 +430,30 @@ int main(int argc, char **argv)
 
   LOG_S(MAX) << "Initializing Data Paths";
 
+#ifdef USE_HDF5
+  std::string path = cfg.output_data->data_root;
+  std::string datafile_name = "data.h5";
+
+  // make root directory
+  lib::make_directory(path);
+
+  hdf5_filepath = path + "/" + datafile_name;
+
+  try
+  {
+    H5::Exception::dontPrint();
+    file = new H5::H5File(hdf5_filepath.c_str(), H5F_ACC_EXCL);
+    // uncomment to truncate if exists
+    // file = new H5::H5File(hdf5_filepath.c_str(), H5F_ACC_TRUNC);
+  }
+  catch (const H5::FileIException& error)
+  {
+    error.printErrorStack();
+    LOG_S(FATAL) << "Can not create new file ``" << hdf5_filepath << "'', file already exists. Exiting";
+  }
+#endif // USE_HDF5
+
+
   vector<DataWriter> data_writers;
 
   for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
@@ -357,6 +464,12 @@ int main(int argc, char **argv)
                        i->specie, i->shape, probe_size, i->schedule,
                        cfg.output_data->compress, cfg.output_data->compress_level,
                        geometry_global, sim_time_clock, domains, cfg.cfg2str());
+
+
+#ifdef USE_HDF5
+    writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
+    writer.hdf5_init(cfg.cfg2str());
+#endif // USE_HDF5
 
     data_writers.push_back(writer);
   }
@@ -452,9 +565,9 @@ int main(int argc, char **argv)
       {
         unsigned int grid_cell_macro_amount = (int)(k->macro_amount / r_domains / z_domains);
 
-	double drho_by_dz = (k->right_density - k->left_density) / geometry_global->z_size;
-	double ld_local = k->left_density + drho_by_dz * left_z * geom_domain->z_cell_size;
-	double rd_local = k->left_density + drho_by_dz * right_z * geom_domain->z_cell_size;
+        double drho_by_dz = (k->right_density - k->left_density) / geometry_global->z_size;
+        double ld_local = k->left_density + drho_by_dz * left_z * geom_domain->z_cell_size;
+        double rd_local = k->left_density + drho_by_dz * right_z * geom_domain->z_cell_size;
 
         SpecieP *pps = new SpecieP (p_id_counter,
                                     k->name,
@@ -613,10 +726,62 @@ int main(int argc, char **argv)
       (*i).go();
 
     sim_time_clock->current += sim_time_clock->step;
+
+//// check if the simulation pause/unpause requested
+    // (signals USR1 for pause and USR2 for unpause
+#ifdef USE_HDF5
+    while (lock_)
+    {
+      if (recreate_writers_)
+      {
+        // reopen HDF file initially
+        try
+        {
+          H5::Exception::dontPrint();
+          file = new H5::H5File(hdf5_filepath.c_str(), H5F_ACC_RDWR);
+        }
+        catch (const H5::FileIException&)
+        {
+          H5::Exception::dontPrint();
+          file = new H5::H5File(hdf5_filepath.c_str(), H5F_ACC_TRUNC);
+        }
+
+        // recreate all of the writers
+        data_writers.clear();
+
+        for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
+        {
+          int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
+
+          DataWriter writer (cfg.output_data->data_root, i->component,
+                             i->specie, i->shape, probe_size, i->schedule,
+                             cfg.output_data->compress, cfg.output_data->compress_level,
+                             geometry_global, sim_time_clock, domains, cfg.cfg2str());
+
+          writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
+          writer.hdf5_init(cfg.cfg2str());
+
+          data_writers.push_back(writer);
+        }
+        recreate_writers_ = false;
+        lock_ = false;
+      }
+      else
+      {
+        cout << "." << flush;
+      }
+      sleep(1);
+    }
+#endif
+
   }
 
+#ifdef USE_HDF5
+  file->close();
+#endif
+
 #ifndef DEBUG
- MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
+  MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
 #endif
 
   LOG_S(INFO) << "SIMULATION COMPLETE";

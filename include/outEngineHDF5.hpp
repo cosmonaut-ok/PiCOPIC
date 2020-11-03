@@ -29,13 +29,18 @@
 #include "H5Cpp.h"
 
 using namespace std;
+using namespace H5;
 
 class OutEngineHDF5 : public OutEngine
 {
 public:
+  H5::H5File *out_file;
+
+public:
   OutEngineHDF5 () {};
-  OutEngineHDF5 (string a_path, string a_subpath, unsigned int a_shape, int *a_size,
-                  bool a_append, bool a_compress, unsigned int a_compress_level);
+  OutEngineHDF5 (H5File* a_file, string a_path, string a_subpath,
+                 unsigned int a_shape, int *a_size,
+                 bool a_append, bool a_compress, unsigned int a_compress_level);
 
   void write_rec(string a_name, Grid<double> data);
   void write_vec(string a_name, Grid<double> data);

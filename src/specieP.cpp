@@ -789,8 +789,17 @@ void SpecieP::reflect ()
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
+    double rand_id = math::random::uniform1();
+    int count = 0;
+
+    // set temporary position as it located in domain 0,0
     double pos_r = P_POS_R((**p)) - r_shift;
     double pos_z = P_POS_Z((**p)) - z_shift;
+    double pos_old_r = P_POS_OLD_R((**p)) - r_shift;
+    double pos_old_z = P_POS_OLD_Z((**p)) - z_shift;
+
+    double pos_delta_r = pos_r - pos_old_r;
+    double pos_delta_z = pos_z - pos_old_z;
 
     while ( // catch multiple reflections
       isnormal(pos_r) && isnormal(pos_z) && // ensure, that position components are not NANs
@@ -804,32 +813,80 @@ void SpecieP::reflect ()
     {
       if (pos_r > radius_wall && geometry->walls[2])
       {
-        P_POS_R((**p)) = radius_wallX2 - pos_r + r_shift;
         P_VEL_R((**p)) = - P_VEL_R((**p));
-        pos_r = P_POS_R((**p)) - r_shift;
+        double dr_small = radius_wall - pos_old_r;
+        double dz_small = dr_small * pos_delta_z / pos_delta_r;
+
+        // new set position
+        pos_r = radius_wallX2 - pos_r;
+
+        // update old_position and deltas
+        pos_delta_r = pos_delta_r - dr_small;
+        pos_delta_z = pos_delta_z - dz_small;
+        pos_old_r = radius_wall;
+        pos_old_z = pos_old_z - dz_small;
       }
 
       if (pos_z > longitude_wall && geometry->walls[3])
       {
-        P_POS_Z((**p)) = longitude_wallX2 - pos_z + z_shift;
         P_VEL_Z((**p)) = - P_VEL_Z((**p));
-        pos_z = P_POS_Z((**p)) - z_shift;
+
+        double dz_small = longitude_wall - pos_old_z;
+        double dr_small = dz_small * pos_delta_r / pos_delta_z;
+
+        // new set position
+        pos_z = longitude_wallX2 - pos_z;
+
+        // update old_position and deltas
+        pos_delta_r = pos_delta_r - dr_small;
+        pos_delta_z = pos_delta_z - dz_small;
+        pos_old_z = longitude_wall;
+        pos_old_r = pos_old_r - dr_small;
       }
 
       if (pos_r < half_dr && geometry->walls[0])
       {
-        P_POS_R((**p)) = dr - pos_r + r_shift;
         P_VEL_R((**p)) = - P_VEL_R((**p));
-        pos_r = P_POS_R((**p)) - r_shift;
+
+        double dr_small = half_dr - pos_old_r;
+        double dz_small = dr_small * pos_delta_z / pos_delta_r;
+
+        // new set position
+        pos_r = dr - pos_r;
+
+        // update old_position and deltas
+        pos_delta_r = pos_delta_r - dr_small;
+        pos_delta_z = pos_delta_z - dz_small;
+        pos_old_r = half_dr;
+        pos_old_z = pos_old_z - dz_small;
+
+        // fix change -small to +small
+        if (pos_r < half_dr) pos_r = half_dr;
       }
 
       if (pos_z < half_dz && geometry->walls[1])
       {
-        P_POS_Z((**p)) = dr - pos_z + z_shift;
         P_VEL_Z((**p)) = - P_VEL_Z((**p));
-        pos_z = P_POS_Z((**p)) - z_shift;
+
+        double dz_small = half_dz - pos_old_z;
+        double dr_small = dz_small * pos_delta_r / pos_delta_z;
+
+        // new set position
+        pos_z = dz - pos_z;
+
+        // update old_position and deltas
+        pos_delta_r = pos_delta_r - dr_small;
+        pos_delta_z = pos_delta_z - dz_small;
+        pos_old_z = dz;
+        pos_old_r = pos_old_r - dr_small;
+
+        // fix change -small to +small
+        if (pos_z < half_dz) pos_z = half_dz;
       }
+      ++count;
     }
+    P_POS_R((**p)) = pos_r + r_shift;
+    P_POS_Z((**p)) = pos_z + z_shift;
   }
 }
 
