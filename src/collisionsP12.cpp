@@ -47,16 +47,16 @@ void CollisionsP12::collide_single(double m_real_a, double m_real_b,
     v_a[0] = P_VEL_R(pa);
     v_a[1] = P_VEL_PHI(pa);
     v_a[2] = P_VEL_Z(pa);
-    charge_a = q_real_a * P_WEIGHT(pa);
-    mass_a = m_real_a * P_WEIGHT(pa);
+    charge_a = q_real_a;
+    mass_a = m_real_a;
     w_a = P_WEIGHT(pa);
     density_a = _density_a;
 
     v_b[0] = P_VEL_R(pb);
     v_b[1] = P_VEL_PHI(pb);
     v_b[2] = P_VEL_Z(pb);
-    charge_b = q_real_b * P_WEIGHT(pb);
-    mass_b = m_real_b * P_WEIGHT(pb);
+    charge_b = q_real_b;
+    mass_b = m_real_b;
     w_b = P_WEIGHT(pb);
     density_b = _density_b;
   }
@@ -65,16 +65,16 @@ void CollisionsP12::collide_single(double m_real_a, double m_real_b,
     v_a[0] = P_VEL_R(pb);
     v_a[1] = P_VEL_PHI(pb);
     v_a[2] = P_VEL_Z(pb);
-    charge_a = q_real_b * P_WEIGHT(pb);
-    mass_a = m_real_b * P_WEIGHT(pb);
+    charge_a = q_real_b;
+    mass_a = m_real_b;
     w_a = P_WEIGHT(pb);
     density_a = _density_b;
 
     v_b[0] = P_VEL_R(pa);
     v_b[1] = P_VEL_PHI(pa);
     v_b[2] = P_VEL_Z(pa);
-    charge_b = q_real_a * P_WEIGHT(pa);
-    mass_b = m_real_a * P_WEIGHT(pa);
+    charge_b = q_real_a;
+    mass_b = m_real_a;
     w_b = P_WEIGHT(pa);
     density_b = _density_a;
 
@@ -123,9 +123,6 @@ void CollisionsP12::collide_single(double m_real_a, double m_real_b,
   p_b_cm[0] = -p_a_cm[0];
   p_b_cm[1] = -p_a_cm[1];
   p_b_cm[2] = -p_a_cm[2];
-  // p_b_cm = p_b;
-  // p_b_cm += beta_cm * beta_cm.dot(p_b) * ( gamma_cm - 1 ) / beta_cm.length2();
-  // p_b_cm -= beta_cm * gamma_cm * p0_b;
 
   // get gamma --- center-of-mass frame
   vector3d<double> v_cm = beta_cm * LIGHT_VEL;

@@ -47,15 +47,15 @@ void CollisionsTA77S::collide_single(double m_real_a, double m_real_b,
     vr_a = P_VEL_R(pa);
     vphi_a = P_VEL_PHI(pa);
     vz_a = P_VEL_Z(pa);
-    charge_a = q_real_a * P_WEIGHT(pa);
-    mass_a = m_real_a * P_WEIGHT(pa);
+    charge_a = q_real_a;
+    mass_a = m_real_a;
     density_a = _density_a;
 
     vr_b = P_VEL_R(pb);
     vphi_b = P_VEL_PHI(pb);
     vz_b = P_VEL_Z(pb);
-    charge_b = q_real_b * P_WEIGHT(pb);
-    mass_b = m_real_b * P_WEIGHT(pb);
+    charge_b = q_real_b;
+    mass_b = m_real_b;
     density_b = _density_b;
   }
   else
@@ -63,15 +63,15 @@ void CollisionsTA77S::collide_single(double m_real_a, double m_real_b,
     vr_a = P_VEL_R(pb);
     vphi_a = P_VEL_PHI(pb);
     vz_a = P_VEL_Z(pb);
-    charge_a = q_real_b * P_WEIGHT(pb);
-    mass_a = m_real_b * P_WEIGHT(pb);
+    charge_a = q_real_b;
+    mass_a = m_real_b;
     density_a = _density_b;
 
     vr_b = P_VEL_R(pa);
     vphi_b = P_VEL_PHI(pa);
     vz_b = P_VEL_Z(pa);
-    charge_b = q_real_a * P_WEIGHT(pa);
-    mass_b = m_real_a * P_WEIGHT(pa);
+    charge_b = q_real_a;
+    mass_b = m_real_a;
     density_b = _density_a;
 
     // swap particles when b-particle is lighter, than a-particle
@@ -182,51 +182,6 @@ void CollisionsTA77S::collide_single(double m_real_a, double m_real_b,
   double vr_b_new = vr_b + m_ab/mass_b * d_ux2;
   double vphi_b_new = vphi_b + m_ab/mass_b * d_uy2;
   double vz_b_new = vz_b + m_ab/mass_b * d_uz2;
-
-  if ( !isnormal(vr_a_new)
-       || !isnormal(vphi_a_new)
-       || !isnormal(vz_a_new)
-       || !isnormal(vr_b_new)
-       || !isnormal(vphi_b_new)
-       || !isnormal(vz_b_new)
-    )
-  {
-    LOG_S(ERROR) << "Something went wrong during collide. Velocities a :"
-            << vr_a_new << ","
-            << vphi_a_new << ","
-            << vz_a_new << ","
-            << vr_b_new << ","
-            << vphi_b_new << ","
-            << vz_b_new << ";"
-            << "Sinuses: "
-            << sin_Theta << ","
-            << sin_Theta2 << ","
-            << sin_Phi << ","
-            << sin_Phi2 << ";"
-            << "Cosinuses: "
-            << cos_Theta << ","
-            << cos_Theta2 << ","
-            << cos_Phi << ","
-            << cos_Phi2 << ";"
-            << "Variance of delta: "
-            << m_ab << " "
-            << pow(u, 3);
-  }
-
-  if (pow(vr_a, 2) + pow(vphi_a, 2) + pow(vz_a, 2) >= LIGHT_VEL_POW_2 / 2
-      || pow(vr_a, 2) + pow(vphi_a, 2) + pow(vz_a, 2) >= LIGHT_VEL_POW_2 / 2)
-  {
-    LOG_S(WARNING) << vr_a << " "
-                   << vphi_a << " "
-                   << vz_a;
-
-    LOG_S(WARNING) << asin(sin_Theta) << " " << asin(sin_Phi) << " " << variance_d;
-
-    LOG_S(WARNING) << vr_a_new << " "
-                   << vphi_a_new << " "
-                   << vz_a_new;
-    LOG_S(WARNING) << "==============================================";
-  }
 
   // set new velocity components
   if (swap)
@@ -481,14 +436,13 @@ void CollisionsTA77S::correct_velocities()
         double vz = P_VEL_Z((*map_ion2cell(i, j)[k]));
         double v_sq = vr*vr + vphi*vphi + vz*vz;
 
-        double mass = mass_ion * P_WEIGHT((*map_ion2cell(i, j)[k]));
-        double weight = mass / mass_ion;
-        double weighted_m = weight * mass;
+        // mass of the macroparticle
+        double mass_m = mass_ion * P_WEIGHT((*map_ion2cell(i, j)[k]));
 
-        moment_new_r_ion += weighted_m * vr;
-        moment_new_phi_ion += weighted_m * vphi;
-        moment_new_z_ion += weighted_m * vz;
-        E_tot_ion_new += weighted_m * v_sq / 2;
+        moment_new_r_ion += mass_m * vr;
+        moment_new_phi_ion += mass_m * vphi;
+        moment_new_z_ion += mass_m * vz;
+        E_tot_ion_new += mass_m * v_sq / 2;
       }
 
       for (unsigned int k = 0; k < vec_size_electrons; ++k)
@@ -498,14 +452,12 @@ void CollisionsTA77S::correct_velocities()
         double vz = P_VEL_Z((*map_el2cell(i, j)[k]));
         double v_sq = vr*vr + vphi*vphi + vz*vz;
 
-        double mass = mass_el * P_WEIGHT((*map_el2cell(i, j)[k]));
-        double weight = mass / mass_el;
-        double weighted_m = weight * mass;
+        double mass_m = mass_el * P_WEIGHT((*map_el2cell(i, j)[k]));
 
-        moment_new_r_el += weighted_m * vr;
-        moment_new_phi_el += weighted_m * vphi;
-        moment_new_z_el += weighted_m * vz;
-        E_tot_el_new += weighted_m * v_sq / 2;
+        moment_new_r_el += mass_m * vr;
+        moment_new_phi_el += mass_m * vphi;
+        moment_new_z_el += mass_m * vz;
+        E_tot_el_new += mass_m * v_sq / 2;
       }
 
       //// calculate delta V components and delta E total
@@ -609,7 +561,6 @@ void CollisionsTA77S::correct_velocities()
         }
       }
     }
-
 }
 
 void CollisionsTA77S::run ()
