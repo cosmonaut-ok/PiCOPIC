@@ -34,6 +34,7 @@
 #include "lib.hpp"
 
 #include <string>
+#include <atomic>         // std::atomic, std::memory_order_relaxed
 
 #include "math/rand.hpp"
 #include "math/maxwellJuettner.hpp"
@@ -54,8 +55,8 @@ using namespace std;
 #ifdef USE_HDF5
 #include "H5Cpp.h"
 
-bool lock_;
-bool recreate_writers_;
+std::atomic<bool> lock_(false);
+std::atomic<bool> recreate_writers_(false);
 
 string hdf5_filepath;
 
@@ -69,13 +70,13 @@ void signalHandler( int signum )
   {
     LOG_S(INFO) << "Paused, unlocking data file";
     file->close();
-    lock_ = true;
+    lock_.store(true, std::memory_order_relaxed);
   }
   else if (signum == SIGUSR2 && lock_) // reopen
   {
     cout << endl;
     LOG_S(INFO) << "Continue, locking data file";
-    recreate_writers_ = true;
+    recreate_writers_.store(true, std::memory_order_relaxed);
   }
 #endif // USE_HDF5
 
@@ -360,8 +361,8 @@ void field_e_overlay (Grid<Domain*> domains, Geometry *geometry_global)
 int main(int argc, char **argv)
 {
 #ifdef USE_HDF5
-  lock_ = false;
-  recreate_writers_ = false;
+  lock_.store(false, std::memory_order_relaxed);
+  recreate_writers_.store(false, std::memory_order_relaxed);
 #endif
 
   // handle signals
@@ -763,8 +764,8 @@ int main(int argc, char **argv)
 
           data_writers.push_back(writer);
         }
-        recreate_writers_ = false;
-        lock_ = false;
+	lock_.store(false, std::memory_order_relaxed);
+	recreate_writers_.store(false, std::memory_order_relaxed);
       }
       else
       {
