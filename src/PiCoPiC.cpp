@@ -68,14 +68,17 @@ void signalHandler( int signum )
 #ifdef USE_HDF5
   if (signum == SIGUSR1 && !lock_)
   {
-    LOG_S(INFO) << "Paused, unlocking data file";
+    LOG_S(INFO) << "Pause calculation";
+    LOG_S(INFO) << "Unlocking data file...";
     file->close();
     lock_.store(true, std::memory_order_relaxed);
+    LOG_S(INFO) << "Unlocked";
+    cout << "Waiting for ``USR2'' OS signal to continue" << flush;
   }
   else if (signum == SIGUSR2 && lock_) // reopen
   {
     cout << endl;
-    LOG_S(INFO) << "Continue, locking data file";
+    LOG_S(INFO) << "Continue calculation";
     recreate_writers_.store(true, std::memory_order_relaxed);
   }
 #endif // USE_HDF5
@@ -738,13 +741,14 @@ int main(int argc, char **argv)
         // reopen HDF file initially
         try
         {
+	  LOG_S(INFO) << "Locking data file...";
           H5::Exception::dontPrint();
           file = new H5::H5File(hdf5_filepath.c_str(), H5F_ACC_RDWR);
+	  LOG_S(INFO) << "Locked";
         }
         catch (const H5::FileIException&)
         {
-          H5::Exception::dontPrint();
-          file = new H5::H5File(hdf5_filepath.c_str(), H5F_ACC_TRUNC);
+	  LOG_S(FATAL) << "Can not open data file ``" << hdf5_filepath << "''. Not accessible, or corrupted";
         }
 
         // recreate all of the writers
