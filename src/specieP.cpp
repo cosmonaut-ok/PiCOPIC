@@ -486,8 +486,6 @@ void SpecieP::boris_pusher()
     double gamma = 1;
 #endif
 
-    vector3d<double> e;
-    vector3d<double> b;
     vector3d<double> velocity(P_VEL_R((**p)), P_VEL_PHI((**p)), P_VEL_Z((**p)));
     vector3d<double> vtmp;
 
@@ -503,8 +501,8 @@ void SpecieP::boris_pusher()
                << "] or longitude[" << pos_z
                << "] is not valid number. Can not continue.";
 
-    e = field_e->get_field(pos_r, pos_z);
-    b = field_h->get_field(pos_r, pos_z);
+    vector3d<double> e = maxwell_solver->get_field_e(pos_r, pos_z);
+    vector3d<double> b = maxwell_solver->get_field_h(pos_r, pos_z);
 
     charge_over_2mass_dt = charge * time->step / (2 * mass); // we just shortened particle weight and use only q/m relation
 
@@ -609,8 +607,8 @@ void SpecieP::vay_pusher()
     double pos_r = P_POS_R((**p));
     double pos_z = P_POS_Z((**p));
 
-    vector3d<double> e = field_e->get_field(pos_r, pos_z);
-    vector3d<double> b = field_h->get_field(pos_r, pos_z);
+    vector3d<double> e = maxwell_solver->get_field_e(pos_r, pos_z);
+    vector3d<double> b = maxwell_solver->get_field_h(pos_r, pos_z);
 
     double gamma, sq_vel, s, us2, alpha, B2;
 
@@ -695,8 +693,8 @@ void SpecieP::hc_pusher()
     double pos_r = P_POS_R((**p));
     double pos_z = P_POS_Z((**p));
 
-    vector3d<double> e = field_e->get_field(pos_r, pos_z);
-    vector3d<double> b = field_h->get_field(pos_r, pos_z);
+    vector3d<double> e = maxwell_solver->get_field_e(pos_r, pos_z);
+    vector3d<double> b = maxwell_solver->get_field_h(pos_r, pos_z);
     vector3d<double> b2;
     vector3d<double> b_cross;
 
@@ -789,9 +787,6 @@ void SpecieP::reflect ()
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
-    double rand_id = math::random::uniform1();
-    int count = 0;
-
     // set temporary position as it located in domain 0,0
     double pos_r = P_POS_R((**p)) - r_shift;
     double pos_z = P_POS_Z((**p)) - z_shift;
@@ -883,7 +878,6 @@ void SpecieP::reflect ()
         // fix change -small to +small
         if (pos_z < half_dz) pos_z = half_dz;
       }
-      ++count;
     }
     P_POS_R((**p)) = pos_r + r_shift;
     P_POS_Z((**p)) = pos_z + z_shift;

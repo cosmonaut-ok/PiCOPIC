@@ -146,6 +146,9 @@ else
    AC_MSG_ERROR([Pusher is not supported.])
 fi
 
+# define Maxwell solver
+AC_DEFINE_UNQUOTED([MAXWELL_SOLVER_YEE], [true], [Yee FDTD Maxwellian solver])
+
 # define a temperature claculation algorithm
 if test x$TEMP_CALC == xweighting; then
    AC_DEFINE_UNQUOTED([TEMP_CALC_WEIGHTING], [true], [Performance debug option])

@@ -44,7 +44,8 @@
 #include "timeSim.hpp"
 #include "specieP.hpp"
 #include "beamP.hpp"
-#include "fieldE.hpp"
+// #include "fieldE.hpp"
+#include "maxwellSolverYee.hpp"
 #include "specieP.hpp"
 #include "dataWriter.hpp"
 
@@ -171,8 +172,8 @@ void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_glob
                   if (r_cell < 0 || z_cell < 0)
                   {
                     LOG_S(ERROR) << "Particle's position is less, than 0. Position is: ["
-                                 << P_POS_R((*o)) << ", "
-                                 << P_POS_Z((*o)) << "]. Removing";
+                                 << P_VEL_R((*o)) << ", "
+                                 << P_VEL_Z((*o)) << "]. Removing";
                     ++r_c;
                     res = true;
                   }
@@ -304,15 +305,21 @@ void field_h_overlay (Grid<Domain*> domains, Geometry *geometry_global)
           if (i < geometry_global->domains_by_r - 1)
           {
             Domain *dst_domain = domains(i+1, j);
-            sim_domain->field_h->field.overlay_x(dst_domain->field_h->field);
-            sim_domain->field_h->field_at_et.overlay_x(dst_domain->field_h->field_at_et);
+            sim_domain->maxwell_solver->field_h.overlay_x(
+              dst_domain->maxwell_solver->field_h
+              );
+            sim_domain->maxwell_solver->field_h_at_et.overlay_x(
+              dst_domain->maxwell_solver->field_h_at_et
+              );
           }
 
           if (j < geometry_global->domains_by_z - 1)
           {
             Domain *dst_domain = domains(i, j + 1);
-            sim_domain->field_h->field.overlay_y(dst_domain->field_h->field);
-            sim_domain->field_h->field_at_et.overlay_y(dst_domain->field_h->field_at_et);
+            sim_domain->maxwell_solver->field_h.overlay_y(
+              dst_domain->maxwell_solver->field_h);
+            sim_domain->maxwell_solver->field_h_at_et.overlay_y(
+              dst_domain->maxwell_solver->field_h_at_et);
           }
 
           // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
@@ -343,13 +350,17 @@ void field_e_overlay (Grid<Domain*> domains, Geometry *geometry_global)
           if (i < geometry_global->domains_by_r - 1)
           {
             Domain *dst_domain = domains(i+1, j);
-            sim_domain->field_e->field.overlay_x(dst_domain->field_e->field);
+            sim_domain->maxwell_solver->field_e.overlay_x(
+              dst_domain->maxwell_solver->field_e
+              );
           }
 
           if (j < geometry_global->domains_by_z - 1)
           {
             Domain *dst_domain = domains(i, j + 1);
-            sim_domain->field_e->field.overlay_y(dst_domain->field_e->field);
+            sim_domain->maxwell_solver->field_e.overlay_y(
+              dst_domain->maxwell_solver->field_e
+              );
           }
 
           // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)

@@ -30,8 +30,12 @@
 #include "msg.hpp"
 
 #include "specieP.hpp"
-#include "fieldE.hpp"
-#include "fieldH.hpp"
+// #include "fieldE.hpp"
+// #include "fieldH.hpp"
+
+#ifdef MAXWELL_SOLVER_YEE
+#include "maxwellSolverYee.hpp"
+#endif
 
 #ifdef CCS_VILLASENOR_BUNEMAN
 #include "currentVB.hpp"
@@ -70,9 +74,14 @@ class Domain
 public:
   vector<SpecieP *> species_p;
 
-  FieldE *field_e;
-  FieldH *field_h;
+  // FieldE *field_e;
+  // FieldH *field_h;
   Current *current;
+
+#ifdef MAXWELL_SOLVER_YEE
+  MaxwellSolverYee *maxwell_solver;
+#endif
+
   Temperature *temperature;
   Density *density;
   DensityCharge *charge;
@@ -80,17 +89,13 @@ public:
   Collisions *collisions;
 #endif
 
-  // Temperature temperature;
-  // DensityP density_particles;
-  // DensityC density_charge;
-
   Geometry geometry;
 
-  TimeSim *time_sim; // simulation time object
+  TimeSim *time; // simulation time object
 
 public:
-  Domain();
-  Domain(Geometry geom, vector<SpecieP *> species, TimeSim* time);
+  Domain() {};
+  Domain(Geometry _geometry, vector<SpecieP *> species_p, TimeSim* _time);
 
   // wrapper methods
   void distribute();
