@@ -17,25 +17,24 @@
 
 #include "domain.hpp"
 
-Domain::Domain(){}
-
-Domain::Domain(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry(geom)
+Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time):geometry(_geometry)
 {
   //! Pass geometry, particle species configuration and time
   // TODO: is it ok to pass only configuration,
   // but not prepared particles specie w/o linking?
 
-  time_sim = time;
+  time = _time;
 
-  species_p = species;
-
-  field_e = new FieldE(&geometry, time, species_p);
-  field_h = new FieldH(&geometry, time, species_p);
+  species_p = _species_p;
 
 #ifdef CCS_VILLASENOR_BUNEMAN
   current = new CurrentVB(&geometry, time, species_p);
 #elif CCS_ZIGZAG
   current = new CurrentZigZag(&geometry, time, species_p);
+#endif
+
+#ifdef MAXWELL_SOLVER_YEE
+  maxwell_solver = new MaxwellSolverYee(&geometry, time, species_p, current);
 #endif
 
 #ifdef TEMP_CALC_COUNTING
@@ -63,16 +62,10 @@ Domain::Domain(Geometry geom, vector<SpecieP *> species, TimeSim* time):geometry
   charge = new DensityCharge(&geometry, species_p);
 
   // ! Linking classes:
-  // ! * insert pointer to field_e into field_h
-  field_h->field_e = field_e;
-  // ! * insert pointer to current and field_h into field_e
-  field_e->current = current;
-  field_e->field_h = field_h;
   // ! * insert field pointers to each particles specie
   for (auto sp = species_p.begin(); sp != species_p.end(); ++sp)
   {
-    (**sp).field_h = field_h;
-    (**sp).field_e = field_e;
+    (**sp).maxwell_solver = maxwell_solver;
   }
 }
 
@@ -109,23 +102,18 @@ void Domain::weight_charge(string specie)
 
 void Domain::weight_field_h()
 {
-  field_h->calc_field_cylindrical();
+  maxwell_solver->calc_field_h();
 }
 
 void Domain::weight_field_e()
 {
-  field_e->calc_field_cylindrical();
+  maxwell_solver->calc_field_e();
 }
 
 void Domain::reset_current()
 {
   current->current = 0;
 }
-
-// void Domain::reset_charge()
-// {
-//   charge->density = 0;
-// }
 
 void Domain::push_particles ()
 {

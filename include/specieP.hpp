@@ -24,8 +24,9 @@
 #include "msg.hpp"
 #include "grid.hpp"
 #include "geometry.hpp"
-#include "fieldE.hpp"
-#include "fieldH.hpp"
+// #include "fieldE.hpp"
+// #include "fieldH.hpp"
+#include "maxwellSolverYee.hpp"
 #include "timeSim.hpp"
 
 #include "math/rand.hpp"
@@ -81,6 +82,7 @@
 
 class FieldE;
 class FieldH;
+class MaxwellSolver;
 
 class SpecieP
 {
@@ -156,6 +158,7 @@ public:
 // private:
   FieldH* field_h;
   FieldE* field_e;
+  MaxwellSolver* maxwell_solver;
 
 public:
   virtual void fullyfill_spatial_distribution (void);

@@ -304,17 +304,17 @@ void DataWriter::merge_domains(string component, string specie)
       Domain *sim_domain = domains(r, z);
 
       if (component.compare("E_r") == 0)
-        value = sim_domain->field_e->field[0];
+        value = sim_domain->maxwell_solver->field_e[0];
       else if (component.compare("E_phi") == 0)
-        value = sim_domain->field_e->field[1];
+        value = sim_domain->maxwell_solver->field_e[1];
       else if (component.compare("E_z") == 0)
-        value = sim_domain->field_e->field[2];
+        value = sim_domain->maxwell_solver->field_e[2];
       else if (component.compare("H_r") == 0)
-        value = sim_domain->field_h->field_at_et[0];
+        value = sim_domain->maxwell_solver->field_h_at_et[0];
       else if (component.compare("H_phi") == 0)
-        value = sim_domain->field_h->field_at_et[1];
+        value = sim_domain->maxwell_solver->field_h_at_et[1];
       else if (component.compare("H_z") == 0)
-        value = sim_domain->field_h->field_at_et[2];
+        value = sim_domain->maxwell_solver->field_h_at_et[2];
       else if (component.compare("J_r") == 0)
         value = sim_domain->current->current[0];
       else if (component.compare("J_phi") == 0)

@@ -438,6 +438,10 @@ void Cfg::weight_macro_amount()
 #endif
 #endif
 
+#ifdef MAXWELL_SOLVER_YEE
+  LOG_S(INFO) << "Using Yee (FDTD) maxwellian solver [10.1109/TAP.1966.1138693]";
+#endif
+
   // align macroparticles amount to particle species
   // with respect to normalization
 #if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)
