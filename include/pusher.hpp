@@ -47,7 +47,7 @@ public:
   Pusher(MaxwellSolver *_maxwell_solver, vector<SpecieP *> _species_p, TimeSim *_time)
   {
     maxwell_solver = _maxwell_solver;
-
+    species_p = _species_p;
     time = _time;
   };
 
