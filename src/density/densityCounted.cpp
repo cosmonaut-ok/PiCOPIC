@@ -17,7 +17,7 @@
 
 #include "density/densityCounted.hpp"
 
-void DensityCounted::calc_density_cylindrical(string specie)
+void DensityCounted::operator()(string specie)
 {
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
     if (specie.compare((**ps).name) == 0)

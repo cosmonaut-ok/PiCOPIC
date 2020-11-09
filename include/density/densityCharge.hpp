@@ -34,6 +34,6 @@ public:
   DensityCharge(Geometry *geom, vector<SpecieP *> species);
   ~DensityCharge() {};
 
-  void calc_density_cylindrical(string specie);
+  void operator()(string specie);
 };
 #endif // end of _DENSITY_CHARGE_

@@ -221,11 +221,12 @@ void Collisions::collect_weighted_params_tot_grid ()
         energy_tot_el.inc(i, j, weighted_m * v_sq / 2);
       }
     }
-  temperature_el.calc_temperature_cylindrical("electrons");
-  temperature_ion.calc_temperature_cylindrical("ions");
+  // calculate temperature of electrons and ions
+  temperature_el("electrons");
+  temperature_ion("ions");
 }
 
-void Collisions::run ()
+void Collisions::operator()()
 {
   clear();
   sort_to_cells();

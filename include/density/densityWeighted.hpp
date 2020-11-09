@@ -31,7 +31,7 @@ public:
   DensityWeighted (Geometry *geom, vector<SpecieP *> species) : Density(geom, species) {};
   ~DensityWeighted () {};
 
-  void calc_density_cylindrical(string specie);
+  void operator()(string specie);
 };
 
 #endif // end of _DENSITY_WEIGHTED_HPP_

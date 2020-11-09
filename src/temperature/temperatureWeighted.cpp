@@ -71,7 +71,7 @@ void TemperatureWeighted::weight_temperature_cylindrical(string specie)
       }
 }
 
-void TemperatureWeighted::calc_temperature_cylindrical(string specie)
+void TemperatureWeighted::operator()(string specie)
 {
   // get specie
   SpecieP *speciep;
@@ -83,7 +83,7 @@ void TemperatureWeighted::calc_temperature_cylindrical(string specie)
   // calculate density initially
   density.density = 0;
   density.density.overlay_set(0);
-  density.calc_density_cylindrical(specie);
+  density(specie); // calc density
 
   // clear temperature grid
   tmpr = 0;

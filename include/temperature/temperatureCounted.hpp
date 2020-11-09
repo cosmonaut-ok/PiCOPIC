@@ -37,7 +37,7 @@ public:
   };
   ~TemperatureCounted () {};
 
-  void calc_temperature_cylindrical(string specie);
+  void operator()(string specie);
 
 private:
   void weight_temperature_cylindrical(string specie);

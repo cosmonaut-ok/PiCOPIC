@@ -439,7 +439,7 @@ void CollisionsSK98::collide ()
     }
 }
 
-void CollisionsSK98::run ()
+void CollisionsSK98::operator()()
 {
   clear();
   sort_to_cells();

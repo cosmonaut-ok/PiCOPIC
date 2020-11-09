@@ -51,7 +51,7 @@ public:
 
   ~Temperature(void) {};
 
-  virtual void calc_temperature_cylindrical(string specie) = 0;
+  virtual void operator()(string specie) = 0;
 };
 
 #endif // end of _TEMPERATURE_HPP_

@@ -32,7 +32,7 @@ public:
   DensityCounted (Geometry *geom, vector<SpecieP *> species) : Density(geom, species) {};
   ~DensityCounted () {};
 
-  void calc_density_cylindrical(string specie);
+  void operator()(string specie);
 };
 
 #endif // end of _DENSITY_COUNTED_HPP_

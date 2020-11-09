@@ -54,7 +54,7 @@ void TemperatureCounted::weight_temperature_cylindrical(string specie)
       }
 }
 
-void TemperatureCounted::calc_temperature_cylindrical(string specie)
+void TemperatureCounted::operator()(string specie)
 {
   // get specie
   SpecieP *speciep;

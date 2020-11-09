@@ -542,14 +542,14 @@ void CollisionsP12::collide ()
     double g_counter;
     for (int i = 0; i < geometry->r_grid_amount; ++i)
       for (int j = 0; j < geometry->z_grid_amount; ++j)
-      {
-        // get temperatures, densities and debye length
-        t_el += get_el_temperature(i, j);
-        t_ion += get_ion_temperature(i, j);
-        d_el += get_el_density(i, j);
-        d_ion += get_ion_density(i, j);
-        ++g_counter;
-      }
+	{
+	  // get temperatures, densities and debye length
+	  t_el += get_el_temperature(i, j);
+	  t_ion += get_ion_temperature(i, j);
+	  d_el += get_el_density(i, j);
+	  d_ion += get_ion_density(i, j);
+	  ++g_counter;
+	}
     d_el /= g_counter;
     d_ion /= g_counter;
     t_el /= g_counter;
@@ -567,7 +567,7 @@ void CollisionsP12::collide ()
   }
 }
 
-void CollisionsP12::run ()
+void CollisionsP12::operator()()
 {
   clear();
   sort_to_cells();

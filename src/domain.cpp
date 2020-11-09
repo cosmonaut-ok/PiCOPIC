@@ -93,21 +93,21 @@ void Domain::weight_density(string specie)
 {
   density->density = 0;
   density->density.overlay_set(0);
-  density->calc_density_cylindrical(specie);
+  (*density)(specie);
 }
 
 void Domain::weight_temperature(string specie)
 {
   temperature->tmpr = 0;
   temperature->tmpr.overlay_set(0);
-  temperature->calc_temperature_cylindrical(specie);
+  (*temperature)(specie);
 }
 
 void Domain::weight_charge(string specie)
 {
   charge->density = 0;
   charge->density.overlay_set(0);
-  charge->calc_density_cylindrical(specie);
+  (*charge)(specie);
 }
 
 void Domain::weight_field_h()

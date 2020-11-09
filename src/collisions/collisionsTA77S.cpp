@@ -563,7 +563,7 @@ void CollisionsTA77S::correct_velocities()
     }
 }
 
-void CollisionsTA77S::run ()
+void CollisionsTA77S::operator()()
 {
   clear();
   sort_to_cells();

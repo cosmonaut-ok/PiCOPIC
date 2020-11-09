@@ -26,7 +26,7 @@ DensityCharge::DensityCharge(Geometry *geom, vector<SpecieP *> species) : geomet
   density.overlay_set(0);
 }
 
-void DensityCharge::calc_density_cylindrical(string specie)
+void DensityCharge::operator()(string specie)
 {
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
     if (specie.compare((**ps).name) == 0)

@@ -49,7 +49,7 @@ public:
                       vector<double> &p1, vector<double> &p2,
                       double _density_a, double _density_b, double debye);
 
-  void run ();
+  void operator()();
 
 protected:
   void correct_velocities();

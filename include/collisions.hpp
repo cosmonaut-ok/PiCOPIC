@@ -58,7 +58,7 @@ public:
   void random_sort();
 
   virtual void clear ();
-  virtual void run ();
+  virtual void operator()() = 0;
 
 protected:
   vector <SpecieP *> species_p;
