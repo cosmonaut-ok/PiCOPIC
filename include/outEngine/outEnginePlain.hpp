@@ -15,20 +15,30 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MSG_HPP_
-#define _MSG_HPP_
+#ifndef _OUT_ENGINE_PLAIN_HPP_
+#define _OUT_ENGINE_PLAIN_HPP_
 
-#include <iostream>
-#include <iomanip> // std::setw
-
+#include "defines.hpp"
+#include "loguru.hpp"
 #include "algo/common.hpp"
+#include "outEngine.hpp"
 
-#define MSG(message) std::cout << message << std::endl;
+using namespace std;
 
-#ifndef FIXME
-#define FIXME false
-#endif
+class OutEnginePlain : public OutEngine
+{
+public:
+  OutEnginePlain () {};
+  OutEnginePlain (string a_path, string a_name, unsigned int a_shape, int *a_size,
+                  bool a_append, bool a_compress, unsigned int a_compress_level);
 
-#define MSG_FIXME(message) if (FIXME) std::cerr << "FIXME: " << message << "." << std::endl;
+  void write_rec(string a_name, Grid<double> data);
+  void write_vec(string a_name, Grid<double> data);
+  void write_dot(string a_name, Grid<double> data);
+  void write_1d_vector(string a_name, vector<double> data);
+  void write_metadata(string metadata);
 
-#endif // end of _MSG_HPP_
+private:
+  string metadata_file;
+};
+#endif // end of _OUT_ENGINE_PLAIN_HPP_

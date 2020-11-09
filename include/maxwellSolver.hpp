@@ -19,7 +19,7 @@
 #define _MAXWELLSOLVER_HPP_
 
 #include <vector>
-#include "grid3d.hpp"
+#include "algo/grid3d.hpp"
 #include "geometry.hpp"
 #include "timeSim.hpp"
 #include "math/vector3d.hpp"

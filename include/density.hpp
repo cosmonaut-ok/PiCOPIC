@@ -19,8 +19,8 @@
 #define _DENSITY_HPP_
 
 #include "geometry.hpp"
-#include "grid.hpp"
-#include "weighter.hpp"
+#include "algo/grid.hpp"
+#include "algo/weighter.hpp"
 #include "specieP.hpp"
 
 class Density

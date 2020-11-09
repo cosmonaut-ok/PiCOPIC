@@ -71,7 +71,7 @@ namespace msg
          << left << setw(20) << type_comp
          << left << setw(21) << probe_shape
          << left << setw(18) << current_time
-         << left << setw(18) << lib::get_simulation_duration()
+         << left << setw(18) << algo::common::get_simulation_duration()
          << endl;
     ++printed_step;
   }

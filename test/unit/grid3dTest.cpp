@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "grid3d.hpp"
+#include "algo/grid3d.hpp"
 
 namespace {
   int deref(int * pint)

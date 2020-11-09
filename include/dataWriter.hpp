@@ -22,16 +22,16 @@
 #include <sstream>
 
 #include "msg.hpp"
-#include "lib.hpp"
-#include "grid.hpp"
+#include "algo/common.hpp"
+#include "algo/grid.hpp"
 #include "timeSim.hpp"
 #include "geometry.hpp"
 #include "domain.hpp"
 
 #ifdef USE_HDF5
-#include "outEngineHDF5.hpp"
+#include "outEngine/outEngineHDF5.hpp"
 #else
-#include "outEnginePlain.hpp"
+#include "outEngine/outEnginePlain.hpp"
 #endif // USE_HDF5
 
 

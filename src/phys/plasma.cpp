@@ -29,14 +29,14 @@ namespace phys::plasma
     const double const1 = 7433.944;
     if (density_el <= 0) LOG_S(FATAL) << "(debye_length): electron density must be positive. Actucal value is: ``" << density_el << "''";
     if (density_ion <= 0) LOG_S(FATAL) << "(debye_length): ion density must be positive. Actucal value is: ``" << density_ion << "''";
-    return ( const1 / lib::sq_rt ( density_el / temperature_el + density_ion / temperature_ion ) );
+    return ( const1 / algo::common::sq_rt ( density_el / temperature_el + density_ion / temperature_ion ) );
   }
 
   double plasma_frequency (double density)
   {
     // const1 is sqrt ( q_e^2 / ( m_e * epsilon_0 ) )
     const double const1 = 56.3803;
-    return ( const1 * lib::sq_rt ( density ) );
+    return ( const1 * algo::common::sq_rt ( density ) );
   }
 
   double coulomb_logarithm (double m_a, double m_b, double debye_length, double v_rel)

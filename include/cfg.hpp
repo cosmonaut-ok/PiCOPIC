@@ -39,7 +39,7 @@
 #endif
 
 #include "constant.hpp"
-#include "lib.hpp"
+#include "algo/common.hpp"
 #include "phys/plasma.hpp"
 #include "geometry.hpp"
 #include "timeSim.hpp"

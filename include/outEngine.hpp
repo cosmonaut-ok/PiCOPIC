@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "grid.hpp"
+#include "algo/grid.hpp"
 
 using namespace std;
 class OutEngine

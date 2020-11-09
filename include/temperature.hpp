@@ -22,8 +22,8 @@
 
 #include "constant.hpp"
 #include "geometry.hpp"
-#include "grid.hpp"
-#include "lib.hpp"
+#include "algo/grid.hpp"
+#include "algo/common.hpp"
 #include "specieP.hpp"
 #include "density.hpp"
 

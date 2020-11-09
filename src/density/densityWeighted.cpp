@@ -15,26 +15,20 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _REL_HPP_
-#define _REL_HPP_
+#include "density/densityWeighted.hpp"
 
-#include <math.h>
-#include <algorithm>
-
-#include "defines.hpp"
-#include "constant.hpp"
-#include "loguru.hpp"
-#include "algo/common.hpp"
-#include "math/vector3d.hpp"
-
-namespace phys::rel
+void DensityWeighted::calc_density_cylindrical(string specie)
 {
-  double lorenz_factor (double sq_velocity);
-  double lorenz_factor_inv (double sq_velocity);
-  double energy (double mass, double velocity_2); // mass and velocity powered to 2
-  double energy_m (double mass, double momentum_2);  // mass and momentum powered to 2
+  for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
+    if (specie.compare((**ps).name) == 0)
+      for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
+        weight_cylindrical<double>(geometry, &density,
+                                   P_POS_R((**i)),
+                                   P_POS_Z((**i)),
+                                   P_WEIGHT((**i))); // amount of particle in macroparticle
 
-  double momentum_0 (double mass, vector3d<double> velocity);
-  vector3d<double> momentum (double mass, vector3d<double> velocity);
+#if defined DENSITY_POSTPROC_BILINEAR
+  Grid<double> density_src = density;
+  algo::common::bilinear_interpolation<Grid<double>>(density_src, density);
+#endif
 }
-#endif // end of _REL_HPP_

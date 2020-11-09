@@ -48,7 +48,7 @@ SpecieP::SpecieP (unsigned int p_id,
   double dr = geometry->r_cell_size;
   double dz = geometry->z_cell_size;
 
-  macro_amount = lib::nearest_divide(p_macro_amount, r_size / dr * z_size / dz);
+  macro_amount = algo::common::nearest_divide(p_macro_amount, r_size / dr * z_size / dz);
 #else
   macro_amount = p_macro_amount;
 #endif
@@ -162,7 +162,7 @@ void SpecieP::rectangular_random_placement (unsigned int int_cell_number,
       P_POS_Z((*n)) = z_size * rand_z;
     else
       P_POS_Z((*n)) = z_size / dn
-        * (lib::sq_rt(pow(dl, 2) + rand_z * (2 * dl * dn + pow(dn, 2))) - dl);
+        * (algo::common::sq_rt(pow(dl, 2) + rand_z * (2 * dl * dn + pow(dn, 2))) - dl);
 
     P_POS_R((*n)) += int_cell_number * dr;
     P_POS_R((*n)) += dr / 2.;
@@ -191,8 +191,8 @@ void SpecieP::rectangular_regular_placement (unsigned int int_cell_number,
   double r_size = (ext_cell_number - int_cell_number) * dr;
   double z_size = (right_cell_number - left_cell_number) * dz;
 
-  double r_macro = lib::sq_rt(macro_amount * r_size / z_size);
-  double z_macro = lib::sq_rt(macro_amount * z_size / r_size);
+  double r_macro = algo::common::sq_rt(macro_amount * r_size / z_size);
+  double z_macro = algo::common::sq_rt(macro_amount * z_size / r_size);
 
   double r_macro_interval = r_size / r_macro;
   double z_macro_interval = z_size / z_macro;
@@ -358,7 +358,7 @@ void SpecieP::thermal_velocity_distribution ()
       therm_vel_cmp *= gamma_inv;
     }
     else
-      therm_vel_cmp = lib::sq_rt(energies[macro_count] * two_over_mass);
+      therm_vel_cmp = algo::common::sq_rt(energies[macro_count] * two_over_mass);
 
     therm_vel_cmp *= norm;
 
@@ -388,7 +388,7 @@ void SpecieP::rectangular_velocity_distribution ()
     therm_vel_cmp *= gamma_inv;
   }
   else
-    therm_vel_cmp = lib::sq_rt(temperature * two_over_mass);
+    therm_vel_cmp = algo::common::sq_rt(temperature * two_over_mass);
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
@@ -419,7 +419,7 @@ void SpecieP::eigen_velocity_distribution ()
     therm_vel_cmp *= gamma_inv;
   }
   else
-    therm_vel_cmp = lib::sq_rt(temperature * two_over_mass);
+    therm_vel_cmp = algo::common::sq_rt(temperature * two_over_mass);
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
@@ -446,7 +446,7 @@ void SpecieP::eigen_directed_velocity_distribution (unsigned int dir)
     therm_vel_cmp *= gamma_inv;
   }
   else
-    therm_vel_cmp = lib::sq_rt(temperature * two_over_mass);
+    therm_vel_cmp = algo::common::sq_rt(temperature * two_over_mass);
 
   switch (dir)
   {
@@ -892,7 +892,7 @@ void SpecieP::back_position_to_rz()
   {
     double pos_r = P_POS_R((**p));
     double pos_phi = P_POS_PHI((**p));
-    double r = lib::sq_rt(pos_r * pos_r + pos_phi * pos_phi);
+    double r = algo::common::sq_rt(pos_r * pos_r + pos_phi * pos_phi);
     P_SIN((**p)) = pos_phi / r;
     P_POS_R((**p)) = r;
     P_POS_PHI((**p)) = 0;

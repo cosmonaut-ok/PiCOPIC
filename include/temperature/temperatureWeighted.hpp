@@ -15,32 +15,32 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _PLASMA_HPP_
-#define _PLASMA_HPP_
+#ifndef _TEMPERATURE_WEIGHTED_HPP_
+#define _TEMPERATURE_WEIGHTED_HPP_
 
-#include <math.h>
-#include <algorithm>
-
-#include "defines.hpp"
 #include "constant.hpp"
-#include "loguru.hpp"
-#include "algo/common.hpp"
-#include "math/vector3d.hpp"
-#include "phys/rel.hpp"
+#include "geometry.hpp"
+#include "algo/grid.hpp"
+#include "algo/weighter.hpp"
+#include "specieP.hpp"
+#include "density/densityWeighted.hpp"
+#include "temperature.hpp"
 
-namespace phys::plasma
+class TemperatureWeighted : public Temperature
 {
-  double debye_length (double density_el, double density_ion,
-                       double temperature_ion, double temperature_el);
+public:
+  DensityWeighted density;
 
-  double plasma_frequency (double density);
+  TemperatureWeighted (void) {};
+  TemperatureWeighted (Geometry *geom, vector<SpecieP *> species) : Temperature(geom, species)
+  {
+    density = DensityWeighted (geometry, species);
+  };
+  ~TemperatureWeighted () {};
 
-  double coulomb_logarithm (double mass_a, double mass_b,
-			    double debye_length, double v_rel);
+  void calc_temperature_cylindrical(string specie);
 
-  double collision_freqency (double e_a, double e_b,
-                             double density_lowest,
-                             double L,
-                             double p_rel, double v_rel);
-}
-#endif // end of _PLASMA_HPP_
+private:
+  void weight_temperature_cylindrical(string specie);
+};
+#endif // end of _TEMPERATURE_WEIGHTED_HPP_

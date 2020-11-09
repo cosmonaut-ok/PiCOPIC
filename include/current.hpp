@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "geometry.hpp"
-#include "grid3d.hpp"
+#include "algo/grid3d.hpp"
 #include "timeSim.hpp"
 #include "specieP.hpp"
 
