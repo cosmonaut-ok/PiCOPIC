@@ -30,8 +30,14 @@
 #include "msg.hpp"
 
 #include "specieP.hpp"
-// #include "fieldE.hpp"
-// #include "fieldH.hpp"
+
+#if defined (PUSHER_BORIS_ADAPTIVE) || defined (PUSHER_BORIS_CLASSIC) || defined (PUSHER_BORIS_RELATIVISTIC)
+#include "pusher/pusherBoris.hpp"
+#elif PUSHER_VAY
+#include "pusher/pusherVay.hpp"
+#elif PUSHER_HIGUERA_CARY
+#include "pusher/pusherHC.hpp"
+#endif
 
 #ifdef MAXWELL_SOLVER_YEE
 #include "maxwellSolver/maxwellSolverYee.hpp"
@@ -73,10 +79,15 @@ class Domain
 {
 public:
   vector<SpecieP *> species_p;
-
-  // FieldE *field_e;
-  // FieldH *field_h;
   Current *current;
+
+#if defined (PUSHER_BORIS_ADAPTIVE) || defined (PUSHER_BORIS_CLASSIC) || defined (PUSHER_BORIS_RELATIVISTIC)
+  PusherBoris *pusher;
+#elif PUSHER_VAY
+  PusherVay *pusher;
+#elif PUSHER_HIGUERA_CARY
+  PusherHC *pusher;
+#endif
 
 #ifdef MAXWELL_SOLVER_YEE
   MaxwellSolverYee *maxwell_solver;
