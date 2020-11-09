@@ -31,13 +31,13 @@ namespace phys::rel
     beta = sq_velocity / LIGHT_VEL_POW_2;
 
     if (beta > 1) // it's VERY BAD! Beta should not be more, than 1
-      LOG_S(FATAL) << "(lorenz_factor): Lorentz factor aka gamma is complex. Velocity is: " << lib::sq_rt(sq_velocity);
+      LOG_S(FATAL) << "(lorenz_factor): Lorentz factor aka gamma is complex. Velocity is: " << algo::common::sq_rt(sq_velocity);
 
-    gamma = 1 / lib::sq_rt(1.0 - beta);
+    gamma = 1 / algo::common::sq_rt(1.0 - beta);
 
     if (isinf(gamma) == 1)
       { // avoid infinity values
-	LOG_S(WARNING) << "(lorenz_factor): gamma (Lorenz factor) girects to infinity for velocity" << lib::sq_rt(sq_velocity);
+	LOG_S(WARNING) << "(lorenz_factor): gamma (Lorenz factor) girects to infinity for velocity" << algo::common::sq_rt(sq_velocity);
 	return 1e100; // just return some very big value
       }
     else
@@ -92,7 +92,7 @@ namespace phys::rel
     if (momentum_2 > REL_LIMIT_POW_2 * mass * mass)
     {
       double e_rest = mass * LIGHT_VEL_POW_2;
-      e = lib::sq_rt(momentum_2 * LIGHT_VEL_POW_2 + pow(e_rest, 2)) - e_rest;
+      e = algo::common::sq_rt(momentum_2 * LIGHT_VEL_POW_2 + pow(e_rest, 2)) - e_rest;
     }
     else
       e = 0.5 * momentum_2 / mass;

@@ -15,26 +15,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _REL_HPP_
-#define _REL_HPP_
+#ifndef _DENSITY_COUNTED_HPP_
+#define _DENSITY_COUNTED_HPP_
 
-#include <math.h>
-#include <algorithm>
+#include "geometry.hpp"
+#include "algo/grid.hpp"
+#include "algo/weighter.hpp"
+#include "density.hpp"
+#include "specieP.hpp"
 
-#include "defines.hpp"
-#include "constant.hpp"
-#include "loguru.hpp"
-#include "algo/common.hpp"
-#include "math/vector3d.hpp"
-
-namespace phys::rel
+class DensityCounted : public Density
 {
-  double lorenz_factor (double sq_velocity);
-  double lorenz_factor_inv (double sq_velocity);
-  double energy (double mass, double velocity_2); // mass and velocity powered to 2
-  double energy_m (double mass, double momentum_2);  // mass and momentum powered to 2
+public:
+  DensityCounted () {};
 
-  double momentum_0 (double mass, vector3d<double> velocity);
-  vector3d<double> momentum (double mass, vector3d<double> velocity);
-}
-#endif // end of _REL_HPP_
+  DensityCounted (Geometry *geom, vector<SpecieP *> species) : Density(geom, species) {};
+  ~DensityCounted () {};
+
+  void calc_density_cylindrical(string specie);
+};
+
+#endif // end of _DENSITY_COUNTED_HPP_

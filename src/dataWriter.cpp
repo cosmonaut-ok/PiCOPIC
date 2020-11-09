@@ -236,7 +236,7 @@ void DataWriter::go()
           << left << setw(50) << "| " + component_name
           << left << setw(8) << "| " + shape_name
           << left << setw(19) << "| " + cur_time_str
-          << left << setw(22) << "| " + (string)lib::get_simulation_duration()
+          << left << setw(22) << "| " + (string)algo::common::get_simulation_duration()
           << left << "|"
         );
       // }

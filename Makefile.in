@@ -25,7 +25,7 @@ RELEASE               = @RELEASE@
 PiCoPiC_MODULE           = PiCoPiC
 PiCoPiC_C_SRCS           =
 
-PiCoPiC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp) $(wildcard $(SRCDIR)/phys/*.cpp)
+PiCoPiC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/algo/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp) $(wildcard $(SRCDIR)/phys/*.cpp) $(wildcard $(SRCDIR)/current/*.cpp) $(wildcard $(SRCDIR)/maxwellSolver/*.cpp) $(wildcard $(SRCDIR)/collisions/*.cpp) $(wildcard $(SRCDIR)/outEngine/*.cpp) $(wildcard $(SRCDIR)/density/*.cpp) $(wildcard $(SRCDIR)/temperature/*.cpp) $(wildcard $(SRCDIR)/pusher/*.cpp)
 
 PiCoPiC_LDFLAGS          = @LDFLAGS_ADDITIONAL@
 PiCoPiC_ARFLAGS          =
@@ -54,7 +54,7 @@ PiCoPiC_LIBRARIES += hdf5
 PiCoPiC_LIBRARIES += hdf5_cpp
 else
 PiCoPiC_CXX_SRCS_TMP := $(PiCoPiC_CXX_SRCS)
-PiCoPiC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngineHDF5.cpp, $(PiCoPiC_CXX_SRCS_TMP))
+PiCoPiC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngine/outEngineHDF5.cpp, $(PiCoPiC_CXX_SRCS_TMP))
 endif
 
 PiCoPiC_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PiCoPiC_CXX_SRCS))
@@ -107,7 +107,8 @@ $(loguru_SUBDIR)/%.o: $(loguru_SUBDIR)/%.cpp
 CLEAN_FILES  = y.tab.c y.tab.h lex.yy.c core *.orig *.rej \
                \\\#*\\\# *~ *% .\\\#*
 
-BUILD_DIRS = $(OBJDIR) $(OBJDIR)/math $(OBJDIR)/phys $(TARGETDIR)
+BUILD_DIRS = $(OBJDIR) $(OBJDIR)/algo $(OBJDIR)/math $(OBJDIR)/phys $(OBJDIR)/maxwellSolver $(OBJDIR)/current $(OBJDIR)/collisions $(OBJDIR)/outEngine $(OBJDIR)/density $(OBJDIR)/temperature $(OBJDIR)/pusher $(TARGETDIR)
+
 space :=
 space +=
 comma :=,

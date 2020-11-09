@@ -22,8 +22,8 @@
 
 #include <algorithm>
 
-#include "grid.hpp"
-#include "grid3d.hpp"
+#include "algo/grid.hpp"
+#include "algo/grid3d.hpp"
 #include "geometry.hpp"
 #include "timeSim.hpp"
 #include "cfg.hpp"
@@ -34,36 +34,36 @@
 // #include "fieldH.hpp"
 
 #ifdef MAXWELL_SOLVER_YEE
-#include "maxwellSolverYee.hpp"
+#include "maxwellSolver/maxwellSolverYee.hpp"
 #endif
 
 #ifdef CCS_VILLASENOR_BUNEMAN
-#include "currentVB.hpp"
+#include "current/currentVB.hpp"
 #elif CCS_ZIGZAG
-#include "currentZigZag.hpp"
+#include "current/currentZigZag.hpp"
 #endif
 
-#include "densityCharge.hpp"
+#include "density/densityCharge.hpp"
 
 #ifdef DENSITY_CALC_COUNTING
-#include "densityCounted.hpp"
+#include "density/densityCounted.hpp"
 #elif DENSITY_CALC_WEIGHTING
-#include "densityWeighted.hpp"
+#include "density/densityWeighted.hpp"
 #endif
 
 #ifdef TEMP_CALC_COUNTING
-#include "temperatureCounted.hpp"
+#include "temperature/temperatureCounted.hpp"
 #elif TEMP_CALC_WEIGHTING
-#include "temperatureWeighted.hpp"
+#include "temperature/temperatureWeighted.hpp"
 #endif
 
 #ifdef COLLISIONS
 #ifdef COULOMB_COLLISIONS_TA77S
-#include "collisionsTA77S.hpp"
+#include "collisions/collisionsTA77S.hpp"
 #elif COULOMB_COLLISIONS_SK98
-#include "collisionsSK98.hpp"
+#include "collisions/collisionsSK98.hpp"
 #elif COULOMB_COLLISIONS_P12
-#include "collisionsP12.hpp"
+#include "collisions/collisionsP12.hpp"
 #endif
 #endif
 

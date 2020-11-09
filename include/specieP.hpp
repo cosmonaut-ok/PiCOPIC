@@ -20,13 +20,13 @@
 
 #include "constant.hpp"
 #include "phys/rel.hpp"
-#include "lib.hpp"
+#include "algo/common.hpp"
 #include "msg.hpp"
-#include "grid.hpp"
+#include "algo/grid.hpp"
 #include "geometry.hpp"
 // #include "fieldE.hpp"
 // #include "fieldH.hpp"
-#include "maxwellSolverYee.hpp"
+#include "maxwellSolver/maxwellSolverYee.hpp"
 #include "timeSim.hpp"
 
 #include "math/rand.hpp"
@@ -53,7 +53,7 @@
 
 // service variables to correct cartesian to cylindrical geometry
 #define PP_SIN(var, num) (*var[num])[10]
-#define PP_COS(var, num) lib::sq_rt( 1 - (*var[num])[10] * (*var[num])[10] )
+#define PP_COS(var, num) algo::common::sq_rt( 1 - (*var[num])[10] * (*var[num])[10] )
 
 #define PP_CELL_R(var, num) (*var[num])[11]
 #define PP_CELL_Z(var, num) (*var[num])[12]
@@ -75,7 +75,7 @@
 
 // service variables to correct cartesian to cylindrical geometry
 #define P_SIN(var) var[10]
-#define P_COS(var) lib::sq_rt(1 - var[10] * var[10])
+#define P_COS(var) algo::common::sq_rt(1 - var[10] * var[10])
 
 #define P_CELL_R(var) var[11]
 #define P_CELL_Z(var) var[12]

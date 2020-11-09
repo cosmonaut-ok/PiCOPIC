@@ -29,12 +29,12 @@
 
 #include "defines.hpp"
 #include "loguru.hpp"
-#include "lib.hpp"
+#include "algo/common.hpp"
 #include "geometry.hpp"
 #include "specieP.hpp"
 
-#include "temperatureCounted.hpp"
-#include "densityCounted.hpp"
+#include "temperature/temperatureCounted.hpp"
+#include "density/densityCounted.hpp"
 
 // const double PROTON_MASS = EL_MASS * 1836;
 

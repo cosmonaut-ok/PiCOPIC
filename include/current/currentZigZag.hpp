@@ -15,32 +15,37 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _PLASMA_HPP_
-#define _PLASMA_HPP_
+#ifndef _CURRENT_ZIGZAG_
+#define _CURRENT_ZIGZAG_
 
-#include <math.h>
+#include <vector>
 #include <algorithm>
 
-#include "defines.hpp"
-#include "constant.hpp"
-#include "loguru.hpp"
-#include "algo/common.hpp"
-#include "math/vector3d.hpp"
-#include "phys/rel.hpp"
+#include "geometry.hpp"
+#include "algo/grid3d.hpp"
+#include "timeSim.hpp"
+#include "specieP.hpp"
+#include "current.hpp"
 
-namespace phys::plasma
+using namespace std;
+
+class SpecieP;
+class Geometry;
+
+#define RELAY_POINT(i1, i2, x1, x2, dx)                           \
+  min( min((i1) * (dx), (i2) * (dx)) + (dx),                      \
+       max( max((i1) * (dx), (i2) * (dx)), ((x1) + (x2)) / 2.));
+
+class CurrentZigZag : public Current
 {
-  double debye_length (double density_el, double density_ion,
-                       double temperature_ion, double temperature_el);
+public:
+  CurrentZigZag() {};
+  CurrentZigZag(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Current(geom, t, species) {};
+  ~CurrentZigZag() {};
 
-  double plasma_frequency (double density);
+  void current_distribution();
 
-  double coulomb_logarithm (double mass_a, double mass_b,
-			    double debye_length, double v_rel);
+private:
 
-  double collision_freqency (double e_a, double e_b,
-                             double density_lowest,
-                             double L,
-                             double p_rel, double v_rel);
-}
-#endif // end of _PLASMA_HPP_
+};
+#endif // end of _CURRENT_ZIGZAG_

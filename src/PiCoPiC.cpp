@@ -31,7 +31,7 @@
 #include "defines.hpp"
 #include "msg.hpp"
 #include "cfg.hpp"
-#include "lib.hpp"
+#include "algo/common.hpp"
 
 #include <string>
 #include <atomic>         // std::atomic, std::memory_order_relaxed
@@ -40,12 +40,12 @@
 #include "math/maxwellJuettner.hpp"
 
 #include "geometry.hpp"
-#include "grid.hpp"
+#include "algo/grid.hpp"
 #include "timeSim.hpp"
 #include "specieP.hpp"
 #include "beamP.hpp"
 // #include "fieldE.hpp"
-#include "maxwellSolverYee.hpp"
+#include "maxwellSolver/maxwellSolverYee.hpp"
 #include "specieP.hpp"
 #include "dataWriter.hpp"
 
@@ -108,21 +108,21 @@ string parse_argv_get_config(int argc, char **argv)
 {
   string filename;
 
-  if (lib::cmd_option_exists(argv, argv+argc, "-h"))
+  if (algo::common::cmd_option_exists(argv, argv+argc, "-h"))
   {
     cerr << "USAGE:" << endl << "  picopic [ --version | -f path/to/PiCoPiC.json ]" << endl;
     exit(1);
   }
 
-  if (lib::cmd_option_exists(argv, argv+argc, "--version"))
+  if (algo::common::cmd_option_exists(argv, argv+argc, "--version"))
   {
     cerr << PACKAGE_NAME << " " << PACKAGE_VERSION << endl;
     exit(0);
   }
 
-  if (lib::cmd_option_exists(argv, argv+argc, "-f"))
+  if (algo::common::cmd_option_exists(argv, argv+argc, "-f"))
   {
-    filename = lib::get_cmd_option(argv, argv + argc, "-f");
+    filename = algo::common::get_cmd_option(argv, argv + argc, "-f");
   }
   else
   {
@@ -450,7 +450,7 @@ int main(int argc, char **argv)
   std::string datafile_name = "data.h5";
 
   // make root directory
-  lib::make_directory(path);
+  algo::common::make_directory(path);
 
   hdf5_filepath = path + "/" + datafile_name;
 

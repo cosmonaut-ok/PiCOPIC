@@ -15,26 +15,25 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _REL_HPP_
-#define _REL_HPP_
+#ifndef _DENSITY_CHARGE_
+#define _DENSITY_CHARGE_
 
-#include <math.h>
-#include <algorithm>
+#include "geometry.hpp"
+#include "algo/grid.hpp"
+#include "algo/weighter.hpp"
+#include "specieP.hpp"
 
-#include "defines.hpp"
-#include "constant.hpp"
-#include "loguru.hpp"
-#include "algo/common.hpp"
-#include "math/vector3d.hpp"
-
-namespace phys::rel
+class DensityCharge
 {
-  double lorenz_factor (double sq_velocity);
-  double lorenz_factor_inv (double sq_velocity);
-  double energy (double mass, double velocity_2); // mass and velocity powered to 2
-  double energy_m (double mass, double momentum_2);  // mass and momentum powered to 2
+public:
+  Geometry *geometry;
+  Grid<double> density;
+  vector<SpecieP *> species_p;
 
-  double momentum_0 (double mass, vector3d<double> velocity);
-  vector3d<double> momentum (double mass, vector3d<double> velocity);
-}
-#endif // end of _REL_HPP_
+  DensityCharge(void) {};
+  DensityCharge(Geometry *geom, vector<SpecieP *> species);
+  ~DensityCharge() {};
+
+  void calc_density_cylindrical(string specie);
+};
+#endif // end of _DENSITY_CHARGE_
