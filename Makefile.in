@@ -29,8 +29,6 @@ PiCoPiC_C_SRCS           =
 
 PiCoPiC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(foreach d, $(SUBPTHS), $(wildcard $(SRCDIR)/$d/*.cpp))
 
-# PiCoPiC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/algo/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp) $(wildcard $(SRCDIR)/phys/*.cpp) $(wildcard $(SRCDIR)/current/*.cpp) $(wildcard $(SRCDIR)/maxwellSolver/*.cpp) $(wildcard $(SRCDIR)/collisions/*.cpp) $(wildcard $(SRCDIR)/outEngine/*.cpp) $(wildcard $(SRCDIR)/density/*.cpp) $(wildcard $(SRCDIR)/temperature/*.cpp) $(wildcard $(SRCDIR)/pusher/*.cpp)
-
 PiCoPiC_LDFLAGS          = @LDFLAGS_ADDITIONAL@
 PiCoPiC_ARFLAGS          =
 PiCoPiC_LIBRARY_PATH     =
@@ -113,12 +111,6 @@ CLEAN_FILES  = y.tab.c y.tab.h lex.yy.c core *.orig *.rej \
 
 BUILD_DIRS = $(OBJDIR) $(foreach d, $(SUBPTHS), $(OBJDIR)/$d) $(TARGETDIR)
 
-# BUILD_DIRS = $(OBJDIR) $(OBJDIR)/algo $(OBJDIR)/math $(OBJDIR)/phys $(OBJDIR)/maxwellSolver $(OBJDIR)/current $(OBJDIR)/collisions $(OBJDIR)/outEngine $(OBJDIR)/density $(OBJDIR)/temperature $(OBJDIR)/pusher $(TARGETDIR)
-
-# space :=
-# space +=
-# comma :=,
-
 clean: $(SUBDIRS:%=%/__clean__) $(EXTRASUBDIRS:%=%/__clean__) $(TESTSUBDIRS:%=%/__clean__) $(DOXYGEN_FORMATS:%=%/__clean__)
 	$(RM) $(PiCoPiC_OBJS) $(CLEAN_FILES)
 	$(RM) $(LIBS) $(EXES) $(EXES:%=%.so)
@@ -138,7 +130,6 @@ $(DOXYGEN_FORMATS:%=%/__clean__): dummy
 
 $(EXTRASUBDIRS:%=%/__clean__): dummy
 	-cd `dirname $@` && $(RM) $(CLEAN_FILES)
-
 
 $(TESTSUBDIRS:%=%/__clean__): dummy
 	-cd `dirname $@` && $(MAKE) clean
