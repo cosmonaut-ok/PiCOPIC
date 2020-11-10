@@ -105,6 +105,10 @@ if __name__ == "__main__":
     sys.stdout.write(".")
     sys.stdout.flush()
 
+    single_test.cmd_run('make distclean')
+    sys.stdout.write(".")
+    sys.stdout.flush()
+
     single_test.cmd_run('./autogen.sh')
     sys.stdout.write(".")
     sys.stdout.flush()
