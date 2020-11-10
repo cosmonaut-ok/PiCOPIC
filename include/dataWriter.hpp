@@ -77,6 +77,6 @@ public:
 
   void merge_domains(string component, string specie);
   void merge_particle_domains(string parameter, unsigned int component, string specie);
-  void go();
+  void operator()();
 };
 #endif // end of _DATA_WRITER_HPP_

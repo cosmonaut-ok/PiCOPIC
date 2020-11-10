@@ -728,7 +728,7 @@ int main(int argc, char **argv)
 //// output data
     // for (unsigned int i=0; i < data_writers.size(); ++i)
     for (auto i = data_writers.begin(); i != data_writers.end(); i++)
-      (*i).go();
+      (*i)();
 
     sim_time_clock->current += sim_time_clock->step;
 

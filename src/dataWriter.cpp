@@ -127,7 +127,7 @@ void DataWriter::hdf5_init(string a_metadata)
 }
 #endif
 
-void DataWriter::go()
+void DataWriter::operator()()
 {
 
   int current_time_step = ceil(time->current / time->step);
