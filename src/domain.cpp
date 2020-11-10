@@ -127,20 +127,7 @@ void Domain::reset_current()
 
 void Domain::push_particles ()
 {
-  // ! update particles velocity
-  for (auto i = species_p.begin(); i != species_p.end(); i++)
-  {
-#if defined PUSHER_BORIS_ADAPTIVE || defined PUSHER_BORIS_CLASSIC || defined PUSHER_BORIS_RELATIVISTIC
-    (*i)->boris_pusher();
-#elif defined PUSHER_VAY
-    (*i)->vay_pusher();
-#elif defined PUSHER_HIGUERA_CARY
-    (*i)->hc_pusher();
-#else
-    LOG_S(FATAL) << "Undefined particles pusher used";
-#endif
-  }
-  // (*pusher)();
+  (*pusher)();
 }
 
 void Domain::update_particles_coords()

@@ -21,7 +21,7 @@
 void PusherBoris::operator()()
 {
   // !
-  // ! boris pusherBoris
+  // ! boris pusher
   // !
   for (auto sp = species_p.begin(); sp != species_p.end(); ++sp)
   {
@@ -32,10 +32,10 @@ void PusherBoris::operator()()
     {
       // define vars directly in loop, because of multithreading
       double charge_over_2mass_dt, const2, sq_velocity;
-#ifdef PUSHERBORIS_BORIS_ADAPTIVE
+#ifdef PUSHER_BORIS_ADAPTIVE
       bool use_rel; // use relativistic calculations
 #endif
-#ifndef PUSHERBORIS_BORIS_CLASSIC // do not use gamma in non-relativistic boris pusherBoris
+#ifndef PUSHER_BORIS_CLASSIC // do not use gamma in non-relativistic boris pusher
       double gamma = 1;
 #endif
 
@@ -50,7 +50,7 @@ void PusherBoris::operator()()
           isinf(pos_r) != 0 ||
           isnan(pos_z) ||
           isinf(pos_z) != 0)
-        LOG_S(FATAL) << "(boris_pusherBoris): radius[" << pos_r
+        LOG_S(FATAL) << "(boris_pusher): radius[" << pos_r
                      << "] or longitude[" << pos_z
                      << "] is not valid number. Can not continue.";
 
@@ -64,16 +64,16 @@ void PusherBoris::operator()()
 
       // ! 0. check, if we should use classical calculations.
       // ! Required to increase modeling speed
-#ifdef PUSHERBORIS_BORIS_ADAPTIVE
+#ifdef PUSHER_BORIS_ADAPTIVE
       if (pow(velocity[0], 2) + pow(velocity[1], 2) + pow(velocity[2], 2) > REL_LIMIT_POW_2)
         use_rel = true;
 #endif
       // ! 1. Multiplication by relativistic factor (only for relativistic case)
       // ! \f$ u_{n-\frac{1}{2}} = \gamma_{n-\frac{1}{2}} * v_{n-\frac{1}{2}} \f$
-#ifdef PUSHERBORIS_BORIS_ADAPTIVE
+#ifdef PUSHER_BORIS_ADAPTIVE
       if (use_rel)
 #endif
-#if defined (PUSHERBORIS_BORIS_RELATIVISTIC) || defined (PUSHERBORIS_BORIS_ADAPTIVE)
+#if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
       {
         sq_velocity = velocity.length2();
 
@@ -90,10 +90,10 @@ void PusherBoris::operator()()
       // ! 3. Rotation in the magnetic field
       // ! \f$ u" = u' + \frac{2}{1 + B'^2}  [(u' + [u' \times B'(n)] ) \times B'(n)] \f$,
       // ! \f$ B'(n) = \frac{B(n) q dt}{2 m * \gamma_n} \f$
-#ifdef PUSHERBORIS_BORIS_ADAPTIVE
+#ifdef PUSHER_BORIS_ADAPTIVE
       if (use_rel)
 #endif
-#if defined (PUSHERBORIS_BORIS_RELATIVISTIC) || defined (PUSHERBORIS_BORIS_ADAPTIVE)
+#if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
       {
         sq_velocity = velocity.length2();
         gamma = phys::rel::lorenz_factor_inv(sq_velocity);
@@ -125,10 +125,10 @@ void PusherBoris::operator()()
       velocity += e;
 
       // ! 5. Division by relativistic factor
-#ifdef PUSHERBORIS_BORIS_ADAPTIVE
+#ifdef PUSHER_BORIS_ADAPTIVE
       if (use_rel)
 #endif
-#if defined (PUSHERBORIS_BORIS_RELATIVISTIC) || defined (PUSHERBORIS_BORIS_ADAPTIVE)
+#if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
       {
         sq_velocity = velocity.length2();
         gamma = phys::rel::lorenz_factor_inv(sq_velocity);

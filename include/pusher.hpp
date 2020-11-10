@@ -40,10 +40,9 @@ protected:
 public:
   Pusher() {};
   Pusher(MaxwellSolver *_maxwell_solver, vector<SpecieP *> _species_p, TimeSim *_time)
+    : maxwell_solver(_maxwell_solver), time(_time)
   {
-    maxwell_solver = _maxwell_solver;
     species_p = _species_p;
-    time = _time;
   };
 
   virtual void operator()() = 0;
