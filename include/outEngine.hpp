@@ -18,16 +18,14 @@
 #ifndef _OUT_ENGINE_HPP_
 #define _OUT_ENGINE_HPP_
 
-#include <fstream>
-#include <iostream>
 #include <string>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "algo/grid.hpp"
 
+#include "defines.hpp"
+#include "msg.hpp"
+
 using namespace std;
+
 class OutEngine
 {
 public:

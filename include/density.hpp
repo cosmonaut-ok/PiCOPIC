@@ -18,8 +18,8 @@
 #ifndef _DENSITY_HPP_
 #define _DENSITY_HPP_
 
-#include "geometry.hpp"
-#include "algo/grid.hpp"
+#include "defines.hpp"
+#include "msg.hpp"
 #include "algo/weighter.hpp"
 #include "specieP.hpp"
 

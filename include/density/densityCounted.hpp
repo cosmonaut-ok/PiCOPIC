@@ -18,11 +18,7 @@
 #ifndef _DENSITY_COUNTED_HPP_
 #define _DENSITY_COUNTED_HPP_
 
-#include "geometry.hpp"
-#include "algo/grid.hpp"
-#include "algo/weighter.hpp"
 #include "density.hpp"
-#include "specieP.hpp"
 
 class DensityCounted : public Density
 {

@@ -18,20 +18,26 @@
 #ifndef _SPECIE_P_HPP_
 #define _SPECIE_P_HPP_
 
-#include "constant.hpp"
-#include "phys/rel.hpp"
-#include "algo/common.hpp"
-#include "msg.hpp"
-#include "algo/grid.hpp"
-#include "geometry.hpp"
-// #include "fieldE.hpp"
-// #include "fieldH.hpp"
-#include "maxwellSolver/maxwellSolverYee.hpp"
-#include "timeSim.hpp"
+#include <math.h>
+#include <string>
+#include <vector>
 
+#include "defines.hpp"
+#include "msg.hpp"
+
+#include "math/vector3d.hpp"
 #include "math/rand.hpp"
 #include "math/maxwellJuettner.hpp"
-#include "math/vector3d.hpp"
+#include "phys/rel.hpp"
+
+#ifdef MAXWELL_SOLVER_YEE
+#include "maxwellSolver/maxwellSolverYee.hpp"
+#endif
+
+#include "geometry.hpp"
+#include "timeSim.hpp"
+
+using namespace std;
 
 //! define service constant "particle`s vector size"
 #define P_VEC_SIZE 13

@@ -19,7 +19,8 @@
 #define _GRID_3D_HPP_
 
 #include "defines.hpp"
-#include "loguru.hpp"
+#include "msg.hpp"
+
 #include "algo/grid.hpp"
 
 template<class T>

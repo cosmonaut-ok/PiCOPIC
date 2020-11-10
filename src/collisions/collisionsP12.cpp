@@ -16,7 +16,7 @@
  */
 
 #include "collisions/collisionsP12.hpp"
-#include <iostream>
+
 // say: TA77   - Takizuka, Abe; 1977; DOI: 10.1016/0021-9991(77)90099-7
 //      TA77S18 - P12 et al.; 2018; DOI: 10.1002/ctpp.201700121
 

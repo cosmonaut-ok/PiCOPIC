@@ -16,11 +16,11 @@
  */
 
 // enable openmp optional
-#include <typeinfo>
 #include <signal.h>
 #include <unistd.h>
-
-#include "msg.hpp"
+#include <vector>
+#include <string>
+#include <atomic>         // std::atomic, std::memory_order_relaxed
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -32,22 +32,12 @@
 #include "msg.hpp"
 #include "cfg.hpp"
 #include "algo/common.hpp"
-
-#include <string>
-#include <atomic>         // std::atomic, std::memory_order_relaxed
-
-#include "math/rand.hpp"
-#include "math/maxwellJuettner.hpp"
-
-#include "geometry.hpp"
 #include "algo/grid.hpp"
-#include "timeSim.hpp"
+
+#include "domain.hpp"
+#include "dataWriter.hpp"
 #include "specieP.hpp"
 #include "beamP.hpp"
-// #include "fieldE.hpp"
-#include "maxwellSolver/maxwellSolverYee.hpp"
-#include "specieP.hpp"
-#include "dataWriter.hpp"
 
 using namespace std;
 

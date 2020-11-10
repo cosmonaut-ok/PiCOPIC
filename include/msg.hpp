@@ -15,6 +15,28 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "loguru.hpp"
+
+#ifdef LOGURU_WITH_STREAMS
+#undef LOGURU_WITH_STREAMS
+#define LOGURU_WITH_STREAMS 1
+#endif
+
+#ifdef LOGURU_SCOPE_TIME_PRECISION
+#undef LOGURU_SCOPE_TIME_PRECISION
+#define LOGURU_SCOPE_TIME_PRECISION 3
+#endif
+
+#ifdef LOGURU_REPLACE_GLOG
+#undef LOGURU_REPLACE_GLOG
+#define LOGURU_REPLACE_GLOG 1
+#endif
+
+#ifdef LOGURU_USE_FMTLIB
+#undef LOGURU_USE_FMTLIB
+#define LOGURU_USE_FMTLIB 1
+#endif
+
 #ifndef _MSG_HPP_
 #define _MSG_HPP_
 
@@ -22,6 +44,7 @@
 #include <iomanip> // std::setw
 
 #include "algo/common.hpp"
+#include "defines.hpp"
 
 #define MSG(message) std::cout << message << std::endl;
 

@@ -20,23 +20,18 @@
 
 #include <vector>
 #include <algorithm>    // std::min, std::random_shuffle
-#include <typeinfo>
-#include <ctime>        // std::time
-#include <cstdlib>      // std::rand, std::srand
-#include <math.h>       // floor, asin
-
-#include <string>
 
 #include "defines.hpp"
-#include "loguru.hpp"
-#include "algo/common.hpp"
-#include "geometry.hpp"
-#include "specieP.hpp"
+#include "msg.hpp"
+
+#include "phys/plasma.hpp"
 
 #include "temperature/temperatureCounted.hpp"
 #include "density/densityCounted.hpp"
 
 // const double PROTON_MASS = EL_MASS * 1836;
+
+using namespace std;
 
 class Collisions
 {

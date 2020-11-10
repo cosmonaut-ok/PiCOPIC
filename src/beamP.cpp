@@ -15,9 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <typeinfo>
-
-#include "msg.hpp"
 #include "beamP.hpp"
 
 BeamP::BeamP (unsigned int id, // ID for every particles specie

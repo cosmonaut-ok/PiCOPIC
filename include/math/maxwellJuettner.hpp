@@ -18,18 +18,9 @@
 #ifndef _MAXWELL_JUETTNER_HPP_
 #define _MAXWELL_JUETTNER_HPP_
 
-#include <cmath>
-#include <ctime>
-#include <cstdlib>
+#include "defines.hpp"
+#include "msg.hpp"
 
-#include <iostream>
-
-// IDRIS
-#include <cstring>
-// IDRIS
-
-#include <vector>
-#include "constant.hpp"
 #include "math/rand.hpp"
 
 namespace math::maxwell_juettner

@@ -18,14 +18,9 @@
 #ifndef _PUSHER_HPP_
 #define _PUSHER_HPP_
 
-#include <vector>
-
-#include "geometry.hpp"
-#include "algo/grid3d.hpp"
-#include "timeSim.hpp"
+#include "defines.hpp"
+#include "msg.hpp"
 #include "specieP.hpp"
-
-#include "maxwellSolver.hpp"
 
 #ifdef MAXWELL_SOLVER_YEE
 #include "maxwellSolver/maxwellSolverYee.hpp"

@@ -18,15 +18,9 @@
 #ifndef _PLASMA_HPP_
 #define _PLASMA_HPP_
 
-#include <math.h>
-#include <algorithm>
-
 #include "defines.hpp"
 #include "constant.hpp"
-#include "loguru.hpp"
-#include "algo/common.hpp"
-#include "math/vector3d.hpp"
-#include "phys/rel.hpp"
+#include "msg.hpp"
 
 namespace phys::plasma
 {

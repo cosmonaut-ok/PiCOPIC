@@ -19,7 +19,7 @@
 #define _GRID_HPP_
 
 #include "defines.hpp"
-#include "loguru.hpp"
+#include "msg.hpp"
 
 template <class T>
 class Grid

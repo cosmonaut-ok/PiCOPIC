@@ -21,11 +21,15 @@ DOXYGEN_FORMATS       = @DOXYGEN_FORMATS@
 DOXYGEN_DIRS          = doc/app doc/lib doc/vis
 RELEASE               = @RELEASE@
 
+SUBPTHS               =  algo math phys current maxwellSolver collisions outEngine density temperature pusher
+
 ### PiCoPiC sources and settings
 PiCoPiC_MODULE           = PiCoPiC
 PiCoPiC_C_SRCS           =
 
-PiCoPiC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/algo/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp) $(wildcard $(SRCDIR)/phys/*.cpp) $(wildcard $(SRCDIR)/current/*.cpp) $(wildcard $(SRCDIR)/maxwellSolver/*.cpp) $(wildcard $(SRCDIR)/collisions/*.cpp) $(wildcard $(SRCDIR)/outEngine/*.cpp) $(wildcard $(SRCDIR)/density/*.cpp) $(wildcard $(SRCDIR)/temperature/*.cpp) $(wildcard $(SRCDIR)/pusher/*.cpp)
+PiCoPiC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(foreach d, $(SUBPTHS), $(wildcard $(SRCDIR)/$d/*.cpp))
+
+# PiCoPiC_CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/algo/*.cpp) $(wildcard $(SRCDIR)/math/*.cpp) $(wildcard $(SRCDIR)/phys/*.cpp) $(wildcard $(SRCDIR)/current/*.cpp) $(wildcard $(SRCDIR)/maxwellSolver/*.cpp) $(wildcard $(SRCDIR)/collisions/*.cpp) $(wildcard $(SRCDIR)/outEngine/*.cpp) $(wildcard $(SRCDIR)/density/*.cpp) $(wildcard $(SRCDIR)/temperature/*.cpp) $(wildcard $(SRCDIR)/pusher/*.cpp)
 
 PiCoPiC_LDFLAGS          = @LDFLAGS_ADDITIONAL@
 PiCoPiC_ARFLAGS          =
@@ -107,11 +111,13 @@ $(loguru_SUBDIR)/%.o: $(loguru_SUBDIR)/%.cpp
 CLEAN_FILES  = y.tab.c y.tab.h lex.yy.c core *.orig *.rej \
                \\\#*\\\# *~ *% .\\\#*
 
-BUILD_DIRS = $(OBJDIR) $(OBJDIR)/algo $(OBJDIR)/math $(OBJDIR)/phys $(OBJDIR)/maxwellSolver $(OBJDIR)/current $(OBJDIR)/collisions $(OBJDIR)/outEngine $(OBJDIR)/density $(OBJDIR)/temperature $(OBJDIR)/pusher $(TARGETDIR)
+BUILD_DIRS = $(OBJDIR) $(foreach d, $(SUBPTHS), $(OBJDIR)/$d) $(TARGETDIR)
 
-space :=
-space +=
-comma :=,
+# BUILD_DIRS = $(OBJDIR) $(OBJDIR)/algo $(OBJDIR)/math $(OBJDIR)/phys $(OBJDIR)/maxwellSolver $(OBJDIR)/current $(OBJDIR)/collisions $(OBJDIR)/outEngine $(OBJDIR)/density $(OBJDIR)/temperature $(OBJDIR)/pusher $(TARGETDIR)
+
+# space :=
+# space +=
+# comma :=,
 
 clean: $(SUBDIRS:%=%/__clean__) $(EXTRASUBDIRS:%=%/__clean__) $(TESTSUBDIRS:%=%/__clean__) $(DOXYGEN_FORMATS:%=%/__clean__)
 	$(RM) $(PiCoPiC_OBJS) $(CLEAN_FILES)

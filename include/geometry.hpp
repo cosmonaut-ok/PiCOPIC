@@ -18,8 +18,9 @@
 #ifndef _GEOMETRY_HPP_
 #define _GEOMETRY_HPP_
 
-#include <cmath>
+#include "defines.hpp"
 #include "constant.hpp"
+#include "msg.hpp"
 
 using namespace constant;
 

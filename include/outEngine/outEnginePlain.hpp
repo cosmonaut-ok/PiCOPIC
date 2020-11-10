@@ -18,9 +18,6 @@
 #ifndef _OUT_ENGINE_PLAIN_HPP_
 #define _OUT_ENGINE_PLAIN_HPP_
 
-#include "defines.hpp"
-#include "loguru.hpp"
-#include "algo/common.hpp"
 #include "outEngine.hpp"
 
 using namespace std;

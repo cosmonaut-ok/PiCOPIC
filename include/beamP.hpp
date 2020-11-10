@@ -18,7 +18,8 @@
 #ifndef _BEAM_P_HPP_
 #define _BEAM_P_HPP_
 
-#include "math/rand.hpp"
+// #include "msg.hpp"
+// #include "math/rand.hpp"
 #include "specieP.hpp"
 
 class SpecieP;

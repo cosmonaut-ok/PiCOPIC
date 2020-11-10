@@ -18,6 +18,8 @@
 #ifndef _WEIGHTER_HPP_
 #define _WEIGHTER_HPP_
 
+#include "defines.hpp"
+#include "msg.hpp"
 #include "geometry.hpp"
 #include "algo/grid.hpp"
 #include "specieP.hpp"

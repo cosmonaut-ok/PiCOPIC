@@ -18,11 +18,7 @@
 #ifndef _DENSITY_WEIGHTED_HPP_
 #define _DENSITY_WEIGHTED_HPP_
 
-#include "geometry.hpp"
-#include "algo/grid.hpp"
-#include "algo/weighter.hpp"
 #include "density.hpp"
-#include "specieP.hpp"
 
 class DensityWeighted : public Density
 {

@@ -18,11 +18,6 @@
 #ifndef _TEMPERATURE_COUNTED_HPP_
 #define _TEMPERATURE_COUNTED_HPP_
 
-#include "constant.hpp"
-#include "phys/rel.hpp"
-#include "geometry.hpp"
-#include "algo/grid.hpp"
-#include "specieP.hpp"
 #include "temperature.hpp"
 
 class TemperatureCounted : public Temperature

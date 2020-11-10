@@ -18,18 +18,11 @@
 #ifndef _LIB_HPP_
 #define _LIB_HPP_
 
-#include <sstream>
-#include <iostream>
-#include <string>
-#include <sys/stat.h> // stat
-#include <errno.h> // errno, ENOENT, EEXIST
 #include <math.h>
-#include <algorithm>
-#include <ctime>
-
-#include <fstream>
 #include <vector>
-#include <cstdlib>
+#include <algorithm>  // std::transform
+#include <sys/stat.h> // stat
+#include <fstream>    // std::ifstream
 
 #ifdef __SSE__
 #include <pmmintrin.h>
@@ -44,7 +37,7 @@
 #endif
 
 #include "defines.hpp"
-#include "loguru.hpp"
+#include "msg.hpp"
 
 #include "algo/grid.hpp"
 #include "constant.hpp"

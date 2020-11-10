@@ -16,7 +16,6 @@
  */
 
 #include "specieP.hpp"
-#include "geometry.hpp"
 
 SpecieP::SpecieP (unsigned int p_id,
                   string p_name,

@@ -16,7 +16,6 @@
  */
 
 #include "cfg.hpp"
-#include <typeinfo>
 
 #define MIN_DOMAIN_GRID_AMOUNT 64
 

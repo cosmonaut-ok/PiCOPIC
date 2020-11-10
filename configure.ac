@@ -218,10 +218,4 @@ fi
 
 AC_DEFINE_UNQUOTED([CXXFLAGS], ["$CFLAGS_DEFAULT $CFLAGS_ADDITIONAL"], [define used C(XX)FLAGS])
 
-# define loguru serve variables
-AC_DEFINE_UNQUOTED([LOGURU_WITH_STREAMS], [1], [Enable loguru stream behavior])
-AC_DEFINE_UNQUOTED([LOGURU_SCOPE_TIME_PRECISION], [3], [Resolution of loguru scope timers. 3=ms, 6=us, 9=ns])
-AC_DEFINE_UNQUOTED([LOGURU_REPLACE_GLOG], [1], [Replace GLOG by Loguru])
-AC_DEFINE_UNQUOTED([LOGURU_USE_FMTLIB], [0], [Use fmtlib])
-
 AC_OUTPUT(Makefile)

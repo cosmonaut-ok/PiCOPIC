@@ -20,13 +20,17 @@
 
 #include <vector>
 
-#include "geometry.hpp"
+#include "defines.hpp"
+#include "msg.hpp"
+
 #include "algo/grid3d.hpp"
 #include "timeSim.hpp"
+#include "geometry.hpp"
 #include "specieP.hpp"
 
+using namespace std;
+
 class SpecieP;
-// class Geometry;
 
 class Current
 {

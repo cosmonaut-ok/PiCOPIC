@@ -15,8 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <typeinfo>
-
 #include "outEngine/outEnginePlain.hpp"
 
 OutEnginePlain::OutEnginePlain (string a_path, string a_subpath, unsigned int a_shape, int *a_size,

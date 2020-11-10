@@ -18,13 +18,6 @@
 #ifndef _CURRENT_ZIGZAG_
 #define _CURRENT_ZIGZAG_
 
-#include <vector>
-#include <algorithm>
-
-#include "geometry.hpp"
-#include "algo/grid3d.hpp"
-#include "timeSim.hpp"
-#include "specieP.hpp"
 #include "current.hpp"
 
 using namespace std;

@@ -18,14 +18,13 @@
 #ifndef _DATA_WRITER_HPP_
 #define _DATA_WRITER_HPP_
 
-#include <string>
-#include <sstream>
+#include <math.h> // ceil
 
+#include "defines.hpp"
 #include "msg.hpp"
-#include "algo/common.hpp"
-#include "algo/grid.hpp"
-#include "timeSim.hpp"
+
 #include "geometry.hpp"
+#include "timeSim.hpp"
 #include "domain.hpp"
 
 #ifdef USE_HDF5

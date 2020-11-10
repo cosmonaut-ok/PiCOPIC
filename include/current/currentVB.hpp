@@ -18,12 +18,6 @@
 #ifndef _CURRENT_VB_HPP_
 #define _CURRENT_VB_HPP_
 
-#include <vector>
-
-#include "geometry.hpp"
-#include "algo/grid3d.hpp"
-#include "timeSim.hpp"
-#include "specieP.hpp"
 #include "current.hpp"
 
 #define SOME_SHIT_DENSITY_STRICT(q, r, dr, dz, delta_t) \

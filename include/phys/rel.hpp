@@ -19,12 +19,11 @@
 #define _REL_HPP_
 
 #include <math.h>
-#include <algorithm>
 
 #include "defines.hpp"
 #include "constant.hpp"
-#include "loguru.hpp"
-#include "algo/common.hpp"
+#include "msg.hpp"
+
 #include "math/vector3d.hpp"
 
 namespace phys::rel

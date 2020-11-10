@@ -18,8 +18,6 @@
 #ifndef _MAXWELLSOLVERYEE_HPP_
 #define _MAXWELLSOLVERYEE_HPP_
 
-#include "specieP.hpp"
-#include "math/vector3d.hpp"
 #include "maxwellSolver.hpp"
 
 class MaxwellSolverYee : public MaxwellSolver

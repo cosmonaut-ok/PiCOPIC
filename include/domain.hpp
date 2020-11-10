@@ -18,15 +18,7 @@
 #ifndef _DOMAIN_HPP_
 #define _DOMAIN_HPP_
 
-#include <vector>
-
-#include <algorithm>
-
-#include "algo/grid.hpp"
-#include "algo/grid3d.hpp"
-#include "geometry.hpp"
-#include "timeSim.hpp"
-#include "cfg.hpp"
+#include "defines.hpp"
 #include "msg.hpp"
 
 #include "specieP.hpp"
@@ -49,8 +41,6 @@
 #include "current/currentZigZag.hpp"
 #endif
 
-#include "density/densityCharge.hpp"
-
 #ifdef DENSITY_CALC_COUNTING
 #include "density/densityCounted.hpp"
 #elif DENSITY_CALC_WEIGHTING
@@ -72,6 +62,8 @@
 #include "collisions/collisionsP12.hpp"
 #endif
 #endif
+
+#include "density/densityCharge.hpp"
 
 using namespace std;
 

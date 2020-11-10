@@ -17,8 +17,6 @@
 
 // https://portal.hdfgroup.org/pages/viewpage.action?pageId=50073884
 
-#include <typeinfo>
-
 #include "outEngine/outEngineHDF5.hpp"
 
 OutEngineHDF5::OutEngineHDF5 (H5File* a_file, string a_path, string a_subpath,

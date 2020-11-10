@@ -20,11 +20,8 @@
 
 #include <vector>
 
-#include "constant.hpp"
-#include "geometry.hpp"
-#include "algo/grid.hpp"
-#include "algo/common.hpp"
-#include "specieP.hpp"
+#include "defines.hpp"
+#include "msg.hpp"
 #include "density.hpp"
 
 class Temperature

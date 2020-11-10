@@ -18,32 +18,17 @@
 #ifndef _CFG_HPP_
 #define _CFG_HPP_
 
-#include <exception>
-#include <omp.h>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include <math.h>
+#include <sstream> // std::stringstream
+#include <fstream> // std::ifstream
+
+#include "picojson.h"
 
 #include "defines.hpp"
-#include "picojson.h"
-#include "loguru.hpp"
-
-// enable openmp optional
-#ifdef _OPENMP
-#include <omp.h>
-#else
-#define omp_get_thread_num() 0
-#endif
-
-#include "constant.hpp"
-#include "algo/common.hpp"
+#include "msg.hpp"
 #include "phys/plasma.hpp"
+
 #include "geometry.hpp"
 #include "timeSim.hpp"
-#include "msg.hpp"
 
 using namespace std;
 using namespace picojson;

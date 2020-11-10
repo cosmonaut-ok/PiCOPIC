@@ -18,18 +18,11 @@
 #ifndef _RAND_HPP_
 #define _RAND_HPP_
 
-#include <algorithm>
-#include <cmath>
-#include <ctime>
-#include <iomanip>
-
-#include <iostream>
-#include <string>
-#include <map>
 #include <random>
 
-#include "constant.hpp"
 #include "defines.hpp"
+#include "constant.hpp"
+#include "msg.hpp"
 
 using namespace std;
 

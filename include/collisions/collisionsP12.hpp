@@ -18,23 +18,6 @@
 #ifndef _COLLISIONS_P12_HPP_
 #define _COLLISIONS_P12_HPP_
 
-#include <vector>
-#include <algorithm>    // std::min, std::random_shuffle
-#include <typeinfo>
-#include <ctime>        // std::time
-#include <cstdlib>      // std::rand, std::srand
-#include <math.h>       // floor, asin
-
-#include <string>
-
-#include "algo/common.hpp"
-#include "phys/rel.hpp"
-#include "phys/plasma.hpp"
-#include "geometry.hpp"
-#include "specieP.hpp"
-
-#include "specieP.hpp"
-
 #include "collisions.hpp"
 
 class CollisionsP12 : public Collisions

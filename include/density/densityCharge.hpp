@@ -18,10 +18,7 @@
 #ifndef _DENSITY_CHARGE_
 #define _DENSITY_CHARGE_
 
-#include "geometry.hpp"
-#include "algo/grid.hpp"
-#include "algo/weighter.hpp"
-#include "specieP.hpp"
+#include "density.hpp"
 
 class DensityCharge
 {

@@ -18,13 +18,11 @@
 #ifndef _VECTOR_3D_HPP_
 #define _VECTOR_3D_HPP_
 
-#include <sstream>
-#include <iostream>
 #include <math.h>
-#include <algorithm>
-#include <cmath>
 #include <vector>
 
+#include "defines.hpp"
+#include "msg.hpp"
 
 template <typename T>
 class vector3d

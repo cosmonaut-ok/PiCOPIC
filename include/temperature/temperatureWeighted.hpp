@@ -18,13 +18,11 @@
 #ifndef _TEMPERATURE_WEIGHTED_HPP_
 #define _TEMPERATURE_WEIGHTED_HPP_
 
-#include "constant.hpp"
-#include "geometry.hpp"
-#include "algo/grid.hpp"
-#include "algo/weighter.hpp"
-#include "specieP.hpp"
-#include "density/densityWeighted.hpp"
+#include "defines.hpp"
+#include "msg.hpp"
+
 #include "temperature.hpp"
+#include "density/densityWeighted.hpp"
 
 class TemperatureWeighted : public Temperature
 {
