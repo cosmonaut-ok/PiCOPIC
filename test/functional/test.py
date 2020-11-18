@@ -132,7 +132,7 @@ class bootstrap ():
         if self.verbose: print("\nEnd of application Output.\n==========================\n")
         ## print time report
         print(Fore.CYAN + "Execution time is", round(end_time - start_time, 2),  "s." + Style.RESET_ALL)
-        
+
 
     def __del__(self):
         utils = Util()
@@ -187,9 +187,26 @@ class picopicTest ():
             print("Data matching for " + component_name + ":" + filename,
                   Fore.RED + "FAILED" + Style.RESET_ALL)
 
-        if not isc and self.verbose:
-            print(Fore.YELLOW + "Standard Deviation " + str(test_value_std) + "; Ralative Difference: " + str(abs((test_value_std - true_value_std) / true_value_std)) + Style.RESET_ALL)
-            print(Fore.YELLOW + "Variance " + str(test_value_var) + "; Ralative Difference: " + str(abs((test_value_var - true_value_var) / true_value_var)) + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.YELLOW, "Standard Deviation of",
+                  component_name,
+                  ". test data:",
+                  str(test_value_std),
+                  ", true data:",
+                  str(true_value_std),
+                  "; Ralative Difference:",
+                  str(abs((test_value_std - true_value_std) / true_value_std)),
+                  Style.RESET_ALL)
+
+            print(Fore.YELLOW, "Variance of",
+                  component_name,
+                  ". test data:",
+                  str(test_value_var),
+                  ", true data:",
+                  str(true_value_var),
+                  "; Ralative Difference:",
+                  str(abs((test_value_var - true_value_var) / true_value_var)),
+                  Style.RESET_ALL)
 
         return isc
 
@@ -231,7 +248,7 @@ def test_example(template_name, number, accept_ieee=True,
     for i in components:
         s = t.compare(i, '{}.dat'.format(number))
         if status: status = s
-    
+
     return status
 
 
@@ -478,9 +495,9 @@ if __name__ == "__main__":
 
     if args.type == 'smoke':
         if ieee:
-            rtol = 0.2
+            rtol = 0.15
         else:
-            rtol = 0.2
+            rtol = 0.15
         for i in range(1, 5):
             print(Fore.GREEN + "Launching tests. Try " + str(i) + Style.RESET_ALL)
             status = test_example('picopic.json.tmpl', 4,
@@ -514,5 +531,7 @@ if __name__ == "__main__":
 
     if status:
         print(Fore.BLUE + "Test PASSED" + Style.RESET_ALL)
+        exit(0)
     else:
         print(Fore.RED + "Test FAILED" + Style.RESET_ALL)
+        exit(1)
