@@ -22,6 +22,7 @@
 #include "msg.hpp"
 
 #include "specieP.hpp"
+#include "beamP.hpp"
 
 #if defined (PUSHER_BORIS_ADAPTIVE) || defined (PUSHER_BORIS_CLASSIC) || defined (PUSHER_BORIS_RELATIVISTIC)
 #include "pusher/pusherBoris.hpp"

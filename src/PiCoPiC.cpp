@@ -34,7 +34,7 @@
 #include "algo/common.hpp"
 #include "algo/grid.hpp"
 
-#include "domain.hpp"
+#include "SMB.hpp"
 #include "dataWriter.hpp"
 #include "specieP.hpp"
 #include "beamP.hpp"
@@ -54,7 +54,7 @@ string hdf5_filepath;
 H5::H5File *file;
 #endif // USE_HDF5
 
-void signalHandler( int signum )
+void signal_handler( int signum )
 {
 #ifdef USE_HDF5
   if (signum == SIGUSR1 && !lock_)
@@ -124,244 +124,6 @@ string parse_argv_get_config(int argc, char **argv)
   return filename;
 }
 
-void particles_runaway_collector (Grid<Domain*> domains, Geometry *geometry_global)
-{
-  // ! collects particles, that runaways from their domains and moves it to
-  // ! domain, corresponding to their actual position
-  // ! also, erase particles, that run out of simulation domain
-  unsigned int r_domains = domains.x_size;
-  unsigned int z_domains = domains.y_size;
-  int j_c = 0;
-  int r_c = 0;
-  for (unsigned int idx = 0; idx < 2; ++idx)
-    for (unsigned int idy = 0; idy < 2; ++idy)
-    {
-#pragma omp parallel for
-      for (unsigned int i = idx; i < r_domains; i+=2)
-        for (unsigned int j = idy; j < z_domains; j+=2)
-        {
-          Domain *sim_domain = domains(i, j);
-
-          for (auto ps = sim_domain->species_p.begin(); ps != sim_domain->species_p.end(); ++ps)
-          {
-            (**ps).particles.erase(
-              std::remove_if(
-                (**ps).particles.begin(), (**ps).particles.end(),
-                [ &j_c, &r_c, &ps, &domains, &sim_domain, &i, &j,
-                  &geometry_global ] ( vector <double> * & o )
-                {
-                  bool res = false;
-
-                  // not unsigned, because it could be less, than zero
-                  int r_cell = P_CELL_R((*o));
-                  int z_cell = P_CELL_Z((*o));
-
-                  unsigned int i_dst = (unsigned int)ceil(r_cell / sim_domain->geometry.r_grid_amount);
-                  unsigned int j_dst = (unsigned int)ceil(z_cell / sim_domain->geometry.z_grid_amount);
-
-                  if (r_cell < 0 || z_cell < 0)
-                  {
-                    LOG_S(ERROR) << "Particle's position is less, than 0. Position is: ["
-                                 << P_VEL_R((*o)) << ", "
-                                 << P_VEL_Z((*o)) << "]. Removing";
-                    ++r_c;
-                    res = true;
-                  }
-
-                  else if (r_cell >= geometry_global->r_grid_amount)
-                  {
-                    if ((**ps).id >= BEAM_ID_START)
-                    {
-                      LOG_S(MAX) << "Beam particle is out of simulation domain: ["
-                                 << P_POS_R((*o)) << ", "
-                                 << P_POS_Z((*o)) << "]. Removing";
-                    }
-                    else
-                    {
-                      LOG_S(ERROR) << "Particle's r-position is more, than geometry r-size: "
-                                   << geometry_global->r_grid_amount
-                                   << ". Position is: ["
-                                   << P_POS_R((*o)) << ", "
-                                   << P_POS_Z((*o)) << "]. Removing";
-                    }
-                    ++r_c;
-                    res = true;
-                  }
-
-                  // remove out-of-simulation particles
-                  else if (z_cell >= geometry_global->z_grid_amount)
-                  {
-                    if ((**ps).id >= BEAM_ID_START)
-                    {
-                      LOG_S(MAX) << "Beam particle is out of simulation domain: ["
-                                 << P_POS_R((*o)) << ", "
-                                 << P_POS_Z((*o)) << "]. Removing";
-                    }
-                    else
-                    {
-                      LOG_S(ERROR) << "Particle's z-position is more, than geometry z-size: "
-                                   << geometry_global->z_grid_amount
-                                   << ". Position is: ["
-                                   << P_POS_R((*o)) << ", "
-                                   << P_POS_Z((*o)) << "]. Removing";
-                    }
-                    ++r_c;
-                    res = true;
-                  }
-
-                  // move particles between cells
-                  else if (i_dst != i || j_dst != j) // check that destination domain is different, than source
-                  {
-                    ++j_c;
-
-                    Domain *dst_domain = domains(i_dst, j_dst);
-                    for (auto pd = dst_domain->species_p.begin(); pd != dst_domain->species_p.end(); ++pd)
-                      if ((**pd).id == (**ps).id)
-                      {
-                        LOG_S(MAX) << "Particle with specie "
-                                   << (**ps).id
-                                   << " jump from domain "
-                                   << i << "," << j
-                                   << " to domain "
-                                   << i_dst << "," << j_dst;
-                        (**pd).particles.push_back(o);
-                      }
-
-                    res = true;
-                  }
-                  return res;
-                }),
-              (**ps).particles.end());
-          }
-        }
-    }
-  if (j_c > 0)
-    LOG_S(MAX) << "Amount of particles to jump between domains: " << j_c;
-  if (r_c > 0)
-    LOG_S(MAX) << "Amount of particles to remove: " << r_c;
-}
-
-void current_overlay (Grid<Domain*> domains, Geometry *geometry_global)
-{
-  unsigned int r_domains = domains.x_size;
-  unsigned int z_domains = domains.y_size;
-
-  for (unsigned int idx = 0; idx < 2; ++idx)
-    for (unsigned int idy = 0; idy < 2; ++idy)
-    {
-#pragma omp parallel for
-      for (unsigned int i = idx; i < r_domains; i+=2)
-        for (unsigned int j = idy; j < z_domains; j+=2)
-        {
-          Domain *sim_domain = domains(i, j);
-
-          // update grid
-          if (i < geometry_global->domains_by_r - 1)
-          {
-            Domain *dst_domain = domains(i+1, j);
-            sim_domain->current->current.overlay_x(dst_domain->current->current);
-          }
-
-          if (j < geometry_global->domains_by_z - 1)
-          {
-            Domain *dst_domain = domains(i, j + 1);
-            sim_domain->current->current.overlay_y(dst_domain->current->current);
-          }
-
-          // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
-          // {
-          //   Domain *dst_domain = domains(i + 1, j + 1);
-          //   sim_domain->current->current.overlay_xy(dst_domain->current->current);
-          // }
-        }
-    }
-}
-
-void field_h_overlay (Grid<Domain*> domains, Geometry *geometry_global)
-{
-  unsigned int r_domains = domains.x_size;
-  unsigned int z_domains = domains.y_size;
-
-  for (unsigned int idx = 0; idx < 2; ++idx)
-    for (unsigned int idy = 0; idy < 2; ++idy)
-    {
-#pragma omp parallel for
-      for (unsigned int i = idx; i < r_domains; i+=2)
-        for (unsigned int j = idy; j < z_domains; j+=2)
-        {
-          Domain *sim_domain = domains(i, j);
-
-          // update grid
-          if (i < geometry_global->domains_by_r - 1)
-          {
-            Domain *dst_domain = domains(i+1, j);
-            sim_domain->maxwell_solver->field_h.overlay_x(
-              dst_domain->maxwell_solver->field_h
-              );
-            sim_domain->maxwell_solver->field_h_at_et.overlay_x(
-              dst_domain->maxwell_solver->field_h_at_et
-              );
-          }
-
-          if (j < geometry_global->domains_by_z - 1)
-          {
-            Domain *dst_domain = domains(i, j + 1);
-            sim_domain->maxwell_solver->field_h.overlay_y(
-              dst_domain->maxwell_solver->field_h);
-            sim_domain->maxwell_solver->field_h_at_et.overlay_y(
-              dst_domain->maxwell_solver->field_h_at_et);
-          }
-
-          // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
-          // {
-          //   Domain *dst_domain = domains(i + 1, j + 1);
-          //   sim_domain->field_h->field.overlay_xy(dst_domain->field_h->field);
-          //   sim_domain->field_h->field_at_et.overlay_xy(dst_domain->field_h->field_at_et);
-          // }
-        }
-    }
-}
-
-void field_e_overlay (Grid<Domain*> domains, Geometry *geometry_global)
-{
-  unsigned int r_domains = domains.x_size;
-  unsigned int z_domains = domains.y_size;
-
-  for (unsigned int idx = 0; idx < 2; ++idx)
-    for (unsigned int idy = 0; idy < 2; ++idy)
-    {
-#pragma omp parallel for
-      for (unsigned int i = idx; i < r_domains; i+=2)
-        for (unsigned int j = idy; j < z_domains; j+=2)
-        {
-          Domain *sim_domain = domains(i, j);
-
-          // update grid
-          if (i < geometry_global->domains_by_r - 1)
-          {
-            Domain *dst_domain = domains(i+1, j);
-            sim_domain->maxwell_solver->field_e.overlay_x(
-              dst_domain->maxwell_solver->field_e
-              );
-          }
-
-          if (j < geometry_global->domains_by_z - 1)
-          {
-            Domain *dst_domain = domains(i, j + 1);
-            sim_domain->maxwell_solver->field_e.overlay_y(
-              dst_domain->maxwell_solver->field_e
-              );
-          }
-
-          // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
-          // {
-          //   Domain *dst_domain = domains(i + 1, j + 1);
-          //   sim_domain->field_e->field.overlay_xy(dst_domain->field_e->field);
-          // }
-        }
-    }
-}
-
 int main(int argc, char **argv)
 {
 #ifdef USE_HDF5
@@ -370,18 +132,18 @@ int main(int argc, char **argv)
 #endif
 
   // handle signals
-  signal(SIGUSR1, signalHandler);
-  signal(SIGUSR2, signalHandler);
-  signal(SIGTERM, signalHandler); // kill
-  signal(SIGINT, signalHandler);  // control+c
-  signal(SIGQUIT, signalHandler);
-  signal(SIGPIPE, signalHandler);
-  signal(SIGTSTP, signalHandler);
-  signal(SIGABRT, signalHandler);
-  signal(SIGBUS, signalHandler);
-  signal(SIGFPE, signalHandler);
-  signal(SIGILL, signalHandler);
-  signal(SIGSEGV, signalHandler);
+  signal(SIGUSR1, signal_handler);
+  signal(SIGUSR2, signal_handler);
+  signal(SIGTERM, signal_handler); // kill
+  signal(SIGINT, signal_handler);  // control+c
+  signal(SIGQUIT, signal_handler);
+  signal(SIGPIPE, signal_handler);
+  signal(SIGTSTP, signal_handler);
+  signal(SIGABRT, signal_handler);
+  signal(SIGBUS, signal_handler);
+  signal(SIGFPE, signal_handler);
+  signal(SIGILL, signal_handler);
+  signal(SIGSEGV, signal_handler);
 
 
   // do not handle signals by Loguru
@@ -400,19 +162,19 @@ int main(int argc, char **argv)
 
   loguru::init(argc, argv, options);
 
-#ifdef _OPENMP
-#ifdef OPENMP_DYNAMIC_THREADS
-  omp_set_dynamic(1); // Explicitly enable dynamic teams
-  LOG_S(MAX) << "Number of Calculation Processors Changing Dynamically";
-#else
-  int cores = omp_get_num_procs();
-  LOG_S(MAX) << "Number of Calculation Processors: " << cores;
-  omp_set_dynamic(0); // Explicitly disable dynamic teams
-  omp_set_num_threads(cores); // Use 4 threads for all consecutive parallel regions
-#endif
-#else
-  LOG_S(MAX) << "There is no Openmp Here";
-#endif
+// #ifdef _OPENMP
+// #ifdef OPENMP_DYNAMIC_THREADS
+//   omp_set_dynamic(1); // Explicitly enable dynamic teams
+//   LOG_S(MAX) << "Number of Calculation Processors Changing Dynamically";
+// #else
+//   int cores = omp_get_num_procs();
+//   LOG_S(MAX) << "Number of Calculation Processors: " << cores;
+//   omp_set_dynamic(0); // Explicitly disable dynamic teams
+//   omp_set_num_threads(cores); // Use 4 threads for all consecutive parallel regions
+// #endif
+// #else
+//   LOG_S(MAX) << "There is no Openmp Here";
+// #endif
 
   ////!
   ////! Program begin
@@ -425,13 +187,18 @@ int main(int argc, char **argv)
   LOG_S(MAX) << "Reading Configuration File ``" << cfgname << "''";
   Cfg cfg = Cfg(cfgname);
 
+  LOG_S(MAX) << "Initializing Geometry, Time and Simulation Domains";
   Geometry* geometry_global = cfg.geometry;
 
   TimeSim* sim_time_clock = cfg.time;
 
-  LOG_S(MAX) << "Initializing Geometry, Particle Species and Simulation Domains";
+  // define a shared memory block
+  SMB shared_mem_blk ( &cfg, geometry_global, sim_time_clock);
 
-  Grid<Domain*> domains (geometry_global->domains_by_r, geometry_global->domains_by_z, 0);
+  Grid<Domain *> domains = shared_mem_blk.domains;
+
+  unsigned int r_domains = geometry_global->domains_by_r;
+  unsigned int z_domains = geometry_global->domains_by_z;
 
   LOG_S(MAX) << "Initializing Data Paths";
 
@@ -458,7 +225,6 @@ int main(int argc, char **argv)
   }
 #endif // USE_HDF5
 
-
   vector<DataWriter> data_writers;
 
   for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
@@ -479,150 +245,20 @@ int main(int argc, char **argv)
     data_writers.push_back(writer);
   }
 
-  unsigned int r_domains = geometry_global->domains_by_r;
-  unsigned int z_domains = geometry_global->domains_by_z;
-
-  unsigned int p_id_counter = 0;
-  unsigned int b_id_counter = BEAM_ID_START;
-
-  for (unsigned int i=0; i < r_domains; i++)
-    for (unsigned int j = 0; j < z_domains; j++)
-    {
-      //! init geometry
-      bool wall_r0 = false;
-      bool wall_rr = false;
-      bool wall_z0 = false;
-      bool wall_zz = false;
-
-      double pml_l_z0 = 0;
-      double pml_l_zwall = 0;
-      double pml_l_rwall = 0;
-
-      // set walls to domains
-      if (i == 0)
-        wall_r0 = true;
-      if (i == r_domains - 1)
-        wall_rr = true;
-      if (j == 0)
-        wall_z0 = true;
-      if (j == z_domains - 1)
-        wall_zz = true;
-
-#ifdef USE_PML
-      // set PML to domains
-      if (geometry_global->r_size - geometry_global->r_size / r_domains * (i + 1)
-          < geometry_global->pml_length[2])
-        pml_l_rwall = geometry_global->pml_length[2];
-      if (j * geometry_global->z_size / z_domains < geometry_global->pml_length[1])
-        pml_l_z0 = geometry_global->pml_length[1];
-      if (geometry_global->z_size - geometry_global->z_size / z_domains * (j + 1)
-          < geometry_global->pml_length[3])
-        pml_l_zwall = geometry_global->pml_length[3];
-#endif
-
-      unsigned int bot_r = (unsigned int)geometry_global->r_grid_amount * i / r_domains;
-      unsigned int top_r = (unsigned int)geometry_global->r_grid_amount * (i + 1) / r_domains;
-
-      unsigned int left_z = (unsigned int)geometry_global->z_grid_amount * j / z_domains;
-      unsigned int right_z = (unsigned int)geometry_global->z_grid_amount * (j + 1) / z_domains;
-
-#ifdef USE_PML
-      Geometry *geom_domain = new Geometry (
-        geometry_global->r_size / r_domains,
-        geometry_global->z_size / z_domains,
-        bot_r, top_r, left_z, right_z,
-        pml_l_z0 * z_domains,    // multiplying is a workaround, because domain
-        pml_l_zwall * z_domains, // doesn't know abount whole simulation domain size
-        pml_l_rwall * r_domains, // aka geometry_global
-        geometry_global->pml_sigma[0],
-        geometry_global->pml_sigma[1],
-        wall_r0,
-        wall_z0,
-        wall_rr,
-        wall_zz
-        );
-
-      // WORKAROUND: // used just to set PML
-      // for information about global geometry
-      // WARNING! don't use it in local geometries!
-      geom_domain->domains_by_r = r_domains;
-      geom_domain->domains_by_z = z_domains;
-      // /WORKAROUND
-#else
-      Geometry *geom_domain = new Geometry (
-        geometry_global->r_size / r_domains,
-        geometry_global->z_size / z_domains,
-        bot_r, top_r, left_z, right_z,
-        wall_r0,
-        wall_z0,
-        wall_rr,
-        wall_zz
-        );
-#endif
-
-      // init particle species
-      vector<SpecieP *> species_p;
-
-      p_id_counter = 0; // counter for particle specie IDs
-      b_id_counter = 1000; // counter for particle specie IDs
-
-      for (auto k = cfg.particle_species.begin(); k != cfg.particle_species.end(); ++k)
-      {
-        unsigned int grid_cell_macro_amount = (int)(k->macro_amount / r_domains / z_domains);
-
-        double drho_by_dz = (k->right_density - k->left_density) / geometry_global->z_size;
-        double ld_local = k->left_density + drho_by_dz * left_z * geom_domain->z_cell_size;
-        double rd_local = k->left_density + drho_by_dz * right_z * geom_domain->z_cell_size;
-
-        SpecieP *pps = new SpecieP (p_id_counter,
-                                    k->name,
-                                    k->charge, k->mass, grid_cell_macro_amount,
-                                    ld_local, rd_local,
-                                    k->temperature, geom_domain, sim_time_clock);
-        species_p.push_back(pps);
-
-        ++p_id_counter;
-      };
-
-      // init particle beams
-      if (! cfg.particle_beams.empty())
-        for (auto bm = cfg.particle_beams.begin(); bm != cfg.particle_beams.end(); ++bm)
-        {
-          if (bm->bunches_amount > 0)
-          {
-            BeamP *beam = new BeamP (b_id_counter, ((string)"beam_").append(bm->name),
-                                     bm->charge, bm->mass, bm->macro_amount,
-                                     bm->start_time, bm->bunch_radius, bm->density,
-                                     bm->bunches_amount, bm->bunch_length,
-                                     bm->bunches_distance, bm->velocity,
-                                     geom_domain, sim_time_clock);
-
-            species_p.push_back(beam);
-          }
-          ++b_id_counter;
-        }
-
-      Domain *sim_domain = new Domain(*geom_domain, species_p, sim_time_clock);
-      domains.set(i, j, sim_domain);
-    };
-
   LOG_S(INFO) << "Preparation to calculation";
 
-#pragma omp parallel for collapse(2)
-  for (unsigned int i=0; i < r_domains; i++)
-    for (unsigned int j = 0; j < z_domains; j++)
-    {
-      Domain *sim_domain = domains(i, j);
+  shared_mem_blk.distribute();
+// #pragma omp parallel for collapse(2)
+//   for (unsigned int i=0; i < r_domains; i++)
+//     for (unsigned int j = 0; j < z_domains; j++)
+//     {
+//       Domain *sim_domain = domains(i, j);
 
-      sim_domain->distribute(); // spatial and velocity distribution
-    }
+//       sim_domain->distribute(); // spatial and velocity distribution
+//     }
 
   //! Main calculation loop
   LOG_S(INFO) << "Launching calculation";
-
-  // need to set p_id_counter to zero, because bunches are injecting dynamically
-  // and we need mark it
-  p_id_counter = 0;
 
   while (sim_time_clock->current <= sim_time_clock->end)
   {
@@ -651,79 +287,16 @@ int main(int argc, char **argv)
     LOG_S(MAX) << "Run calculation loop for timestamp: " << sim_time_clock->current;
 
 //// inject beam
-    if (! cfg.particle_beams.empty())
-    {
-#pragma omp parallel for collapse(2)
-      for (unsigned int i=0; i < r_domains; i++)
-        for (unsigned int j = 0; j < z_domains; j++)
-        {
-          Domain *sim_domain = domains(i, j);
-
-          // ! 1. manage beam
-          sim_domain->manage_beam();
-        }
-    }
+    shared_mem_blk.inject_beam();
 
 //// solve maxwell equations
-#pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_domains; i++)
-      for (unsigned int j = 0; j < z_domains; j++)
-      {
-        Domain *sim_domain = domains(i, j);
-
-        // ! 5. Calculate electric field (E)
-        sim_domain->weight_field_e(); // +
-      }
-    field_e_overlay(domains, geometry_global);
-
-#pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_domains; i++)
-      for (unsigned int j = 0; j < z_domains; j++)
-      {
-        Domain *sim_domain = domains(i, j);
-
-        // ! 2. Calculate magnetic field (H)
-        sim_domain->weight_field_h(); // +
-      }
-    field_h_overlay(domains, geometry_global);
+    shared_mem_blk.solve_maxvell();
 
 //// advance particles
-#pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_domains; i++)
-      for (unsigned int j = 0; j < z_domains; j++)
-      {
-        Domain *sim_domain = domains(i, j);
-
-        // ! 3. Calculate velocity
-        sim_domain->push_particles(); // +
-
-#ifdef COLLISIONS
-        sim_domain->collide(); // collide before reflect
-#endif
-
-        sim_domain->dump_particle_positions_to_old(); // +
-        sim_domain->update_particles_coords(); // + +reflect
-        sim_domain->particles_back_position_to_rz(); // +
-
-        sim_domain->reflect();
-
-        sim_domain->particles_back_velocity_to_rz();
-
-        sim_domain->bind_cell_numbers();
-      }
-    particles_runaway_collector(domains, geometry_global);
+    shared_mem_blk.advance_particles();
 
 //// solve currents
-#pragma omp parallel for collapse(2)
-    for (unsigned int i=0; i < r_domains; i++)
-      for (unsigned int j = 0; j < z_domains; j++)
-      {
-        Domain *sim_domain = domains(i, j);
-
-        sim_domain->reset_current();
-        sim_domain->weight_current();
-      }
-    current_overlay(domains, geometry_global);
+    shared_mem_blk.solve_current();
 
 //// output data
     // for (unsigned int i=0; i < data_writers.size(); ++i)
@@ -742,14 +315,14 @@ int main(int argc, char **argv)
         // reopen HDF file initially
         try
         {
-	  LOG_S(INFO) << "Locking data file...";
+          LOG_S(INFO) << "Locking data file...";
           H5::Exception::dontPrint();
           file = new H5::H5File(hdf5_filepath.c_str(), H5F_ACC_RDWR);
-	  LOG_S(INFO) << "Locked";
+          LOG_S(INFO) << "Locked";
         }
         catch (const H5::FileIException&)
         {
-	  LOG_S(FATAL) << "Can not open data file ``" << hdf5_filepath << "''. Not accessible, or corrupted";
+          LOG_S(FATAL) << "Can not open data file ``" << hdf5_filepath << "''. Not accessible, or corrupted";
         }
 
         // recreate all of the writers
@@ -769,8 +342,8 @@ int main(int argc, char **argv)
 
           data_writers.push_back(writer);
         }
-	lock_.store(false, std::memory_order_relaxed);
-	recreate_writers_.store(false, std::memory_order_relaxed);
+        lock_.store(false, std::memory_order_relaxed);
+        recreate_writers_.store(false, std::memory_order_relaxed);
       }
       else
       {
