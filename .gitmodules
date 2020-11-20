@@ -10,3 +10,6 @@
 [submodule "lib/loguru"]
 	path = lib/loguru
 	url = https://github.com/emilk/loguru.git
+[submodule "lib/HighFive"]
+	path = lib/HighFive
+	url = https://github.com/BlueBrain/HighFive.git

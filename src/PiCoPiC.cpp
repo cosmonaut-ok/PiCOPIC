@@ -41,17 +41,17 @@
 
 using namespace std;
 
-#define BEAM_ID_START 1000
-
 #ifdef USE_HDF5
-#include "H5Cpp.h"
+#include <highfive/H5File.hpp>
 
 std::atomic<bool> lock_(false);
 std::atomic<bool> recreate_writers_(false);
 
 string hdf5_filepath;
 
-H5::H5File *file;
+using namespace HighFive;
+
+File *file;
 #endif // USE_HDF5
 
 void signal_handler( int signum )
@@ -61,7 +61,7 @@ void signal_handler( int signum )
   {
     LOG_S(INFO) << "Pause calculation";
     LOG_S(INFO) << "Unlocking data file...";
-    file->close();
+    delete file;
     lock_.store(true, std::memory_order_relaxed);
     LOG_S(INFO) << "Unlocked";
     cout << "Waiting for ``USR2'' OS signal to continue" << flush;
@@ -87,9 +87,9 @@ void signal_handler( int signum )
        || signum == SIGSEGV )
   {
 #ifdef USE_HDF5
-    file->close();
+    delete file;
 #endif // USE_HDF5
-    LOG_S(ERROR) << "Signal ``" << signum << "'' received. Exiting";
+    std::cerr << "Signal ``" << signum << "'' received. Exiting" << std::endl;
     exit(signum);
   }
 }
@@ -203,6 +203,9 @@ int main(int argc, char **argv)
   LOG_S(MAX) << "Initializing Data Paths";
 
 #ifdef USE_HDF5
+  // suppress traditional HDF5's flooding error output
+  H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+
   std::string path = cfg.output_data->data_root;
   std::string datafile_name = "data.h5";
 
@@ -213,15 +216,13 @@ int main(int argc, char **argv)
 
   try
   {
-    H5::Exception::dontPrint();
-    file = new H5::H5File(hdf5_filepath.c_str(), H5F_ACC_EXCL);
-    // uncomment to truncate if exists
-    // file = new H5::H5File(hdf5_filepath.c_str(), H5F_ACC_TRUNC);
+    file = new File(hdf5_filepath.c_str(), File::Create | File::Excl);
   }
-  catch (const H5::FileIException& error)
+  catch (const FileException& error)
   {
-    error.printErrorStack();
-    LOG_S(FATAL) << "Can not create new file ``" << hdf5_filepath << "'', file already exists. Exiting";
+    LOG_S(FATAL) << "Can not create new file ``"
+                 << hdf5_filepath << "''"
+                 << endl << error.what();
   }
 #endif // USE_HDF5
 
@@ -316,11 +317,10 @@ int main(int argc, char **argv)
         try
         {
           LOG_S(INFO) << "Locking data file...";
-          H5::Exception::dontPrint();
-          file = new H5::H5File(hdf5_filepath.c_str(), H5F_ACC_RDWR);
+          file = new File(hdf5_filepath.c_str(), File::ReadWrite | File::Excl);
           LOG_S(INFO) << "Locked";
         }
-        catch (const H5::FileIException&)
+        catch (const Exception&)
         {
           LOG_S(FATAL) << "Can not open data file ``" << hdf5_filepath << "''. Not accessible, or corrupted";
         }
@@ -356,7 +356,7 @@ int main(int argc, char **argv)
   }
 
 #ifdef USE_HDF5
-  file->close();
+  delete file;
 #endif
 
 #ifndef DEBUG
