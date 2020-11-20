@@ -17,9 +17,9 @@
 
 #include "outEngine/outEnginePlain.hpp"
 
-OutEnginePlain::OutEnginePlain (string a_path, string a_subpath, unsigned int a_shape, int *a_size,
-                                bool a_append, bool a_compress, unsigned int a_compress_level)
-  : OutEngine (a_path, a_subpath, a_shape, a_size, a_append, a_compress, a_compress_level)
+OutEnginePlain::OutEnginePlain (string _path, string _subpath, unsigned int _shape, int *_size,
+                                bool _append, bool _compress, unsigned int _compress_level)
+  : OutEngine (_path, _subpath, _shape, _size, _append, _compress, _compress_level)
 {
   // make root directory
   algo::common::make_directory(path + "/" + subpath);
@@ -30,7 +30,7 @@ OutEnginePlain::OutEnginePlain (string a_path, string a_subpath, unsigned int a_
     LOG_S(WARNING) << "compression is not supported by plaintext output engine";
 }
 
-void OutEnginePlain::write_rec(string a_name, Grid<double> data)
+void OutEnginePlain::write_rec(string _name, Grid<double> data)
 {
   std::ofstream::openmode omode;
   if (append)
@@ -38,7 +38,7 @@ void OutEnginePlain::write_rec(string a_name, Grid<double> data)
   else
     omode = ios::trunc;
 
-  ofstream out_val(path + "/" + subpath + "/" + a_name + ".dat", omode);
+  ofstream out_val(path + "/" + subpath + "/" + _name + ".dat", omode);
 
   for (int i = size[0]; i < size[2]; i++)
     for (int j = size[1]; j < size[3]; j++)
@@ -47,7 +47,7 @@ void OutEnginePlain::write_rec(string a_name, Grid<double> data)
   out_val.close();
 }
 
-void OutEnginePlain::write_vec(string a_name, Grid<double> data)
+void OutEnginePlain::write_vec(string _name, Grid<double> data)
 {
   std::ofstream::openmode omode;
   if (append)
@@ -55,7 +55,7 @@ void OutEnginePlain::write_vec(string a_name, Grid<double> data)
   else
     omode = ios::trunc;
 
-  ofstream out_val(path + "/" + subpath + "/" + a_name + ".dat", omode);
+  ofstream out_val(path + "/" + subpath + "/" + _name + ".dat", omode);
 
   // vector by Z-component with fixed r (r_begin)
   if (size[1] == -1 && size[0] == -1 && size[3] == -1)
@@ -75,7 +75,7 @@ void OutEnginePlain::write_vec(string a_name, Grid<double> data)
   out_val.close();
 }
 
-void OutEnginePlain::write_dot(string a_name, Grid<double> data)
+void OutEnginePlain::write_dot(string _name, Grid<double> data)
 {
     std::ofstream::openmode omode;
   if (append)
@@ -83,14 +83,14 @@ void OutEnginePlain::write_dot(string a_name, Grid<double> data)
   else
     omode = ios::trunc;
 
-  ofstream out_val(path + "/" + subpath + "/" + a_name + ".dat", omode);
+  ofstream out_val(path + "/" + subpath + "/" + _name + ".dat", omode);
 
   out_val << data(size[2], size[3]) << endl;
 
   out_val.close();
 }
 
-void OutEnginePlain::write_1d_vector(string a_name, vector<double> data)
+void OutEnginePlain::write_1d_vector(string _name, vector<double> data)
 {
   std::ofstream::openmode omode;
   if (append)
@@ -98,7 +98,7 @@ void OutEnginePlain::write_1d_vector(string a_name, vector<double> data)
   else
     omode = ios::trunc;
 
-  ofstream out_val(path + "/" + subpath + "/" + a_name + ".dat", omode);
+  ofstream out_val(path + "/" + subpath + "/" + _name + ".dat", omode);
 
   for (auto i = data.begin(); i != data.end(); ++i)
     out_val << *i << " ";
@@ -106,9 +106,9 @@ void OutEnginePlain::write_1d_vector(string a_name, vector<double> data)
   out_val.close();
 }
 
-void OutEnginePlain::write_metadata(string metadata)
+void OutEnginePlain::write_metadata(string _metadata)
 {
   ofstream out_val(path + "/" + metadata_file, ios::out);
-  out_val << metadata;
+  out_val << _metadata;
   out_val.close();
 }

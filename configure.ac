@@ -17,7 +17,6 @@ dnl AC_CONFIG_MACRO_DIR([acdir])
 # AC_CANONICAL_SYSTEM
 
 AC_SUBST(EXPERIMENTAL_OPTION)
-AC_SUBST(LEGACY_OPTION)
 AC_SUBST(IEEE)
 AC_SUBST(DEBUG)
 AC_SUBST(SINGLETHREAD)
@@ -28,6 +27,8 @@ AC_SUBST(DOXYGEN_FORMATS)
 AC_SUBST(HDF5_OPTION)
 AC_SUBST(PUSHER)
 AC_SUBST(OMP_DYNAMIC)
+AC_SUBST(MPI)
+AC_SUBST(MPI_SUPPORT)
 AC_SUBST(DEBUG_OPTION)
 AC_SUBST(PROFILER)
 AC_SUBST(HDF5)
@@ -43,14 +44,14 @@ RELEASE=${PACKAGE_VERSION}
 HDF5_URL="https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.bz2"
 HDF5_VERSION="hdf5-1.12.0"
 
-dnl AC_ARG_ENABLE([experimental], [AC_HELP_STRING([--enable-experimental], [Enable experimental features (only for debug/development)])], [ENABLE_EXPERIMENTAL="$enableval"], [ENABLE_EXPERIMENTAL=no])
-dnl AC_ARG_ENABLE([legacy], [AC_HELP_STRING([--enable-legacy], [Use legacy instead of current features])], [ENABLE_LEGACY="$enableval"], [ENABLE_LEGACY=no])
+AC_ARG_ENABLE([experimental], [AC_HELP_STRING([--enable-experimental], [Enable experimental features (only for debug/development)])], [ENABLE_EXPERIMENTAL="$enableval"], [ENABLE_EXPERIMENTAL=no])
 AC_ARG_ENABLE([debug], [AC_HELP_STRING([--enable-debug], [Enable debug (optimized for GDB)])], [DEBUG="$enableval"], [DEBUG=no])
 AC_ARG_ENABLE([fixme], [AC_HELP_STRING([--enable-fixme], [Enable FIXME output ])], [FIXME="$enableval"], [FIXME=${DEBUG}])
 AC_ARG_ENABLE([profiler], [AC_HELP_STRING([--enable-profiler], [Enable profiler support for performance debug])], [PROFILER="$enableval"], [PROFILER=no])
 AC_ARG_ENABLE([ieee], [AC_HELP_STRING([--enable-ieee], [Keep IEEE compliant rounding and disable hardware acceleration. Decrease calculation speed])], [IEEE="$enableval"], [IEEE=${DEBUG}])
 AC_ARG_ENABLE([singlethread], [AC_HELP_STRING([--enable-singlethread], [Build application to run in single-thread mode (used in debug by default)])], [SINGLETHREAD="$enableval"], [SINGLETHREAD=${DEBUG}])
 AC_ARG_ENABLE([omp_dynamic], [AC_HELP_STRING([--enable-omp-dynamic], [Enable openmp dynamic thread creation])], [OMP_DYNAMIC="$enableval"], [OMP_DYNAMIC=no])
+AC_ARG_ENABLE([mpi], [AC_HELP_STRING([--enable-mpi], [Enable openMPI support])], [MPI="$enableval"], [MPI=no])
 
 AC_ARG_ENABLE([hdf5], [AC_HELP_STRING([--disable-hdf5], [Build application with hdf5 library support])], [HDF5="$enableval"], [HDF5=yes])
 
@@ -77,9 +78,18 @@ AC_LANG(C++)
 # set default and customized options
 CFLAGS_DEFAULT="-m64 -mcmodel=medium -std=c++17"
 
+# experimental
+if test x$ENABLE_EXPERIMENTAL == xyes; then
+  EXPERIMENTAL_OPTION=true
+  AC_DEFINE_UNQUOTED([USE_EXPERIMENTAL], [true], [Enable experimental options])
+  AC_MSG_WARN([You are going to enable experimental features, that was not completely tested. It can cause unexpected behavior!])
+else
+  EXPERIMENTAL_OPTION=false
+fi
+
 # singlethread
 if test x$SINGLETHREAD == xyes; then
-     CFLAGS_ADDITIONAL+=" -Wno-unknown-pragmas"
+  CFLAGS_ADDITIONAL+=" -Wno-unknown-pragmas"
   AC_DEFINE_UNQUOTED([SINGLETHREAD], [true], [Debug option])
 else
   AC_OPENMP
@@ -87,7 +97,17 @@ else
 fi
 
 if test x$OMP_DYNAMIC == xyes; then
-   AC_DEFINE_UNQUOTED([OPENMP_DYNAMIC_THREADS], [true], [Set OpenMP threads to be created dynamically])
+  AC_DEFINE_UNQUOTED([OPENMP_DYNAMIC_THREADS], [true], [Set OpenMP threads to be created dynamically])
+fi
+
+if test x$MPI == xyes; then
+  if test x$EXPERIMENTAL_OPTION == xtrue; then
+    AC_MSG_WARN([MPI support is still experimental and can be unstable.])
+    MPI_SUPPORT=true
+    AC_DEFINE_UNQUOTED([MPI_SUPPORT], [true], [Enable openMPI support])
+  else
+    AC_MSG_ERROR([MPI support is an experimental option. To ensure, that you know, what you do, please, add --enable-experimental to your configure arguments])
+  fi
 fi
 
 # speedup
@@ -118,32 +138,32 @@ if test x$PROFILER = xyes; then
 fi
 
 if test x$HDF5 = xyes; then
-   AC_HAVE_LIBRARY(hdf5, , AC_MSG_WARN([No such library hdf5. You can build it locally after configuration with `make hdf5-install` before build and it includes to build paths automatically]))
-   HDF5_OPTION=true
-   AC_DEFINE_UNQUOTED([USE_HDF5], [true], [Use HDF5])
+  AC_HAVE_LIBRARY(hdf5, , AC_MSG_WARN([No such library hdf5. You can build it locally after configuration with `make hdf5-install` before build and it includes to build paths automatically]))
+HDF5_OPTION=true
+  AC_DEFINE_UNQUOTED([USE_HDF5], [true], [Use HDF5])
 else
-   HDF5_OPTION=false
+  HDF5_OPTION=false
 fi
 
 if test x$PML = xyes; then
-   AC_DEFINE_UNQUOTED([USE_PML], [true], [Use PML (10.1006/jcph.1994.1159)])
+  AC_DEFINE_UNQUOTED([USE_PML], [true], [Use PML (10.1006/jcph.1994.1159)])
 fi
 
 AC_DEFINE_UNQUOTED([REL_LIMIT], [5e7], [Relativistit calculations limit (for boris-adaptive pusher)])
 
 # define a pusher
 if test x$PUSHER == xboris-adaptive; then
-   AC_DEFINE_UNQUOTED([PUSHER_BORIS_ADAPTIVE], [true], [Performance debug option])
+  AC_DEFINE_UNQUOTED([PUSHER_BORIS_ADAPTIVE], [true], [Performance debug option])
 elif test x$PUSHER == xboris; then
-   AC_DEFINE_UNQUOTED([PUSHER_BORIS_CLASSIC], [true], [Performance debug option])
+  AC_DEFINE_UNQUOTED([PUSHER_BORIS_CLASSIC], [true], [Performance debug option])
 elif test x$PUSHER == xboris-relativistic; then
-   AC_DEFINE_UNQUOTED([PUSHER_BORIS_RELATIVISTIC], [true], [Performance debug option])
+  AC_DEFINE_UNQUOTED([PUSHER_BORIS_RELATIVISTIC], [true], [Performance debug option])
 elif test x$PUSHER == xvay; then
-   AC_DEFINE_UNQUOTED([PUSHER_VAY], [true], [Performance debug option])
+  AC_DEFINE_UNQUOTED([PUSHER_VAY], [true], [Performance debug option])
 elif test x$PUSHER == xhiguera-cary; then
-   AC_DEFINE_UNQUOTED([PUSHER_HIGUERA_CARY], [true], [Performance debug option])
+  AC_DEFINE_UNQUOTED([PUSHER_HIGUERA_CARY], [true], [Performance debug option])
 else
-   AC_MSG_ERROR([Pusher is not supported.])
+  AC_MSG_ERROR([Pusher is not supported.])
 fi
 
 # define Maxwell solver
@@ -151,69 +171,73 @@ AC_DEFINE_UNQUOTED([MAXWELL_SOLVER_YEE], [true], [Yee FDTD Maxwellian solver])
 
 # define a temperature claculation algorithm
 if test x$TEMP_CALC == xweighting; then
-   AC_DEFINE_UNQUOTED([TEMP_CALC_WEIGHTING], [true], [Performance debug option])
+  AC_DEFINE_UNQUOTED([TEMP_CALC_WEIGHTING], [true], [Performance debug option])
 elif test x$TEMP_CALC == xcounting; then
-   AC_DEFINE_UNQUOTED([TEMP_CALC_COUNTING], [true], [Performance debug option])
+  AC_DEFINE_UNQUOTED([TEMP_CALC_COUNTING], [true], [Performance debug option])
 else
-   AC_MSG_ERROR([Temperature calculation algorithm is not supported.])
+  AC_MSG_ERROR([Temperature calculation algorithm is not supported.])
 fi
 
 # define a temperature claculation algorithm
 if test x$DENSITY_CALC == xweighting; then
-   AC_DEFINE_UNQUOTED([DENSITY_CALC_WEIGHTING], [true], [Performance debug option])
+  AC_DEFINE_UNQUOTED([DENSITY_CALC_WEIGHTING], [true], [Performance debug option])
 elif test x$DENSITY_CALC == xcounting; then
-   AC_DEFINE_UNQUOTED([DENSITY_CALC_COUNTING], [true], [Performance debug option])
+  AC_DEFINE_UNQUOTED([DENSITY_CALC_COUNTING], [true], [Performance debug option])
 else
-   AC_MSG_ERROR([Density calculation algorithm is not supported.])
+  AC_MSG_ERROR([Density calculation algorithm is not supported.])
 fi
 
 # define plasma spatial distribution type
 if test x$PLASMA_SPATIAL == xrandom; then
-   AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_RANDOM], [true], [Set plasma spatial distribution type to random])
+  AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_RANDOM], [true], [Set plasma spatial distribution type to random])
 elif test x$PLASMA_SPATIAL == xregular; then
-   AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_REGULAR], [true], [Set plasma spatial distribution type to regular])
+  AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_REGULAR], [true], [Set plasma spatial distribution type to regular])
 elif test x$PLASMA_SPATIAL == xcentered; then
-   AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_CENTERED], [true], [Set plasma spatial distribution type to cell-centered])
+  AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_CENTERED], [true], [Set plasma spatial distribution type to cell-centered])
 elif test x$PLASMA_SPATIAL == xflat; then
-   AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_FLAT], [true], [Set plasma spatial distribution type to "flat"])
+  AC_DEFINE_UNQUOTED([PLASMA_SPATIAL_FLAT], [true], [Set plasma spatial distribution type to "flat"])
 else
-   AC_MSG_ERROR([Plasma spatial distribution type is not supported.])
+  AC_MSG_ERROR([Plasma spatial distribution type is not supported.])
 fi
 
 # define plasma spatial distribution type
 if test x$PLASMA_VELOCITY == xthermal; then
-   AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_THERMAL], [true], [Set plasma spatial distribution type to random])
+  AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_THERMAL], [true], [Set plasma spatial distribution type to random])
 elif test x$PLASMA_VELOCITY == xrectangular; then
-   AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_RECTANGULAR], [true], [Set plasma spatial distribution type to regular ("flat" distribution)])
+  AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_RECTANGULAR], [true], [Set plasma spatial distribution type to regular ("flat" distribution)])
 elif test x$PLASMA_VELOCITY == xeigen; then
-   AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_EIGEN], [true], [Set plasma spatial distribution type to cell-centered])
+  AC_DEFINE_UNQUOTED([PLASMA_VELOCITY_EIGEN], [true], [Set plasma spatial distribution type to cell-centered])
 else
-   AC_MSG_ERROR([Plasma velocity distribution type is not supported.])
+  AC_MSG_ERROR([Plasma velocity distribution type is not supported.])
 fi
 
 # define charge concervation scheme
 if test x$CCS == xvillasenor-buneman; then
-   AC_DEFINE_UNQUOTED([CCS_VILLASENOR_BUNEMAN], [true], [Set plasma charge conservation scheme to Villasenor-Buneman])
+  AC_DEFINE_UNQUOTED([CCS_VILLASENOR_BUNEMAN], [true], [Set plasma charge conservation scheme to Villasenor-Buneman])
 elif test x$CCS == xzigzag; then
-   AC_DEFINE_UNQUOTED([CCS_ZIGZAG], [true], [Set plasma charge conservation scheme to ZigZag])
+  AC_DEFINE_UNQUOTED([CCS_ZIGZAG], [true], [Set plasma charge conservation scheme to ZigZag])
 else
-   AC_MSG_ERROR([Plasma charge conservation scheme is not supported.])
+  AC_MSG_ERROR([Plasma charge conservation scheme is not supported.])
 fi
 
 if test x$COLLISIONS = xyes; then
-   AC_DEFINE_UNQUOTED([COLLISIONS], [true], [Enable coulomb collisions])
-   AC_MSG_WARN([Coulomb collisions is an unfinished experimental feature. Currently it is ONLY for development purposes. Ensure, you know what you do by enabling it.])
-fi
+  if test x$EXPERIMENTAL_OPTION == xtrue; then
+    AC_DEFINE_UNQUOTED([COLLISIONS], [true], [Enable coulomb collisions])
+    AC_MSG_WARN([Coulomb collisions is still experimental and can be unstable.])
+  else
+    AC_MSG_ERROR([Coulomb collisions is an experimental option. To ensure, that you know, what you do, please, add --enable-experimental to your configure arguments])
+  fi
 
-# define charge concervation scheme
-if test x$COULOMB_COLLISIONS_SCHEME == xta77s; then
-   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_TA77S], [true], [Set coulomb collision scheme to 10.1002/ctpp.201700121])
-elif test x$COULOMB_COLLISIONS_SCHEME == xsk98; then
-   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_SK98], [true], [Set coulomb collision scheme to 10.1143/JPSJ.67.4084, 10.1016/j.jcp.2008.03.043])
-elif test x$COULOMB_COLLISIONS_SCHEME == xp12; then
-   AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_P12], [true], [Set coulomb collision scheme to 10.1063/1.4742167])
-else
-   AC_MSG_ERROR([Coulomb collisions scheme is not supported.])
+# define coulomb collisions scheme
+  if test x$COULOMB_COLLISIONS_SCHEME == xta77s; then
+    AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_TA77S], [true], [Set coulomb collision scheme to 10.1002/ctpp.201700121])
+  elif test x$COULOMB_COLLISIONS_SCHEME == xsk98; then
+    AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_SK98], [true], [Set coulomb collision scheme to 10.1143/JPSJ.67.4084, 10.1016/j.jcp.2008.03.043])
+  elif test x$COULOMB_COLLISIONS_SCHEME == xp12; then
+    AC_DEFINE_UNQUOTED([COULOMB_COLLISIONS_P12], [true], [Set coulomb collision scheme to 10.1063/1.4742167])
+  else
+    AC_MSG_ERROR([Coulomb collisions scheme is not supported.])
+  fi
 fi
 
 AC_DEFINE_UNQUOTED([CXXFLAGS], ["$CFLAGS_DEFAULT $CFLAGS_ADDITIONAL"], [define used C(XX)FLAGS])

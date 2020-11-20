@@ -19,6 +19,8 @@
 
 #include "outEngine/outEngineHDF5.hpp"
 
+using namespace HighFive;
+
 OutEngineHDF5::OutEngineHDF5 (File* _file, string _path, string _subpath,
                               unsigned int _shape, int *_size,
                               bool _append, bool _compress,
