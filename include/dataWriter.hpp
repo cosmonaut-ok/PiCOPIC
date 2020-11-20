@@ -58,7 +58,7 @@ public:
 #ifdef USE_HDF5
   HighFive::File *hdf5_file;
   OutEngineHDF5 engine;
-  void hdf5_init(string a_metadata);
+  void hdf5_init(string _metadata);
 #else
   OutEnginePlain engine;
 #endif // USE_HDF5
@@ -68,12 +68,12 @@ private:
   vector<double> out_data_plain;
 
 public:
-  DataWriter(string a_path, string a_component,
-             string a_specie, unsigned int a_shape,
-             int *a_size, unsigned int a_schedule,
-             bool a_compress, unsigned int a_compress_level,
-             Geometry *a_geom, TimeSim *a_time,
-             Grid<Domain *> a_domains, string a_metadata);
+  DataWriter(string _path, string _component,
+             string _specie, unsigned int _shape,
+             int *_size, unsigned int _schedule,
+             bool _compress, unsigned int _compress_level,
+             Geometry *_geom, TimeSim *_time,
+             Grid<Domain *> _domains, string _metadata);
 
   void merge_domains(string component, string specie);
   void merge_particle_domains(string parameter, unsigned int component, string specie);

@@ -22,13 +22,13 @@
 #include <string>
 #include <atomic>         // std::atomic, std::memory_order_relaxed
 
-#ifdef _OPENMP
-#include <omp.h>
-// #else
-// #define omp_get_thread_num() 0
-#endif
-
 #include "defines.hpp"
+
+#ifdef MPI_SUPPORT
+#include <mpi.h>
+using namespace MPI;
+#endif // MPI_SUPPORT
+
 #include "msg.hpp"
 #include "cfg.hpp"
 #include "algo/common.hpp"
@@ -49,9 +49,9 @@ std::atomic<bool> recreate_writers_(false);
 
 string hdf5_filepath;
 
-using namespace HighFive;
+// using namespace HighFive;
 
-File *file;
+HighFive::File *file;
 #endif // USE_HDF5
 
 void signal_handler( int signum )
@@ -162,93 +162,109 @@ int main(int argc, char **argv)
 
   loguru::init(argc, argv, options);
 
-// #ifdef _OPENMP
-// #ifdef OPENMP_DYNAMIC_THREADS
-//   omp_set_dynamic(1); // Explicitly enable dynamic teams
-//   LOG_S(MAX) << "Number of Calculation Processors Changing Dynamically";
-// #else
-//   int cores = omp_get_num_procs();
-//   LOG_S(MAX) << "Number of Calculation Processors: " << cores;
-//   omp_set_dynamic(0); // Explicitly disable dynamic teams
-//   omp_set_num_threads(cores); // Use 4 threads for all consecutive parallel regions
-// #endif
-// #else
-//   LOG_S(MAX) << "There is no Openmp Here";
-// #endif
-
   ////!
   ////! Program begin
   ////!
   LOG_S(INFO) << "Initialization";
 
-  // string cfgname;
-  string cfgname = parse_argv_get_config(argc, argv);
-
-  LOG_S(MAX) << "Reading Configuration File ``" << cfgname << "''";
-  Cfg cfg = Cfg(cfgname);
-
-  LOG_S(MAX) << "Initializing Geometry, Time and Simulation Domains";
-  Geometry* geometry_global = cfg.geometry;
-
-  TimeSim* sim_time_clock = cfg.time;
-
-  // define a shared memory block
-  SMB shared_mem_blk ( &cfg, geometry_global, sim_time_clock);
-
-  Grid<Domain *> domains = shared_mem_blk.domains;
-
-  unsigned int r_domains = geometry_global->domains_by_r;
-  unsigned int z_domains = geometry_global->domains_by_z;
-
-  LOG_S(MAX) << "Initializing Data Paths";
-
-#ifdef USE_HDF5
-  // suppress traditional HDF5's flooding error output
-  H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-
-  std::string path = cfg.output_data->data_root;
-  std::string datafile_name = "data.h5";
-
-  // make root directory
-  algo::common::make_directory(path);
-
-  hdf5_filepath = path + "/" + datafile_name;
-
+  //// init MPI
+#ifdef MPI_SUPPORT
   try
   {
-    file = new File(hdf5_filepath.c_str(), File::Create | File::Excl);
-  }
-  catch (const FileException& error)
-  {
-    LOG_S(FATAL) << "Can not create new file ``"
-                 << hdf5_filepath << "''"
-                 << endl << error.what();
-  }
+    // initialize MPI
+    Init ();
+    COMM_WORLD.Set_errhandler (MPI::ERRORS_THROW_EXCEPTIONS);
+
+    // get information about our world
+    const int NPROCS = COMM_WORLD.Get_size ();
+    const int ID = COMM_WORLD.Get_rank ();
+
+    // number of tasks
+    const size_t NTASKS = NPROCS - 1;
+    LOG_S(WARNING) << "Number of tasks is: " << NTASKS;
+
+    // size of each task
+    const size_t SZ = 1024 * 1024;
+#endif // MPI_SUPPORT
+
+    // string cfgname;
+    string cfgname = parse_argv_get_config(argc, argv);
+
+    LOG_S(MAX) << "Reading Configuration File ``" << cfgname << "''";
+    Cfg cfg = Cfg(cfgname);
+
+    LOG_S(MAX) << "Initializing Geometry, Time and Simulation Domains";
+    Geometry* geometry_global = cfg.geometry;
+
+    TimeSim* sim_time_clock = cfg.time;
+
+    // define a shared memory block
+    SMB shared_mem_blk ( &cfg, geometry_global, sim_time_clock);
+
+    Grid<Domain *> domains = shared_mem_blk.domains;
+
+    unsigned int r_domains = geometry_global->domains_by_r;
+    unsigned int z_domains = geometry_global->domains_by_z;
+
+    LOG_S(MAX) << "Initializing Data Paths";
+
+#ifdef USE_HDF5
+    // suppress traditional HDF5's flooding error output
+    H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+
+    std::string path = cfg.output_data->data_root;
+    std::string datafile_name = "data.h5";
+
+    // make root directory
+    algo::common::make_directory(path);
+
+    hdf5_filepath = path + "/" + datafile_name;
+
+    try
+    {
+#ifdef MPI_SUPPORT
+      if (ID == 0)
+#endif // MPI_SUPPORT
+        file = new HighFive::File(hdf5_filepath.c_str(), HighFive::File::Create | HighFive::File::Excl);
+    }
+    catch (const HighFive::FileException& error)
+    {
+      LOG_S(FATAL) << "Can not create new file ``"
+                   << hdf5_filepath << "''"
+                   << endl << error.what();
+    }
 #endif // USE_HDF5
 
-  vector<DataWriter> data_writers;
+    vector<DataWriter> data_writers;
 
-  for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
-  {
-    int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
+    for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
+    {
+      int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
 
-    DataWriter writer (cfg.output_data->data_root, i->component,
-                       i->specie, i->shape, probe_size, i->schedule,
-                       cfg.output_data->compress, cfg.output_data->compress_level,
-                       geometry_global, sim_time_clock, domains, cfg.cfg2str());
+      DataWriter writer (cfg.output_data->data_root, i->component,
+                         i->specie, i->shape, probe_size, i->schedule,
+                         cfg.output_data->compress, cfg.output_data->compress_level,
+                         geometry_global, sim_time_clock, domains, cfg.cfg2str());
 
 
 #ifdef USE_HDF5
-    writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
-    writer.hdf5_init(cfg.cfg2str());
+#ifdef MPI_SUPPORT
+      if (ID == 0)
+      {
+#endif
+        writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
+        writer.hdf5_init(cfg.cfg2str());
+#ifdef MPI_SUPPORT
+      }
+#endif
 #endif // USE_HDF5
 
-    data_writers.push_back(writer);
-  }
+      data_writers.push_back(writer);
+    }
 
-  LOG_S(INFO) << "Preparation to calculation";
+    LOG_S(INFO) << "Preparation to calculation";
 
-  shared_mem_blk.distribute();
+    shared_mem_blk.distribute();
 // #pragma omp parallel for collapse(2)
 //   for (unsigned int i=0; i < r_domains; i++)
 //     for (unsigned int j = 0; j < z_domains; j++)
@@ -258,112 +274,129 @@ int main(int argc, char **argv)
 //       sim_domain->distribute(); // spatial and velocity distribution
 //     }
 
-  //! Main calculation loop
-  LOG_S(INFO) << "Launching calculation";
+    //! Main calculation loop
+    LOG_S(INFO) << "Launching calculation";
 
-  while (sim_time_clock->current <= sim_time_clock->end)
-  {
-    //! Steps:
-    //! efield->calc_field
-    //! == efield overlay ==
-    //! 2. hfield->calc_field
-    //! == hfield overlay ==
-    //! 3. c_current->reset_j
-    //! 1. init beam
-    //! 6. push_particles
-    //! 7. dump_position_to_old
-    //! 8. half_step_pos
-    //! 9. back_position_to_rz
-    //! == runaway ==
-    //! 10. azimuthal_current_distribution
-    //! 11. half_step_pos
-    //! 13. back_position_to_rz
-    //! 12. reflection
-    //! == runaway ==
-    //! == current overlay ==
-    //! 14. current_distribution
-    //! 15. back_velocity_to_rz
-    //! == current overlay ==
+    while (sim_time_clock->current <= sim_time_clock->end)
+    {
+      //! Steps:
+      //! efield->calc_field
+      //! == efield overlay ==
+      //! 2. hfield->calc_field
+      //! == hfield overlay ==
+      //! 3. c_current->reset_j
+      //! 1. init beam
+      //! 6. push_particles
+      //! 7. dump_position_to_old
+      //! 8. half_step_pos
+      //! 9. back_position_to_rz
+      //! == runaway ==
+      //! 10. azimuthal_current_distribution
+      //! 11. half_step_pos
+      //! 13. back_position_to_rz
+      //! 12. reflection
+      //! == runaway ==
+      //! == current overlay ==
+      //! 14. current_distribution
+      //! 15. back_velocity_to_rz
+      //! == current overlay ==
 
-    LOG_S(MAX) << "Run calculation loop for timestamp: " << sim_time_clock->current;
+      LOG_S(MAX) << "Run calculation loop for timestamp: " << sim_time_clock->current;
 
 //// inject beam
-    shared_mem_blk.inject_beam();
+      shared_mem_blk.inject_beam();
 
 //// solve maxwell equations
-    shared_mem_blk.solve_maxvell();
+      shared_mem_blk.solve_maxvell();
 
 //// advance particles
-    shared_mem_blk.advance_particles();
+      shared_mem_blk.advance_particles();
 
 //// solve currents
-    shared_mem_blk.solve_current();
+      shared_mem_blk.solve_current();
 
 //// output data
-    // for (unsigned int i=0; i < data_writers.size(); ++i)
-    for (auto i = data_writers.begin(); i != data_writers.end(); i++)
-      (*i)();
+#ifdef MPI_SUPPORT
+      if (ID == 0)
+#endif
+        for (auto i = data_writers.begin(); i != data_writers.end(); i++)
+          (*i)();
 
-    sim_time_clock->current += sim_time_clock->step;
+      sim_time_clock->current += sim_time_clock->step;
 
 //// check if the simulation pause/unpause requested
-    // (signals USR1 for pause and USR2 for unpause
+      // (signals USR1 for pause and USR2 for unpause
 #ifdef USE_HDF5
-    while (lock_)
-    {
-      if (recreate_writers_)
+      while (lock_)
       {
-        // reopen HDF file initially
-        try
+        if (recreate_writers_)
         {
-          LOG_S(INFO) << "Locking data file...";
-          file = new File(hdf5_filepath.c_str(), File::ReadWrite | File::Excl);
-          LOG_S(INFO) << "Locked";
+          // reopen HDF file initially
+          try
+          {
+            LOG_S(INFO) << "Locking data file...";
+            file = new HighFive::File(hdf5_filepath.c_str(), HighFive::File::ReadWrite | HighFive::File::Excl);
+            LOG_S(INFO) << "Locked";
+          }
+          catch (const HighFive::Exception&)
+          {
+            LOG_S(FATAL) << "Can not open data file ``" << hdf5_filepath << "''. Not accessible, or corrupted";
+          }
+
+          // recreate all of the writers
+          data_writers.clear();
+
+          for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
+          {
+            int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
+
+            DataWriter writer (cfg.output_data->data_root, i->component,
+                               i->specie, i->shape, probe_size, i->schedule,
+                               cfg.output_data->compress, cfg.output_data->compress_level,
+                               geometry_global, sim_time_clock, domains, cfg.cfg2str());
+
+            writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
+            writer.hdf5_init(cfg.cfg2str());
+
+            data_writers.push_back(writer);
+          }
+          lock_.store(false, std::memory_order_relaxed);
+          recreate_writers_.store(false, std::memory_order_relaxed);
         }
-        catch (const Exception&)
+        else
         {
-          LOG_S(FATAL) << "Can not open data file ``" << hdf5_filepath << "''. Not accessible, or corrupted";
+          cout << "." << flush;
         }
-
-        // recreate all of the writers
-        data_writers.clear();
-
-        for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
-        {
-          int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
-
-          DataWriter writer (cfg.output_data->data_root, i->component,
-                             i->specie, i->shape, probe_size, i->schedule,
-                             cfg.output_data->compress, cfg.output_data->compress_level,
-                             geometry_global, sim_time_clock, domains, cfg.cfg2str());
-
-          writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
-          writer.hdf5_init(cfg.cfg2str());
-
-          data_writers.push_back(writer);
-        }
-        lock_.store(false, std::memory_order_relaxed);
-        recreate_writers_.store(false, std::memory_order_relaxed);
+        sleep(1);
       }
-      else
-      {
-        cout << "." << flush;
-      }
-      sleep(1);
-    }
 #endif
-
-  }
+    }
 
 #ifdef USE_HDF5
-  delete file;
+    delete file;
 #endif
 
 #ifndef DEBUG
-  MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
+    MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
 #endif
 
-  LOG_S(INFO) << "SIMULATION COMPLETE";
+    LOG_S(INFO) << "SIMULATION COMPLETE";
+
+#ifdef MPI_SUPPORT
+    Finalize();
+  }
+  catch (MPI::Exception& e )
+  {
+    cerr << "MPI error: " << e.Get_error_string() << e.Get_error_code() << endl;
+    MPI::COMM_WORLD.Abort (-1);
+    return -1;
+  }
+  // catch (const exception &e)
+  // {
+  //   cerr << e.what () << endl;
+  //   return -1;
+  // }
+#endif // MPI_SUPPORT
 
   return 0;
 }

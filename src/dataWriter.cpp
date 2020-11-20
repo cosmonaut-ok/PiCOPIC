@@ -17,12 +17,12 @@
 
 #include "dataWriter.hpp"
 
-DataWriter::DataWriter(string a_path, string a_component,
-                       string a_specie, unsigned int a_shape,
-                       int *a_size, unsigned int a_schedule,
-                       bool a_compress,  unsigned int a_compress_level,
-                       Geometry *a_geom, TimeSim *a_time,
-                       Grid<Domain *> a_domains, string a_metadata)
+DataWriter::DataWriter(string _path, string _component,
+                       string _specie, unsigned int _shape,
+                       int *_size, unsigned int _schedule,
+                       bool _compress,  unsigned int _compress_level,
+                       Geometry *_geom, TimeSim *_time,
+                       Grid<Domain *> _domains, string _metadata)
 {
   // ! path - path to save the results
   // ! component - some parameter, that should be dumped:
@@ -42,23 +42,23 @@ DataWriter::DataWriter(string a_path, string a_component,
   // ! time - pointer to global time object
   // ! domains - grid of pointers to domains
 
-  path = a_path;
-  component = a_component;
-  specie = a_specie;
-  if (a_shape < 4)
-    shape = a_shape;
+  path = _path;
+  component = _component;
+  specie = _specie;
+  if (_shape < 4)
+    shape = _shape;
   else
-    LOG_S(FATAL) << "Unknown DataWriter shape: " << a_shape;
+    LOG_S(FATAL) << "Unknown DataWriter shape: " << _shape;
 
   for (unsigned int i = 0; i < 4; i++)
-    size[i] = a_size[i];
+    size[i] = _size[i];
 
-  schedule = a_schedule;
-  compress = a_compress;
-  compress_level = a_compress_level;
-  geometry = a_geom;
-  time = a_time;
-  domains = a_domains;
+  schedule = _schedule;
+  compress = _compress;
+  compress_level = _compress_level;
+  geometry = _geom;
+  time = _time;
+  domains = _domains;
 
   out_data = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 0);
   out_data_plain = vector<double> (0);
@@ -119,11 +119,11 @@ DataWriter::DataWriter(string a_path, string a_component,
 }
 
 #ifdef USE_HDF5
-void DataWriter::hdf5_init(string a_metadata)
+void DataWriter::hdf5_init(string _metadata)
 {
   engine = OutEngineHDF5 (hdf5_file, path, name, shape, size, true,
                           compress, compress_level);
-  engine.write_metadata(a_metadata);
+  engine.write_metadata(_metadata);
 }
 #endif
 

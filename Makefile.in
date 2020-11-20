@@ -60,6 +60,10 @@ PiCoPiC_CXX_SRCS_TMP := $(PiCoPiC_CXX_SRCS)
 PiCoPiC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngine/outEngineHDF5.cpp, $(PiCoPiC_CXX_SRCS_TMP))
 endif
 
+ifeq (@MPI_SUPPORT@, true)
+HDF5_ADDITIONAL_OPTIONS := --enable-parallel --enable-shared
+endif
+
 PiCoPiC_OBJS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PiCoPiC_CXX_SRCS))
 PiCoPiC_OBJS += $(loguru_SUBDIR)/loguru.o
 
@@ -70,8 +74,13 @@ C_SRCS                = $(PiCoPiC_C_SRCS)
 CXX_SRCS              = $(PiCoPiC_CXX_SRCS)
 
 ### Tools
-CC ?= gcc
-CXX ?= g++
+ifeq (@MPI_SUPPORT@, true)
+CC := mpicc
+CXX := mpic++
+else
+CC := gcc
+CXX := g++
+endif
 
 RC = wrc
 AR = ar
@@ -190,7 +199,7 @@ hdf5: prepare
 	wget -qO- "@HDF5_URL@" | tar xjf -; \
 	cd @HDF5_VERSION@; \
 	./autogen.sh; \
-	./configure --enable-cxx --enable-build-mode=production --prefix=@prefix@; \
+	./configure --enable-cxx --enable-build-mode=production --prefix=@prefix@ $(HDF5_ADDITIONAL_OPTIONS); \
 	make)
 
 hdf5-install: hdf5

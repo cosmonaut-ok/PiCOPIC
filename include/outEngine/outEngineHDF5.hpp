@@ -25,16 +25,15 @@
 #include <highfive/H5File.hpp>
 
 using namespace std;
-using namespace HighFive;
 
 class OutEngineHDF5 : public OutEngine
 {
 public:
-  File *out_file;
+  HighFive::File *out_file;
 
 public:
   OutEngineHDF5 () {};
-  OutEngineHDF5 (File* _file, string _path, string _subpath,
+  OutEngineHDF5 (HighFive::File* _file, string _path, string _subpath,
                  unsigned int _shape, int *_size,
                  bool _append, bool _compress, unsigned int _compress_level);
 
