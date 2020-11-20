@@ -50,10 +50,11 @@ PiCoPiC_LIBRARIES += pthread
 PiCoPiC_LIBRARIES += dl
 loguru_DEFINES := -DLOGURU_WITH_STREAMS=1
 
-### link hdf5 library
+### link hdf5 and HighFive libraries
 ifeq (@HDF5_OPTION@, true)
 PiCoPiC_LIBRARIES += hdf5
-PiCoPiC_LIBRARIES += hdf5_cpp
+highfive_SUBDIR := $(ROOTDIR)/lib/HighFive/include
+INCLUDE_PATH += -I$(highfive_SUBDIR)
 else
 PiCoPiC_CXX_SRCS_TMP := $(PiCoPiC_CXX_SRCS)
 PiCoPiC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngine/outEngineHDF5.cpp, $(PiCoPiC_CXX_SRCS_TMP))

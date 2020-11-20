@@ -22,27 +22,27 @@
 
 #include "outEngine.hpp"
 
-#include "H5Cpp.h"
+#include <highfive/H5File.hpp>
 
 using namespace std;
-using namespace H5;
+using namespace HighFive;
 
 class OutEngineHDF5 : public OutEngine
 {
 public:
-  H5::H5File *out_file;
+  File *out_file;
 
 public:
   OutEngineHDF5 () {};
-  OutEngineHDF5 (H5File* a_file, string a_path, string a_subpath,
-                 unsigned int a_shape, int *a_size,
-                 bool a_append, bool a_compress, unsigned int a_compress_level);
+  OutEngineHDF5 (File* _file, string _path, string _subpath,
+                 unsigned int _shape, int *_size,
+                 bool _append, bool _compress, unsigned int _compress_level);
 
-  void write_rec(string a_name, Grid<double> data);
-  void write_vec(string a_name, Grid<double> data);
-  void write_dot(string a_name, Grid<double> data);
-  void write_1d_vector(string a_name, vector<double> data);
-  void write_metadata(string metadata);
+  void write_rec(string _name, Grid<double> data);
+  void write_vec(string _name, Grid<double> data);
+  void write_dot(string _name, Grid<double> data);
+  void write_1d_vector(string _name, vector<double> data);
+  void write_metadata(string _metadata);
 
 private:
   string datafile_name;

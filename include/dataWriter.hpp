@@ -56,7 +56,7 @@ public:
   Grid<Domain*> domains;
 
 #ifdef USE_HDF5
-  H5::H5File *hdf5_file;
+  HighFive::File *hdf5_file;
   OutEngineHDF5 engine;
   void hdf5_init(string a_metadata);
 #else
