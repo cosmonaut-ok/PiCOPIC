@@ -24,10 +24,10 @@
 
 #include "defines.hpp"
 
-#ifdef MPI_SUPPORT
+#ifdef ENABLE_MPI
 #include <mpi.h>
 using namespace MPI;
-#endif // MPI_SUPPORT
+#endif // ENABLE_MPI
 
 #include "msg.hpp"
 #include "cfg.hpp"
@@ -41,7 +41,7 @@ using namespace MPI;
 
 using namespace std;
 
-#ifdef USE_HDF5
+#ifdef ENABLE_HDF5
 #include <highfive/H5File.hpp>
 
 std::atomic<bool> lock_(false);
@@ -52,11 +52,11 @@ string hdf5_filepath;
 // using namespace HighFive;
 
 HighFive::File *file;
-#endif // USE_HDF5
+#endif // ENABLE_HDF5
 
 void signal_handler( int signum )
 {
-#ifdef USE_HDF5
+#ifdef ENABLE_HDF5
   if (signum == SIGUSR1 && !lock_)
   {
     LOG_S(INFO) << "Pause calculation";
@@ -72,7 +72,7 @@ void signal_handler( int signum )
     LOG_S(INFO) << "Continue calculation";
     recreate_writers_.store(true, std::memory_order_relaxed);
   }
-#endif // USE_HDF5
+#endif // ENABLE_HDF5
 
   // exit
   if ( signum == SIGINT
@@ -86,9 +86,9 @@ void signal_handler( int signum )
        || signum == SIGILL
        || signum == SIGSEGV )
   {
-#ifdef USE_HDF5
+#ifdef ENABLE_HDF5
     delete file;
-#endif // USE_HDF5
+#endif // ENABLE_HDF5
     std::cerr << "Signal ``" << signum << "'' received. Exiting" << std::endl;
     exit(signum);
   }
@@ -126,7 +126,7 @@ string parse_argv_get_config(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-#ifdef USE_HDF5
+#ifdef ENABLE_HDF5
   lock_.store(false, std::memory_order_relaxed);
   recreate_writers_.store(false, std::memory_order_relaxed);
 #endif
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
   LOG_S(INFO) << "Initialization";
 
   //// init MPI
-#ifdef MPI_SUPPORT
+#ifdef ENABLE_MPI
   try
   {
     // initialize MPI
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 
     // size of each task
     const size_t SZ = 1024 * 1024;
-#endif // MPI_SUPPORT
+#endif // ENABLE_MPI
 
     // string cfgname;
     string cfgname = parse_argv_get_config(argc, argv);
@@ -208,7 +208,7 @@ int main(int argc, char **argv)
 
     LOG_S(MAX) << "Initializing Data Paths";
 
-#ifdef USE_HDF5
+#ifdef ENABLE_HDF5
     // suppress traditional HDF5's flooding error output
     H5Eset_auto(H5E_DEFAULT, NULL, NULL);
 
@@ -222,9 +222,9 @@ int main(int argc, char **argv)
 
     try
     {
-#ifdef MPI_SUPPORT
+#ifdef ENABLE_MPI
       if (ID == 0)
-#endif // MPI_SUPPORT
+#endif // ENABLE_MPI
         file = new HighFive::File(hdf5_filepath.c_str(), HighFive::File::Create | HighFive::File::Excl);
     }
     catch (const HighFive::FileException& error)
@@ -233,7 +233,7 @@ int main(int argc, char **argv)
                    << hdf5_filepath << "''"
                    << endl << error.what();
     }
-#endif // USE_HDF5
+#endif // ENABLE_HDF5
 
     vector<DataWriter> data_writers;
 
@@ -247,17 +247,17 @@ int main(int argc, char **argv)
                          geometry_global, sim_time_clock, domains, cfg.cfg2str());
 
 
-#ifdef USE_HDF5
-#ifdef MPI_SUPPORT
+#ifdef ENABLE_HDF5
+#ifdef ENABLE_MPI
       if (ID == 0)
       {
 #endif
         writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
         writer.hdf5_init(cfg.cfg2str());
-#ifdef MPI_SUPPORT
+#ifdef ENABLE_MPI
       }
 #endif
-#endif // USE_HDF5
+#endif // ENABLE_HDF5
 
       data_writers.push_back(writer);
     }
@@ -316,7 +316,7 @@ int main(int argc, char **argv)
       shared_mem_blk.solve_current();
 
 //// output data
-#ifdef MPI_SUPPORT
+#ifdef ENABLE_MPI
       if (ID == 0)
 #endif
         for (auto i = data_writers.begin(); i != data_writers.end(); i++)
@@ -326,7 +326,7 @@ int main(int argc, char **argv)
 
 //// check if the simulation pause/unpause requested
       // (signals USR1 for pause and USR2 for unpause
-#ifdef USE_HDF5
+#ifdef ENABLE_HDF5
       while (lock_)
       {
         if (recreate_writers_)
@@ -372,7 +372,7 @@ int main(int argc, char **argv)
 #endif
     }
 
-#ifdef USE_HDF5
+#ifdef ENABLE_HDF5
     delete file;
 #endif
 
@@ -382,7 +382,7 @@ int main(int argc, char **argv)
 
     LOG_S(INFO) << "SIMULATION COMPLETE";
 
-#ifdef MPI_SUPPORT
+#ifdef ENABLE_MPI
     Finalize();
   }
   catch (MPI::Exception& e )
@@ -391,12 +391,7 @@ int main(int argc, char **argv)
     MPI::COMM_WORLD.Abort (-1);
     return -1;
   }
-  // catch (const exception &e)
-  // {
-  //   cerr << e.what () << endl;
-  //   return -1;
-  // }
-#endif // MPI_SUPPORT
+#endif // ENABLE_MPI
 
   return 0;
 }

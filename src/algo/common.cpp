@@ -43,7 +43,7 @@ namespace algo::common
 
   double sq_rt(double x)
   {
-#if defined (__AVX__) // && defined (EXPERIMENTAL)
+#if defined (__AVX__)
     return sqrt_recip(x);
 #else
     return sqrt(x);
@@ -117,9 +117,7 @@ namespace algo::common
 
   bool make_directory(const std::string& path)
   {
-#ifdef DEBUG
     LOG_S(MAX) << "Creating directory " << path;
-#endif
 
 #ifdef _WIN32
     int ret = _mkdir(path.c_str());

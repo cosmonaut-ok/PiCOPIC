@@ -1,17 +1,17 @@
-/* 
+/*
  * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
  * Copyright (c) 2020 Alexander Vynnyk.
- * 
- * This program is free software: you can redistribute it and/or modify  
- * it under the terms of the GNU General Public License as published by  
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
  *
- * This program is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
+ * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -48,10 +48,10 @@
 
 #define MSG(message) std::cout << message << std::endl;
 
-#ifndef FIXME
-#define FIXME false
+#ifndef ENABLE_FIXME
+#define ENABLE_FIXME false
 #endif
 
-#define MSG_FIXME(message) if (FIXME) std::cerr << "FIXME: " << message << "." << std::endl;
+#define MSG_FIXME(message) if (ENABLE_FIXME) std::cerr << "FIXME: " << message << "." << std::endl;
 
 #endif // end of _MSG_HPP_

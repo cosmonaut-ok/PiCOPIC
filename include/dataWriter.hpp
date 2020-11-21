@@ -27,11 +27,11 @@
 #include "timeSim.hpp"
 #include "domain.hpp"
 
-#ifdef USE_HDF5
+#ifdef ENABLE_HDF5
 #include "outEngine/outEngineHDF5.hpp"
 #else
 #include "outEngine/outEnginePlain.hpp"
-#endif // USE_HDF5
+#endif // ENABLE_HDF5
 
 
 using namespace std;
@@ -55,13 +55,13 @@ public:
   TimeSim *time;
   Grid<Domain*> domains;
 
-#ifdef USE_HDF5
+#ifdef ENABLE_HDF5
   HighFive::File *hdf5_file;
   OutEngineHDF5 engine;
   void hdf5_init(string _metadata);
 #else
   OutEnginePlain engine;
-#endif // USE_HDF5
+#endif // ENABLE_HDF5
 
 private:
   Grid<double> out_data;

@@ -24,42 +24,42 @@
 #include "specieP.hpp"
 #include "beamP.hpp"
 
-#if defined (PUSHER_BORIS_ADAPTIVE) || defined (PUSHER_BORIS_CLASSIC) || defined (PUSHER_BORIS_RELATIVISTIC)
+#if defined(SWITCH_PUSHER_BORIS_ADAPTIVE) || defined(SWITCH_PUSHER_BORIS) || defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
 #include "pusher/pusherBoris.hpp"
-#elif PUSHER_VAY
+#elif defined(SWITCH_PUSHER_VAY
 #include "pusher/pusherVay.hpp"
-#elif PUSHER_HIGUERA_CARY
+#elif defined(SWITCH_PUSHER_HC
 #include "pusher/pusherHC.hpp"
 #endif
 
-#ifdef MAXWELL_SOLVER_YEE
+#ifdef SWITCH_MAXWELL_SOLVER_YEE
 #include "maxwellSolver/maxwellSolverYee.hpp"
 #endif
 
-#ifdef CCS_VILLASENOR_BUNEMAN
+#ifdef SWITCH_CCS_VB
 #include "current/currentVB.hpp"
-#elif CCS_ZIGZAG
+#elif defined(SWITCH_CCS_ZIGZAG)
 #include "current/currentZigZag.hpp"
 #endif
 
-#ifdef DENSITY_CALC_COUNTING
+#ifdef SWITCH_DENSITY_CALC_COUNTING
 #include "density/densityCounted.hpp"
-#elif DENSITY_CALC_WEIGHTING
+#elif defined(SWITCH_DENSITY_CALC_WEIGHTING)
 #include "density/densityWeighted.hpp"
 #endif
 
-#ifdef TEMP_CALC_COUNTING
+#ifdef SWITCH_TEMP_CALC_COUNTING
 #include "temperature/temperatureCounted.hpp"
-#elif TEMP_CALC_WEIGHTING
+#elif defined(WITH_TEMP_CALC_WEIGHTING)
 #include "temperature/temperatureWeighted.hpp"
 #endif
 
-#ifdef COLLISIONS
-#ifdef COULOMB_COLLISIONS_TA77S
+#ifdef ENABLE_COULOMB_COLLISIONS
+#ifdef SWITCH_COULOMB_COLLISIONS_TA77S
 #include "collisions/collisionsTA77S.hpp"
-#elif COULOMB_COLLISIONS_SK98
+#elif defined(SWITCH_COULOMB_COLLISIONS_SK98)
 #include "collisions/collisionsSK98.hpp"
-#elif COULOMB_COLLISIONS_P12
+#elif defined(SWITCH_COULOMB_COLLISIONS_P12
 #include "collisions/collisionsP12.hpp"
 #endif
 #endif
@@ -74,22 +74,22 @@ public:
   vector<SpecieP *> species_p;
   Current *current;
 
-#if defined (PUSHER_BORIS_ADAPTIVE) || defined (PUSHER_BORIS_CLASSIC) || defined (PUSHER_BORIS_RELATIVISTIC)
+#if defined(SWITCH_PUSHER_BORIS_ADAPTIVE) || defined(SWITCH_PUSHER_BORIS) || defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
   PusherBoris *pusher;
-#elif PUSHER_VAY
+#elif defined(SWITCH_PUSHER_VAY)
   PusherVay *pusher;
-#elif PUSHER_HIGUERA_CARY
+#elif defined(SWITCH_PUSHER_HC)
   PusherHC *pusher;
 #endif
 
-#ifdef MAXWELL_SOLVER_YEE
+#ifdef SWITCH_MAXWELL_SOLVER_YEE
   MaxwellSolverYee *maxwell_solver;
 #endif
 
   Temperature *temperature;
   Density *density;
   DensityCharge *charge;
-#ifdef COLLISIONS
+#ifdef ENABLE_COULOMB_COLLISIONS
   Collisions *collisions;
 #endif
 

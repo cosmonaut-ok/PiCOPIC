@@ -48,7 +48,7 @@ Cfg::Cfg(const std::string json_file_name)
   //! set logfile
   log_file = (char*)json_data.get<object>()["log_file"].get<string>().c_str();
   // set log level, file etc
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
   loguru::add_file(log_file, loguru::Truncate, loguru::Verbosity_MAX);
   loguru::g_stderr_verbosity = loguru::Verbosity_MAX;
 #else
@@ -63,63 +63,63 @@ Cfg::Cfg(const std::string json_file_name)
   // json_data.get<object>()["package_version"] = value((string)PACKAGE_VERSION);
   object o;
   o["package_version"] = value((string)PACKAGE_VERSION);
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
   o["debug"] = value(true);
 #else
   o["debug"] = value(false);
 #endif
 
-#ifdef SPEEDUP
+#ifndef ENABLE_IEEE
   o["ieee"] = value(false);
 #else
   o["ieee"] = value(true);
 #endif
 
-#if defined(PLASMA_SPATIAL_CENTERED)
+#ifdef SWITCH_PLASMA_SPATIAL_CENTERED
   o["plasma_spatial_distribution"] = value("centered");
-#elif defined(PLASMA_SPATIAL_FLAT)
+#elif defined(SWITCH_PLASMA_SPATIA_FLAT)
   o["plasma_spatial_distribution"] = value("flat");
-#elif defined(PLASMA_SPATIAL_RANDOM)
+#elif defined(SWITCH_PLASMA_SPATIAL_RANDOM)
   o["plasma_spatial_distribution"] = value("random");
-#elif defined(PLASMA_SPATIAL_REGULAR)
+#elif defined(SWITCH_PLASMA_SPATIAL_REGULAR)
   o["plasma_spatial_distribution"] = value("regular");
 #endif
 
-#if defined(PLASMA_VELOCITY_THERMAL)
+#ifdef SWITCH_PLASMA_VELOCITY_THERMAL
   o["plasma_velocity_distribution"] = value("thermal");
-#elif defined(PLASMA_VELOCITY_EIGEN)
+#elif defined(SWITCH_PLASMA_VELOCITY_EIGEN)
   o["plasma_velocity_distribution"] = value("eigen");
-#elif defined(PLASMA_VELOCITY_RECTANGULAR)
+#elif defined(SWITCH_PLASMA_VELOCITY_RECTANGULAR)
   o["plasma_velocity_distribution"] = value("rectangular");
 #endif
 
-#if defined(PUSHER_BORIS_ADAPTIVE)
+#ifdef SWITCH_PUSHER_BORIS_ADAPTIVE
   o["particles_pusher"] = value("boris adaptive");
-#elif defined(PUSHER_BORIS_CLASSIC)
+#elif defined(SWITCH_PUSHER_BORIS)
   o["particles_pusher"] = value("boris classic");
-#elif defined(PUSHER_BORIS_RELATIVISTIC)
+#elif defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
   o["particles_pusher"] = value("boris relativistic");
-#elif defined(PUSHER_HIGUERA_CARY)
+#elif defined(SWITCH_PUSHER_HC)
   o["particles_pusher"] = value("higuera-cary");
-  #elif defined(PUSHER_VAY)
+#elif defined(SWITCH_PUSHER_VAY)
   o["particles_pusher"] = value("vay");
 #endif
 
-#if defined(CCS_ZIGZAG)
-  o["charge_conservation"] = value("zigzag");
-#elif defined(CCS_VILLASENOR_BUNEMAN)
-  o["charge_conservation"] = value("villasenor-buneman");
+#ifdef SWITCH_CCS_ZIGZAG
+  o["current_deposition"] = value("zigzag");
+#elif defined(SWITCH_CCS_VB)
+  o["current_deposition"] = value("villasenor-buneman");
 #endif
 
-#if defined(TEMP_CALC_COUNTING)
+#ifdef SWITCH_TEMP_CALC_COUNTING
   o["temperature_calculation_algorithm"] = value("counting");
-#elif defined(TEMP_CALC_WEIGHTING)
+#elif defined(SWITCH_TEMP_CALC_WEIGHTING)
   o["temperature_calculation_algorithm"] = value("weighting");
 #endif
 
-#if defined(DENSITY_CALC_COUNTING)
+#ifdef SWITCH_DENSITY_CALC_COUNTING
   o["density_calculation_algorithm"] = value("counting");
-#elif defined(DENSITY_CALC_WEIGHTING)
+#elif defined(SWITCH_DENSITY_CALC_WEIGHTING)
   o["density_calculation_algorithm"] = value("weighting");
 #endif
 
@@ -331,7 +331,7 @@ void Cfg::init_geometry ()
   int n_grid_z = (int)json_root_grid["longitude"].get<double>();
 
   // init PML
-#ifdef USE_PML
+#ifdef ENABLE_PML
   object& json_root_pml = json_root["pml"].get<object>();
   double left_wall = json_root_pml["left_wall"].get<double>();
   double right_wall = json_root_pml["right_wall"].get<double>();
@@ -348,7 +348,7 @@ void Cfg::init_geometry ()
 #endif
 
   //
-#ifdef SINGLETHREAD
+#ifdef ENABLE_SINGLETHREAD
   LOG_S(INFO) << "Singlethread mode. Reducing domains amount to 1";
   geometry->domains_by_r = 1;
   geometry->domains_by_z = 1;
@@ -403,47 +403,47 @@ void Cfg::weight_macro_amount()
   double norm = macro_amount / norm_sum;
 
   // message about pusher, used in system
-#ifdef PUSHER_BORIS_CLASSIC
+#ifdef SWITCH_PUSHER_BORIS
   LOG_S(INFO) << "Using classic Boris particles pusher";
-#elif defined PUSHER_BORIS_ADAPTIVE
+#elif defined(SWITCH_PUSHER_BORIS_ADAPTIVE)
   LOG_S(INFO) << "Using adaptive Boris particles pusher";
-#elif defined PUSHER_BORIS_RELATIVISTIC
+#elif defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
   LOG_S(INFO) << "Using fully relativistic Boris particles pusher";
-#elif defined PUSHER_VAY
+#elif defined(SWITCH_PUSHER_VAY)
   LOG_S(INFO) << "Using Vay particles pusher [10.1063/1.2837054]";
-#elif defined PUSHER_HIGUERA_CARY
+#elif defined(SWITCH_PUSHER_HC)
   LOG_S(INFO) << "Using Higuera-Cary particles pusher [10.1063/1.4979989]";
 #else
   LOG_S(FATAL) << "Undefined particles pusher used";
 #endif
 
   // message about charge conservation scheme, used in system
-#if defined(CCS_ZIGZAG)
+#ifdef SWITCH_CCS_ZIGZAG
   LOG_S(INFO) << "Using ZigZag charge conservation scheme [10.1016/S0010-4655(03)00437-5]";
-#elif defined(CCS_VILLASENOR_BUNEMAN)
+#elif defined(SWITCH_CCS_VB)
   LOG_S(INFO) << "Using Villasenor-Buneman charge conservation scheme [10.1016/0010-4655(92)90169-Y]";
 #endif
 
   // message about coulomb colisions
-#ifdef COLLISIONS
+#ifdef ENABLE_COULOMB_COLLISIONS
   LOG_S(WARNING) << "Particle collisions are enabled. This is still development feature. Ensure, that you know, what you doing";
-#ifdef COULOMB_COLLISIONS_TA77S
+#ifdef SWITCH_COULOMB_COLLISIONS_TA77S
   LOG_S(INFO) << "Using Takizuka and Abe Coulomb collisions scheme";
   LOG_S(INFO) << "\twith symmetric weighted particles correction [10.1002/ctpp.201700121]";
-#elif COULOMB_COLLISIONS_SK98
+#elif defined(SWITCH_COULOMB_COLLISIONS_SK98)
   LOG_S(INFO) << "Using Sentoku and Kemp Coulomb collisions scheme [10.1143/JPSJ.67.4084, 10.1016/j.jcp.2008.03.043]";
-#elif COULOMB_COLLISIONS_P12
+#elif defined(SWITCH_COULOMB_COLLISIONS_P12)
   LOG_S(INFO) << "Using Perez et al. collisions scheme [10.1063/1.4742167]";
 #endif
 #endif
 
-#ifdef MAXWELL_SOLVER_YEE
+#ifdef SWITCH_MAXWELL_SOLVER_YEE
   LOG_S(INFO) << "Using Yee (FDTD) maxwellian solver [10.1109/TAP.1966.1138693]";
 #endif
 
   // align macroparticles amount to particle species
   // with respect to normalization
-#if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)
+#if defined(SWITCH_PLASMA_SPATIAL_REGULAR) || defined(SWITCH_PLASMA_SPATIAL_CENTERED)
   LOG_S(INFO) << "Using amount-dependent plama macroparticles spatial distribution";
   LOG_S(INFO) << "Amount of plasma macroparticles could be changed to satisfy spatial distribution requirement";
 #endif
@@ -588,7 +588,7 @@ bool Cfg::method_limitations_check ()
 
   if (geometry->r_grid_amount * geometry->r_grid_amount * grid_multiplicator > full_macro_amount)
   {
-    LOG_S(WARNING) << "Too small summary number of macroparticles: ``"
+    LOG_S(WARNING) << "Too small amount of macroparticles: ``"
              << full_macro_amount
              << "''. Should be more, than ``"
              <<  geometry->r_grid_amount * geometry->r_grid_amount * grid_multiplicator
@@ -604,10 +604,10 @@ string Cfg::cfg2str()
   value json_data_for_dump = json_data;
   json_data_for_dump.get<object>()["data"].get<object>()["data_root"].set<string>(".");
 
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
   string str = json_data_for_dump.serialize(true);
 #else
   string str = json_data_for_dump.serialize();
-#endif // DEBUG
+#endif // ENABLE_DEBUG
   return str;
 }

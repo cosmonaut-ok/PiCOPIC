@@ -27,7 +27,7 @@ void DensityCounted::operator()(string specie)
                                    P_POS_Z((**i)),
                                    P_WEIGHT((**i))); // amount of particle in macroparticle
 
-#if defined DENSITY_POSTPROC_BILINEAR
+#ifdef SWITCH_DENSITY_POSTPROC_BILINEAR
   Grid<double> density_src = density;
   algo::common::bilinear_interpolation<Grid<double>>(density_src, density);
 #endif

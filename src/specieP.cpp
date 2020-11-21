@@ -41,7 +41,7 @@ SpecieP::SpecieP (unsigned int p_id,
 /// Correct plasma macroparticles amount
 /// to satisfy conditions of regular/centered
 /// spatial distributions
-#if defined (PLASMA_SPATIAL_REGULAR) || defined (PLASMA_SPATIAL_CENTERED)
+#if defined(SWITCH_PLASMA_SPATIAL_REGULAR) || defined(SWITCH_PLASMA_SPATIAL_CENTERED)
   LOG_S(MAX) << "Correcting domain plasma particles macro amount to satisfy spatial distribution";
   double r_size = geometry->r_size;
   double z_size = geometry->z_size;
@@ -51,7 +51,7 @@ SpecieP::SpecieP (unsigned int p_id,
   macro_amount = algo::common::nearest_divide(p_macro_amount, r_size / dr * z_size / dz);
 #else
   macro_amount = p_macro_amount;
-#endif
+#endif // WITH_PLASMA_SPATIAL
 
   density[0] = p_left_density;
   density[1] = p_right_density;
@@ -94,22 +94,22 @@ void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
 // ! spatial distribution for rectangular (for cartese coordinates)
 // ! or cylindrical ring-shaped macroparticles cloud
 {
-#if defined (PLASMA_SPATIAL_CENTERED)
+#ifdef SWITCH_PLASMA_SPATIAL_CENTERED
   rectangular_centered_placement (int_cell_number,
                                   ext_cell_number,
                                   left_cell_number,
                                   right_cell_number);
-#elif defined (PLASMA_SPATIAL_FLAT) || defined (PLASMA_SPATIAL_RANDOM)
+#elif defined(SWITCH_PLASMA_SPATIAL_FLAT) || defined(SWITCH_PLASMA_SPATIAL_RANDOM)
   rectangular_random_placement (int_cell_number,
                                 ext_cell_number,
                                 left_cell_number,
                                 right_cell_number);
-#elif PLASMA_SPATIAL_REGULAR
+#elif defined(SWITCH_PLASMA_SPATIAL_REGULAR)
   rectangular_regular_placement (int_cell_number,
                                  ext_cell_number,
                                  left_cell_number,
                                  right_cell_number);
-#endif
+#endif // WITH_PLASMA_SPATIAL
 
   set_weight(int_cell_number, ext_cell_number, left_cell_number, right_cell_number);
 }
@@ -136,7 +136,7 @@ void SpecieP::rectangular_random_placement (unsigned int int_cell_number,
   if (geometry->walls[2]) r_size -= dr;
   if (geometry->walls[3]) z_size -= dz;
 
-#ifdef PLASMA_SPATIAL_FLAT
+#ifdef SWITCH_PLASMA_SPATIAL_FLAT
   unsigned int macro_count = 0;
 #endif
 
@@ -144,13 +144,13 @@ void SpecieP::rectangular_random_placement (unsigned int int_cell_number,
   {
     vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
 
-#if defined PLASMA_SPATIAL_RANDOM
+#ifdef SWITCH_PLASMA_SPATIAL_RANDOM
     rand_r = math::random::uniform1();
     rand_z = math::random::uniform1();
-#elif defined PLASMA_SPATIAL_FLAT
+#elif defined(SWITCH_PLASMA_SPATIAL_FLAT)
     rand_r = math::random::random_reverse(macro_count, 13);
     rand_z = math::random::random_reverse(macro_amount - 1 - macro_count, 11);
-#endif
+#endif // WITH_PLASMA_SPATIAL
     if (rand_r == 0) rand_r = MNZL;
     if (rand_z == 0) rand_z = MNZL;
 
@@ -169,7 +169,7 @@ void SpecieP::rectangular_random_placement (unsigned int int_cell_number,
     P_POS_Z((*n)) += left_cell_number * dz; // shift by z to respect geometry with domains
     P_POS_Z((*n)) += dz / 2.;
 
-#ifdef PLASMA_SPATIAL_FLAT
+#ifdef SWITCH_PLASMA_SPATIAL_FLAT
     ++macro_count;
 #endif
 
@@ -317,17 +317,13 @@ void SpecieP::set_weight (unsigned int int_cell_number,
   }
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 void SpecieP::velocity_distribution ()
 {
-#ifdef PLASMA_VELOCITY_THERMAL
+#ifdef SWITCH_PLASMA_VELOCITY_THERMAL
   thermal_velocity_distribution();
-#elif PLASMA_VELOCITY_RECTANGULAR
+#elif defined(SWITCH_PLASMA_VELOCITY_RECTANGULAR)
   rectangular_velocity_distribution();
-#elif PLASMA_VELOCITY_EIGEN
+#elif defined(SWITCH_PLASMA_VELOCITY_EIGEN)
   eigen_velocity_distribution();
 #else
   LOG_S(FATAL) << "Plasma velocity distribution type unknown";
@@ -469,293 +465,6 @@ void SpecieP::eigen_directed_velocity_distribution (unsigned int dir)
 }
 
 void SpecieP::inject () {}
-
-void SpecieP::boris_pusher()
-{
-  // !
-  // ! boris pusher
-  // !
-  for (auto p = particles.begin(); p != particles.end(); ++p)
-  {
-    // define vars directly in loop, because of multithreading
-    double charge_over_2mass_dt, const2, sq_velocity;
-#ifdef PUSHER_BORIS_ADAPTIVE
-    bool use_rel; // use relativistic calculations
-#endif
-#ifndef PUSHER_BORIS_CLASSIC // do not use gamma in non-relativistic boris pusher
-    double gamma = 1;
-#endif
-
-    vector3d<double> velocity(P_VEL_R((**p)), P_VEL_PHI((**p)), P_VEL_Z((**p)));
-    vector3d<double> vtmp;
-
-    double pos_r = P_POS_R((**p));
-    double pos_z = P_POS_Z((**p));
-
-    // check if radius and longitude are correct
-    if (isnan(pos_r) ||
-        isinf(pos_r) != 0 ||
-        isnan(pos_z) ||
-        isinf(pos_z) != 0)
-      LOG_S(FATAL) << "(boris_pusher): radius[" << pos_r
-               << "] or longitude[" << pos_z
-               << "] is not valid number. Can not continue.";
-
-    vector3d<double> e = maxwell_solver->get_field_e(pos_r, pos_z);
-    vector3d<double> b = maxwell_solver->get_field_h(pos_r, pos_z);
-
-    charge_over_2mass_dt = charge * time->step / (2 * mass); // we just shortened particle weight and use only q/m relation
-
-    e *= charge_over_2mass_dt;
-    b *= charge_over_2mass_dt * MAGN_CONST;
-
-    // ! 0. check, if we should use classical calculations.
-    // ! Required to increase modeling speed
-#ifdef PUSHER_BORIS_ADAPTIVE
-    if (pow(velocity[0], 2) + pow(velocity[1], 2) + pow(velocity[2], 2) > REL_LIMIT_POW_2)
-      use_rel = true;
-#endif
-    // ! 1. Multiplication by relativistic factor (only for relativistic case)
-    // ! \f$ u_{n-\frac{1}{2}} = \gamma_{n-\frac{1}{2}} * v_{n-\frac{1}{2}} \f$
-#ifdef PUSHER_BORIS_ADAPTIVE
-    if (use_rel)
-#endif
-#if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
-    {
-      sq_velocity = velocity.length2();
-
-      gamma = phys::rel::lorenz_factor(sq_velocity);
-      velocity *= gamma;
-    }
-#endif
-
-    // ! 2. Half acceleration in the electric field
-    // ! \f$ u'_n = u_{n-\frac{1}{2}} + \frac{q dt}{2 m E(n)} \f$
-    // ! \f$ u'_n = u_{n-1 / 2} + \frac{q dt}{2 m E(n)} \f$
-    velocity += e;
-
-    // ! 3. Rotation in the magnetic field
-    // ! \f$ u" = u' + \frac{2}{1 + B'^2}  [(u' + [u' \times B'(n)] ) \times B'(n)] \f$,
-    // ! \f$ B'(n) = \frac{B(n) q dt}{2 m * \gamma_n} \f$
-#ifdef PUSHER_BORIS_ADAPTIVE
-    if (use_rel)
-#endif
-#if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
-    {
-      sq_velocity = velocity.length2();
-      gamma = phys::rel::lorenz_factor_inv(sq_velocity);
-      b *= gamma;
-    }
-#endif
-    // ! \f$ const2 = \frac{2}{1 + b_1^2 + b_2^2 + b_3^2} \f$
-    const2 = 2. / (1. + b.length2());
-
-    // set temporary velocity as old values
-    // to calculate magnetic rotation
-    vtmp = velocity;
-
-    velocity[0] = vtmp[0] + const2 * (
-      (vtmp[1] - vtmp[0] * b[2] + vtmp[2] * b[0]) * b[2]
-      - (vtmp[2] + vtmp[0] * b[1] - vtmp[1] * b[0]) * b[1]
-      );
-    velocity[1] = vtmp[1] + const2 * (
-      -(vtmp[0] + vtmp[1] * b[2] - vtmp[2] * b[1]) * b[2]
-      + (vtmp[2] + vtmp[0] * b[1] - vtmp[1] * b[0]) * b[0]
-      );
-    velocity[2] = vtmp[2] + const2 * (
-      (vtmp[0] + vtmp[1] * b[2] - vtmp[2] * b[1]) * b[1]
-      - (vtmp[1] - vtmp[0] * b[2] + vtmp[2] * b[0]) * b[0]
-      );
-
-    // ! 4. Half acceleration in the electric field
-    // ! \f$ u_{n + \frac{1}{2}} = u_n + \frac{q dt}{2 m E(n)} \f$
-    velocity += e;
-
-    // ! 5. Division by relativistic factor
-#ifdef PUSHER_BORIS_ADAPTIVE
-    if (use_rel)
-#endif
-#if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
-    {
-      sq_velocity = velocity.length2();
-      gamma = phys::rel::lorenz_factor_inv(sq_velocity);
-      velocity *= gamma;
-    }
-#endif
-
-    P_VEL_R((**p)) = velocity[0];
-    P_VEL_PHI((**p)) = velocity[1];
-    P_VEL_Z((**p)) = velocity[2];
-  }
-}
-
-void SpecieP::vay_pusher()
-{
-  // !
-  // ! Vay pusher
-  // !
-  for (auto p = particles.begin(); p != particles.end(); ++p)
-  {
-    vector3d<double> velocity(P_VEL_R((**p)), P_VEL_PHI((**p)), P_VEL_Z((**p)));
-    vector3d<double> uplocity; // u prime
-    vector3d<double> psm; // pxsm, pysm, pzsm
-
-    // we don't care, if it is particle's or macroparticle's
-    // charge over mass ratio
-    double charge_over_2mass_dt = charge * time->step / (2 * mass);
-
-    double pos_r = P_POS_R((**p));
-    double pos_z = P_POS_Z((**p));
-
-    vector3d<double> e = maxwell_solver->get_field_e(pos_r, pos_z);
-    vector3d<double> b = maxwell_solver->get_field_h(pos_r, pos_z);
-
-    double gamma, sq_vel, s, us2, alpha, B2;
-
-    // convert velocity to relativistic momentum
-    sq_vel = velocity.length2();
-    gamma = phys::rel::lorenz_factor(sq_vel);
-    velocity *= gamma;
-
-    //
-    // Part I: Computation of uprime
-    //
-
-    // Add Electric field
-    uplocity = velocity;
-    e *= 2. * charge_over_2mass_dt;
-    uplocity += e;
-
-    // Add magnetic field
-    b *= charge_over_2mass_dt * MAGN_CONST;
-
-    // Smilei: For unknown reason, this has to be computed again
-    sq_vel = velocity.length2();
-    gamma = phys::rel::lorenz_factor_inv(sq_vel);
-
-    uplocity[0] += gamma * ( velocity[1] * b[2] - velocity[2] * b[1] );
-    uplocity[1] += gamma * ( velocity[2] * b[0] - velocity[0] * b[2] );
-    uplocity[2] += gamma * ( velocity[0] * b[1] - velocity[1] * b[0] );
-
-    // alpha is gamma^2
-    alpha = 1. + uplocity.length2();
-    B2 = b.length2();
-
-    //
-    // Part II: Computation of Gamma^{i+1}
-    //
-
-    // s is sigma
-    s = alpha - B2;
-    // TODO: implement * operator for vector3d
-    us2 = pow(uplocity.dot(b), 2);
-
-    // alpha becomes 1/gamma^{i+1}
-    alpha = 1. / sqrt( 0.5 * ( s + sqrt( s * s + 4. * ( B2 + us2 ) ) ) );
-
-    b *= alpha;
-
-    s = 1. / ( 1. + b.length2() );
-    alpha = uplocity.dot(b);
-
-    psm[0] = s * ( uplocity[0] + alpha*b[0] + b[2]*uplocity[1] - b[1]*uplocity[2] );
-    psm[1] = s * ( uplocity[1] + alpha*b[1] + b[0]*uplocity[2] - b[2]*uplocity[0] );
-    psm[2] = s * ( uplocity[2] + alpha*b[2] + b[1]*uplocity[0] - b[0]*uplocity[1] );
-
-    sq_vel = psm.length2();
-    gamma = phys::rel::lorenz_factor_inv(sq_vel);
-    psm *= gamma;
-
-    P_VEL_R((**p)) = psm[0];
-    P_VEL_PHI((**p)) = psm[1];
-    P_VEL_Z((**p)) = psm[2];
-  }
-}
-
-void SpecieP::hc_pusher()
-{
-  // !
-  // ! Higuera-Cary pusher
-  // !
-
-  for (auto p = particles.begin(); p != particles.end(); ++p)
-  {
-    vector3d<double> velocity(P_VEL_R((**p)), P_VEL_PHI((**p)), P_VEL_Z((**p)));
-    vector3d<double> uplocity; // u prime
-    vector3d<double> psm; // pxsm, pysm, pzsm
-    vector3d<double> um; // pxsm, pysm, pzsm
-    vector3d<double> up; // pxsm, pysm, pzsm
-
-    // we don't care, if it is particle's or macroparticle's
-    // charge over mass ratio
-    double charge_over_2mass_dt = charge * time->step / (2 * mass);
-
-    double pos_r = P_POS_R((**p));
-    double pos_z = P_POS_Z((**p));
-
-    vector3d<double> e = maxwell_solver->get_field_e(pos_r, pos_z);
-    vector3d<double> b = maxwell_solver->get_field_h(pos_r, pos_z);
-    vector3d<double> b2;
-    vector3d<double> b_cross;
-
-    double gamma, sq_vel, B2;
-
-    // convert velocity to relativistic momentum
-    sq_vel = velocity.length2();
-    gamma = phys::rel::lorenz_factor(sq_vel);
-    velocity *= gamma;
-
-    //// enter main algo
-    // init Half-acceleration in the electric field
-    e *= charge_over_2mass_dt;
-    psm = e;
-
-    um = velocity;
-    um += psm;
-    // Intermediate gamma factor: only this part differs from the Boris scheme
-    // Square Gamma factor from um
-    double gfm2 = (1. + um.length2());
-
-    b *= charge_over_2mass_dt * MAGN_CONST;
-    B2 = b.length2();
-
-    // Equivalent of 1/\gamma_{new} in the paper
-    gamma = 1. / sqrt ( 0.5*( gfm2 - B2 +
-                              sqrt ( pow( gfm2 - B2, 2 )
-                                     + 4.0 * ( B2 + pow( b[0]*um[0]
-                                                         + b[1]*um[1]
-                                                         + b[2]*um[2], 2 ) ) ) ) );
-
-    b *= gamma;
-    b2 = b;
-    b2 *= b;
-
-    b_cross[0] = b[0]*b[1];
-    b_cross[1] = b[1]*b[2];
-    b_cross[2] = b[2]*b[0];
-    double inv_det_B = 1.0/( 1.0+b2[0]+b2[1]+b2[0] );
-
-    up[0] = ( ( 1.0+b2[0]-b2[1]-b2[2] ) * um[0] + 2. * ( b_cross[0]+b[2] )
-              * um[1] + 2. * ( b_cross[2] - b[2] ) * um[2] ) * inv_det_B;
-    up[1] = ( 2. * ( b_cross[0]-b[2] ) * um[0] + ( 1. - b2[0]+b2[1]-b2[2] )
-              * um[1] + 2. * ( b_cross[1] + b[0] ) * um[2] ) * inv_det_B;
-    up[2] = ( 2. * ( b_cross[2] + b[1] ) * um[0] + 2. * ( b_cross[1] - b[0] )
-              * um[1] + ( 1. - b2[0]-b2[1]+b2[2] )* um[2] ) * inv_det_B;
-
-    // finalize Half-acceleration in the electric field
-    psm += up;
-
-    //// exit main algo
-
-    sq_vel = psm.length2();
-    gamma = phys::rel::lorenz_factor_inv(sq_vel);
-    psm *= gamma;
-
-    P_VEL_R((**p)) = psm[0];
-    P_VEL_PHI((**p)) = psm[1];
-    P_VEL_Z((**p)) = psm[2];
-  }
-}
 
 void SpecieP::mover_cylindrical()
 {

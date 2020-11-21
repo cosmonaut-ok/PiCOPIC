@@ -124,10 +124,10 @@ void TemperatureWeighted::operator()(string specie)
       tmpr.set(r, z, energy);
     }
 
-#if defined TEMPERATURE_POSTPROC_BILINEAR
+#ifdef SWITCH_TEMPERATURE_POSTPROC_BILINEAR
   Grid<double> temperature_src = tmpr;
   algo::common::bilinear_interpolation<Grid<double>>(temperature_src, tmpr);
-// #elif defined TEMPERATURE_POSTPROC_BICUBIC
+// #elWITH_TEMPERATURE_POSTPROC==bicubic
 //   algo::common::bicubic_interpolation(t_src, t, geom->n_grid_r, geom->n_grid_z);
 #endif
 
