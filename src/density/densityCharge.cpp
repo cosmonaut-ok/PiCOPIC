@@ -36,7 +36,7 @@ void DensityCharge::operator()(string specie)
                                    P_POS_Z((**i)),
                                    (**ps).charge * P_WEIGHT((**i)));
 
-#if defined DENSITY_POSTPROC_BILINEAR
+#ifdef SWITCH_DENSITY_POSTPROC_BILINEAR
   Grid<double> density_src = density;
   algo::common::bilinear_interpolation<Grid<double>>(density_src, density);
 #endif

@@ -32,12 +32,12 @@ void PusherBoris::operator()()
     {
       // define vars directly in loop, because of multithreading
       double charge_over_2mass_dt, const2, sq_velocity;
-#ifdef PUSHER_BORIS_ADAPTIVE
+#ifdef SWITCH_PUSHER_BORIS_ADAPTIVE
       bool use_rel; // use relativistic calculations
-#endif
-#ifndef PUSHER_BORIS_CLASSIC // do not use gamma in non-relativistic boris pusher
+#endif // SWITCH_PUSHER
+#if defined(SWITCH_PUSHER_BORIS_ADAPTIVE) || defined(SWITCH_PUSHER_BORIS_RELATIVISTIC) // do not use gamma in non-relativistic boris pusher
       double gamma = 1;
-#endif
+#endif // SWITCH_PUSHER
 
       vector3d<double> velocity(P_VEL_R((**p)), P_VEL_PHI((**p)), P_VEL_Z((**p)));
       vector3d<double> vtmp;
@@ -64,23 +64,23 @@ void PusherBoris::operator()()
 
       // ! 0. check, if we should use classical calculations.
       // ! Required to increase modeling speed
-#ifdef PUSHER_BORIS_ADAPTIVE
+#ifdef SWITCH_PUSHER_BORIS_ADAPTIVE
       if (pow(velocity[0], 2) + pow(velocity[1], 2) + pow(velocity[2], 2) > REL_LIMIT_POW_2)
         use_rel = true;
-#endif
+#endif // SWITCH_PUSHER
       // ! 1. Multiplication by relativistic factor (only for relativistic case)
       // ! \f$ u_{n-\frac{1}{2}} = \gamma_{n-\frac{1}{2}} * v_{n-\frac{1}{2}} \f$
-#ifdef PUSHER_BORIS_ADAPTIVE
+#ifdef SWITCH_PUSHER_BORIS_ADAPTIVE
       if (use_rel)
-#endif
-#if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
+#endif // SWITCH_PUSHER
+#if defined(SWITCH_PUSHER_BORIS_RELATIVISTIC) || defined(SWITCH_PUSHER_BORIS_ADAPTIVE)
       {
         sq_velocity = velocity.length2();
 
         gamma = phys::rel::lorenz_factor(sq_velocity);
         velocity *= gamma;
       }
-#endif
+#endif // SWITCH_PUSHER
 
       // ! 2. Half acceleration in the electric field
       // ! \f$ u'_n = u_{n-\frac{1}{2}} + \frac{q dt}{2 m E(n)} \f$
@@ -90,16 +90,16 @@ void PusherBoris::operator()()
       // ! 3. Rotation in the magnetic field
       // ! \f$ u" = u' + \frac{2}{1 + B'^2}  [(u' + [u' \times B'(n)] ) \times B'(n)] \f$,
       // ! \f$ B'(n) = \frac{B(n) q dt}{2 m * \gamma_n} \f$
-#ifdef PUSHER_BORIS_ADAPTIVE
+#ifdef SWITCH_PUSHER_BORIS_ADAPTIVE
       if (use_rel)
-#endif
-#if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
+#endif // SWITCH_PUSHER
+#if defined(SWITCH_PUSHER_BORIS_RELATIVISTIC) || defined(SWITCH_PUSHER_BORIS_ADAPTIVE)
       {
         sq_velocity = velocity.length2();
         gamma = phys::rel::lorenz_factor_inv(sq_velocity);
         b *= gamma;
       }
-#endif
+#endif // SWITCH_PUSHER
       // ! \f$ const2 = \frac{2}{1 + b_1^2 + b_2^2 + b_3^2} \f$
       const2 = 2. / (1. + b.length2());
 
@@ -125,16 +125,16 @@ void PusherBoris::operator()()
       velocity += e;
 
       // ! 5. Division by relativistic factor
-#ifdef PUSHER_BORIS_ADAPTIVE
+#ifdef SWITCH_PUSHER_BORIS_ADAPTIVE
       if (use_rel)
-#endif
-#if defined (PUSHER_BORIS_RELATIVISTIC) || defined (PUSHER_BORIS_ADAPTIVE)
+#endif // SWITCH_PUSHER
+#if defined(SWITCH_PUSHER_BORIS_RELATIVISTIC) || defined(SWITCH_PUSHER_BORIS_ADAPTIVE)
       {
         sq_velocity = velocity.length2();
         gamma = phys::rel::lorenz_factor_inv(sq_velocity);
         velocity *= gamma;
       }
-#endif
+#endif // SWITCH_PUSHER
 
       P_VEL_R((**p)) = velocity[0];
       P_VEL_PHI((**p)) = velocity[1];

@@ -110,22 +110,20 @@ DataWriter::DataWriter(string _path, string _component,
     break;
   }
 
-#ifndef USE_HDF5
+#ifndef ENABLE_HDF5
   engine = OutEnginePlain (path, name, shape, size, true,
                            compress, compress_level);
-
-  // engine.write_metadata(a_metadata);
-#endif // USE_HDF5
+#endif // ENABLE_HDF5
 }
 
-#ifdef USE_HDF5
+#ifdef ENABLE_HDF5
 void DataWriter::hdf5_init(string _metadata)
 {
   engine = OutEngineHDF5 (hdf5_file, path, name, shape, size, true,
                           compress, compress_level);
   engine.write_metadata(_metadata);
 }
-#endif
+#endif // ENABLE_HDF5
 
 void DataWriter::operator()()
 {
@@ -135,9 +133,7 @@ void DataWriter::operator()()
 
   if (is_run == 0)
   {
-#ifndef DEBUG
-    // if (! DEBUG)
-    // {
+#ifndef ENABLE_DEBUG
       int print_header_step = 30;
       if (time->print_header_counter % print_header_step == 0)
       {
@@ -152,8 +148,8 @@ void DataWriter::operator()()
           );
         MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
       }
-    // }
-#endif
+#endif // ENABLE_DEBUG
+
     string dump_step = to_string((int)current_time_step / schedule);
     string shape_name;
     string component_name;

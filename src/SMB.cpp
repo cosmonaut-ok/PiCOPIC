@@ -58,7 +58,7 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
       if (j == z_domains - 1)
         wall_zz = true;
 
-#ifdef USE_PML
+#ifdef ENABLE_PML
       // set PML to domains
       if (geometry->r_size - geometry->r_size / r_domains * (i + 1)
           < geometry->pml_length[2])
@@ -68,7 +68,7 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
       if (geometry->z_size - geometry->z_size / z_domains * (j + 1)
           < geometry->pml_length[3])
         pml_l_zwall = geometry->pml_length[3];
-#endif // USE_PML
+#endif // ENABLE_PML
 
       unsigned int bot_r = (unsigned int)geometry->r_grid_amount * i / r_domains;
       unsigned int top_r = (unsigned int)geometry->r_grid_amount * (i + 1) / r_domains;
@@ -76,7 +76,7 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
       unsigned int left_z = (unsigned int)geometry->z_grid_amount * j / z_domains;
       unsigned int right_z = (unsigned int)geometry->z_grid_amount * (j + 1) / z_domains;
 
-#ifdef USE_PML
+#ifdef ENABLE_PML
       Geometry *geom_domain = new Geometry (
         geometry->r_size / r_domains,
         geometry->z_size / z_domains,
@@ -108,7 +108,7 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
         wall_rr,
         wall_zz
         );
-#endif // USE_PML
+#endif // ENABLE_PML
 
       //
       // initialize particle species and beams
@@ -167,7 +167,7 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
   unsigned int z_domains = domains.y_size;
 
 #ifdef _OPENMP
-#ifdef OPENMP_DYNAMIC_THREADS
+#ifdef ENABLE_OMP_DYNAMIC
   omp_set_dynamic(1); // Explicitly enable dynamic teams
   LOG_S(MAX) << "Number of Calculation Processors Changing Dynamically";
 #else
@@ -462,9 +462,9 @@ void SMB::advance_particles()
       // ! 3. Calculate velocity
       sim_domain->push_particles();
 
-#ifdef COLLISIONS
+#ifdef ENABLE_COULOMB_COLLISIONS
       sim_domain->collide(); // collide before reflect
-#endif
+#endif // ENABLE_COULOMB_COLLISIONS
 
       sim_domain->dump_particle_positions_to_old();
       sim_domain->update_particles_coords();

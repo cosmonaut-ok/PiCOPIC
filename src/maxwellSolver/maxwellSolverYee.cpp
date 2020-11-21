@@ -47,9 +47,9 @@ MaxwellSolverYee::MaxwellSolverYee(Geometry *_geometry, TimeSim *_time,
   else
     z_end = geometry->z_grid_amount;
 
-#ifdef USE_PML
+#ifdef ENABLE_PML
     set_pml();
-#endif
+#endif // ENABLE_PML
 }
 
 void MaxwellSolverYee::set_pml()
@@ -174,11 +174,11 @@ void MaxwellSolverYee::calc_field_e()
       int i = 0;
       double epsilonx2 = 2 * epsilon(i, k);
 
-#ifdef USE_PML
+#ifdef ENABLE_PML
       double sigma_t = sigma(i, k) * time->step;
 #else
       double sigma_t = 0;
-#endif
+#endif // ENABLE_PML
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
@@ -200,11 +200,11 @@ void MaxwellSolverYee::calc_field_e()
       int k = 0;
       double epsilonx2 = 2 * epsilon(i, k);
 
-#ifdef USE_PML
+#ifdef ENABLE_PML
       double sigma_t = sigma(i, k) * time->step;
 #else
       double sigma_t = 0;
-#endif
+#endif // ENABLE_PML
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
@@ -223,11 +223,11 @@ void MaxwellSolverYee::calc_field_e()
     {
       double epsilonx2 = 2 * epsilon(i, k);
 
-#ifdef USE_PML
+#ifdef ENABLE_PML
       double sigma_t = sigma(i, k) * time->step;
 #else
       double sigma_t = 0;
-#endif
+#endif // ENABLE_PML
 
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h = 2 * time->step / (epsilonx2 + sigma_t);

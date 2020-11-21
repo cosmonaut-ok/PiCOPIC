@@ -22,7 +22,7 @@
 #include "msg.hpp"
 #include "specieP.hpp"
 
-#ifdef MAXWELL_SOLVER_YEE
+#ifdef SWITCH_MAXWELL_SOLVER_YEE
 #include "maxwellSolver/maxwellSolverYee.hpp"
 #endif
 

@@ -106,7 +106,7 @@ void TemperatureCounted::operator()(string specie)
       tmpr.set(r, z, energy);
     }
 
-#if defined TEMPERATURE_POSTPROC_BILINEAR
+#ifdef SWITCH_TEMPERATURE_POSTPROC_BILINEAR
   Grid<double> temperature_src = tmpr;
   algo::common::bilinear_interpolation<Grid<double>>(temperature_src, tmpr);
 #endif

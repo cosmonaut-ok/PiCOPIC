@@ -1,4 +1,4 @@
-MKDIR                 = @MKDIR@
+MKDIR                 = mkdir
 ROOTDIR               = .
 SRCDIR                = $(ROOTDIR)/src
 TARGETDIR             ?= $(ROOTDIR)/target
@@ -17,7 +17,7 @@ LIBRARY_PATH          =
 LIBRARIES             =
 DOXYGEN               = doxygen
 DOXYGEN_CONFIGS       = doc/app.conf doc/lib.conf doc/vis.conf
-DOXYGEN_FORMATS       = @DOXYGEN_FORMATS@
+DOXYGEN_FORMATS       = @WITH_DOXYGEN_FORMATS@
 DOXYGEN_DIRS          = doc/app doc/lib doc/vis
 RELEASE               = @RELEASE@
 
@@ -44,14 +44,13 @@ SUBDIRS += $(picojson_SUBDIR)
 ### loguru sources and settings
 loguru_SUBDIR := $(ROOTDIR)/lib/loguru
 INCLUDE_PATH += -I$(loguru_SUBDIR)
-# SUBDIRS += $(loguru_SUBDIR)
 LDFLAGS += -L$(loguru_SUBDIR)
 PiCoPiC_LIBRARIES += pthread
 PiCoPiC_LIBRARIES += dl
 loguru_DEFINES := -DLOGURU_WITH_STREAMS=1
 
 ### link hdf5 and HighFive libraries
-ifeq (@HDF5_OPTION@, true)
+ifeq (@ENABLE_HDF5@, true)
 PiCoPiC_LIBRARIES += hdf5
 highfive_SUBDIR := $(ROOTDIR)/lib/HighFive/include
 INCLUDE_PATH += -I$(highfive_SUBDIR)
@@ -60,7 +59,7 @@ PiCoPiC_CXX_SRCS_TMP := $(PiCoPiC_CXX_SRCS)
 PiCoPiC_CXX_SRCS = $(filter-out $(SRCDIR)/outEngine/outEngineHDF5.cpp, $(PiCoPiC_CXX_SRCS_TMP))
 endif
 
-ifeq (@MPI_SUPPORT@, true)
+ifeq (@ENABLE_MPI@, true)
 HDF5_ADDITIONAL_OPTIONS := --enable-parallel --enable-shared
 endif
 
@@ -74,7 +73,7 @@ C_SRCS                = $(PiCoPiC_C_SRCS)
 CXX_SRCS              = $(PiCoPiC_CXX_SRCS)
 
 ### Tools
-ifeq (@MPI_SUPPORT@, true)
+ifeq (@ENABLE_MPI@, true)
 CC := mpicc
 CXX := mpic++
 else

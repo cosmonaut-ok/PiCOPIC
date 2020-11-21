@@ -17,8 +17,8 @@ TEST(Message, MSG)
 TEST(Message, MSG_FIXME)
 {
   // unfixme
-#undef FIXME
-#define FIXME false
+#undef ENABLE_FIXME
+#define ENABLE_FIXME false
   testing::internal::CaptureStderr();
   testing::internal::CaptureStdout();
   MSG_FIXME("Fixme");
@@ -28,8 +28,8 @@ TEST(Message, MSG_FIXME)
   ASSERT_EQ(output_u, "");
 
   // fixme
-#undef FIXME
-#define FIXME true
+#undef ENABLE_FIXME
+#define ENABLE_FIXME true
   testing::internal::CaptureStderr();
   testing::internal::CaptureStdout();
   MSG_FIXME("Fixme");

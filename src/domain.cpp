@@ -27,35 +27,35 @@ Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
 
   species_p = _species_p;
 
-#ifdef CCS_VILLASENOR_BUNEMAN
+#ifdef SWITCH_CCS_VB
   current = new CurrentVB(&geometry, time, species_p);
-#elif CCS_ZIGZAG
+#elif defined(SWITCH_CCS_ZIGZAG)
   current = new CurrentZigZag(&geometry, time, species_p);
 #endif
 
-#ifdef MAXWELL_SOLVER_YEE
+#ifdef SWITCH_MAXWELL_SOLVER_YEE
   maxwell_solver = new MaxwellSolverYee(&geometry, time, species_p, current);
 #endif
 
-#ifdef TEMP_CALC_COUNTING
+#ifdef SWITCH_TEMP_CALC_COUNTING
   temperature = new TemperatureCounted(&geometry, species_p);
-#elif TEMP_CALC_WEIGHTING
+#elif defined(SWITCH_TEMP_CALC_WEIGHTING)
   temperature = new TemperatureWeighted(&geometry, species_p);
 #endif
 
-#ifdef COLLISIONS
-#ifdef COULOMB_COLLISIONS_TA77S
+#ifdef ENABLE_COULOMB_COLLISIONS
+#ifdef SWITCH_COULOMB_COLLISIONS_TA77S
   collisions = new CollisionsTA77S(&geometry, time, species_p);
-#elif COULOMB_COLLISIONS_SK98
+#elif defined(SWITCH_COULOMB_COLLISIONS_SK98)
   collisions = new CollisionsSK98(&geometry, time, species_p);
-#elif COULOMB_COLLISIONS_P12
+#elif defined(SWITCH_COULOMB_COLLISIONS_P12)
   collisions = new CollisionsP12(&geometry, time, species_p);
-#endif
-#endif
+#endif // WITH_COULOMB_COLLISIONS
+#endif // ENABLE_COULOMB_COLLISIONS
 
-#ifdef DENSITY_CALC_COUNTING
+#ifdef SWITCH_DENSITY_CALC_COUNTING
   density = new DensityCounted(&geometry, species_p);
-#elif DENSITY_CALC_WEIGHTING
+#elif defined(SWITCH_DENSITY_CALC_WEIGHTING)
   density = new DensityWeighted(&geometry, species_p);
 #endif
 
@@ -68,15 +68,13 @@ Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
     (**sp).maxwell_solver = maxwell_solver;
   }
 
-#if defined (PUSHER_BORIS_ADAPTIVE) || defined (PUSHER_BORIS_CLASSIC) || defined (PUSHER_BORIS_RELATIVISTIC)
+#if defined(SWITCH_PUSHER_BORIS_ADAPTIVE) || defined(SWITCH_PUSHER_BORIS) || defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
   pusher = new PusherBoris(maxwell_solver, species_p, time);
-#elif PUSHER_VAY
+#elif defined(SWITCH_PUSHER_VAY)
   pusher = new PusherVay(maxwell_solver, species_p, time);
-#elif PUSHER_HIGUERA_CARY
+#elif defined(SWITCH_PUSHER_HC)
   pusher = new PusherHC(maxwell_solver, species_p, time);
 #endif
-
-
 }
 
 void Domain::distribute()
@@ -123,6 +121,7 @@ void Domain::weight_field_e()
 void Domain::reset_current()
 {
   current->current = 0;
+  current->current.overlay_set(0);
 }
 
 void Domain::push_particles ()
@@ -183,9 +182,9 @@ void Domain::dump_particle_positions_to_old()
     (**i).dump_position_to_old();
 }
 
-#ifdef COLLISIONS
+#ifdef ENABLE_COULOMB_COLLISIONS
 void Domain::collide()
 {
   collisions->run();
 }
-#endif
+#endif // ENABLE_COULOMB_COLLISIONS
