@@ -57,6 +57,9 @@ SpecieP::SpecieP (unsigned int p_id,
   density[1] = p_right_density;
 
   temperature = p_temperature;
+
+  density_map = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  temperature_map = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
 }
 
 SpecieP::~SpecieP()
@@ -647,4 +650,165 @@ void SpecieP::bind_cell_numbers()
     P_CELL_R((**p)) = r_cell;
     P_CELL_Z((**p)) = z_cell;
   }
+}
+
+
+void SpecieP::calc_density()
+{ // FIXME: it weights density in both cases
+  // clear grid values
+  density_map = 0;
+  density_map.overlay_set(0);
+
+#ifdef SWITCH_DENSITY_CALC_COUNTING
+  for (auto i = particles.begin(); i != particles.end(); i++)
+    weight_cylindrical<double> ( geometry, &density_map,
+                                 P_POS_R((**i)),
+                                 P_POS_Z((**i)),
+                                 P_WEIGHT((**i)));
+#elif defined(SWITCH_DENSITY_CALC_WEIGHTING)
+  for (auto i = particles.begin(); i != particles.end(); i++)
+    weight_cylindrical<double> ( geometry, &density_map,
+                                 P_POS_R((**i)),
+                                 P_POS_Z((**i)),
+                                 P_WEIGHT((**i)));
+#endif // end of SWITCH_DENSITY_CALC_...
+}
+
+void SpecieP::calc_temperature()
+{
+  // initialize service variables
+  Grid<double> p_abs (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  Grid<double> p_r (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  Grid<double> p_phi (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  Grid<double> p_z (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+
+  // clear grid values
+  temperature_map = 0;
+  temperature_map.overlay_set(0);
+
+  // clear momentum grid
+  p_abs = 0;
+  p_abs.overlay_set(0);
+  p_r = 0;
+  p_r.overlay_set(0);
+  p_phi = 0;
+  p_phi.overlay_set(0);
+  p_z = 0;
+  p_z.overlay_set(0);
+
+#ifdef SWITCH_TEMP_CALC_COUNTING
+  Grid<double> count (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  count = 0;
+  count.overlay_set(0);
+
+  for (auto i = particles.begin(); i != particles.end(); i++)
+  {
+    // finding number of i and k cell. example: dr = 0.5; r = 0.4; i = 0
+    unsigned int r_i = P_CELL_R((**i));
+    unsigned int z_k = P_CELL_Z((**i));
+    unsigned int r_i_shift = r_i - geometry->bottom_r_grid_number;
+    unsigned int z_k_shift = z_k - geometry->left_z_grid_number;
+
+    double vel_r_single = P_VEL_R((**i));
+    double vel_phi_single = P_VEL_PHI((**i));
+    double vel_z_single = P_VEL_Z((**i));
+
+    double vel_abs_single = algo::common::sq_rt(pow(vel_r_single, 2)
+                                                + pow(vel_phi_single, 2)
+                                                + pow(vel_z_single, 2));
+
+    if (vel_abs_single < REL_LIMIT)
+    {
+      double gamma = phys::rel::lorenz_factor(vel_abs_single * vel_abs_single);
+      vel_r_single *= gamma;
+      vel_phi_single *= gamma;
+      vel_z_single *= gamma;
+      vel_abs_single *= gamma;
+    }
+
+    p_r.inc(r_i_shift, z_k_shift, vel_r_single * mass);
+    p_phi.inc(r_i_shift, z_k_shift, vel_phi_single * mass);
+    p_z.inc(r_i_shift, z_k_shift, vel_z_single * mass);
+    p_abs.inc(r_i_shift, z_k_shift, vel_abs_single * mass);
+    count.inc(r_i_shift, z_k_shift, 1);
+  }
+#elif defined(SWITCH_TEMP_CALC_WEIGHTING)
+  // calculate density initially
+  calc_density();
+
+  for (auto i = particles.begin(); i != particles.end(); i++)
+  {
+    double vel_r_single = P_VEL_R((**i));
+    double vel_phi_single = P_VEL_PHI((**i));
+    double vel_z_single = P_VEL_Z((**i));
+
+    double vel_abs_single = algo::common::sq_rt (
+      pow(vel_r_single, 2)
+      + pow(vel_phi_single, 2)
+      + pow(vel_z_single, 2)
+      );
+
+    double m_weighted = mass * P_WEIGHT((**i));
+
+    double p_r_single = m_weighted * vel_r_single;
+    double p_phi_single = m_weighted * vel_phi_single;
+    double p_z_single = m_weighted * vel_z_single;
+    double p_abs_single = m_weighted * vel_abs_single;
+
+    if (vel_abs_single < REL_LIMIT)
+    {
+      double gamma = phys::rel::lorenz_factor(pow(vel_abs_single, 2));
+      p_r_single *= gamma;
+      p_phi_single *= gamma;
+      p_z_single *= gamma;
+      p_abs_single *= gamma;
+    }
+
+    weight_cylindrical<double>(geometry, &p_r,
+                               P_POS_R((**i)),
+                               P_POS_Z((**i)),
+                               p_r_single);
+
+    weight_cylindrical<double>(geometry, &p_phi,
+                               P_POS_R((**i)),
+                               P_POS_Z((**i)),
+                               p_phi_single);
+
+    weight_cylindrical<double>(geometry, &p_z,
+                               P_POS_R((**i)),
+                               P_POS_Z((**i)),
+                               p_z_single);
+
+    weight_cylindrical<double>(geometry, &p_abs,
+                               P_POS_R((**i)),
+                               P_POS_Z((**i)),
+                               p_abs_single);
+  }
+
+#endif // end of SWITCH_TEMP_CALC_...
+
+  for (int r = 0; r < geometry->r_grid_amount; r++)
+    for (int z = 0; z < geometry->z_grid_amount; z++)
+    {
+      double p_vec_sum_2 =
+        pow(p_r(r, z), 2)
+        + pow(p_phi(r, z), 2)
+        + pow(p_z(r, z), 2);
+
+      double p_sc_sum_2 = pow(p_abs(r, z), 2) - p_vec_sum_2;
+
+      // normalize to count/density and convert Joules to eV
+#ifdef SWITCH_TEMP_CALC_COUNTING
+      p_sc_sum_2 /= pow(count(r, z), 2);
+#elif defined(SWITCH_TEMP_CALC_WEIGHTING)
+      p_sc_sum_2 /= pow(density_map(r, z), 2);
+#endif // end of SWITCH_TEMP_CALC_...
+
+      double energy = phys::rel::energy_m(mass, p_sc_sum_2);
+
+      // convert Joules to eV
+      energy *= EL_CHARGE_INV;
+
+      temperature_map.set(r, z, energy);
+    }
 }

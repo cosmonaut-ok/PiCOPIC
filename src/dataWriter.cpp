@@ -134,20 +134,20 @@ void DataWriter::operator()()
   if (is_run == 0)
   {
 #ifndef ENABLE_DEBUG
-      int print_header_step = 30;
-      if (time->print_header_counter % print_header_step == 0)
-      {
-        MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
-        MSG(left << setw(13) << "|    Step"
-            << left << setw(14) << "| Saved Frame"
-            << left << setw(50) << "|                Dumping Probe Name"
-            << left << setw(8) << "| Shape"
-            << left << setw(19) << "| Model Time (sec)"
-            << left << setw(22) << "| Simulation Duration"
-            << left << "|"
-          );
-        MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
-      }
+    int print_header_step = 30;
+    if (time->print_header_counter % print_header_step == 0)
+    {
+      MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
+      MSG(left << setw(13) << "|    Step"
+          << left << setw(14) << "| Saved Frame"
+          << left << setw(50) << "|                Dumping Probe Name"
+          << left << setw(8) << "| Shape"
+          << left << setw(19) << "| Model Time (sec)"
+          << left << setw(22) << "| Simulation Duration"
+          << left << "|"
+        );
+      MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
+    }
 #endif // ENABLE_DEBUG
 
     string dump_step = to_string((int)current_time_step / schedule);
@@ -223,19 +223,19 @@ void DataWriter::operator()()
     // if (! DEBUG)
     // {
 #ifndef DEBUG
-      std::ostringstream time_conv;
-      time_conv << time->current;
-      std::string cur_time_str = time_conv.str();
+    std::ostringstream time_conv;
+    time_conv << time->current;
+    std::string cur_time_str = time_conv.str();
 
-      MSG(left << setw(13) << "| " + to_string(current_time_step)
-          << left << setw(14) << "| " + dump_step
-          << left << setw(50) << "| " + component_name
-          << left << setw(8) << "| " + shape_name
-          << left << setw(19) << "| " + cur_time_str
-          << left << setw(22) << "| " + (string)algo::common::get_simulation_duration()
-          << left << "|"
-        );
-      // }
+    MSG(left << setw(13) << "| " + to_string(current_time_step)
+        << left << setw(14) << "| " + dump_step
+        << left << setw(50) << "| " + component_name
+        << left << setw(8) << "| " + shape_name
+        << left << setw(19) << "| " + cur_time_str
+        << left << setw(22) << "| " + (string)algo::common::get_simulation_duration()
+        << left << "|"
+      );
+    // }
 #endif
     ++time->print_header_counter;
   }
@@ -248,41 +248,57 @@ void DataWriter::merge_domains(string component, string specie)
     for (unsigned int z = 0; z < geometry->domains_by_z; ++z)
     {
       Domain *sim_domain = domains(r, z);
+      SpecieP *speciep;
+
+      for (auto ps = sim_domain->species_p.begin(); ps != sim_domain->species_p.end(); ++ps)
+        if (specie.compare((**ps).name) == 0)
+          speciep = (*ps);
 
       if (component.compare("density") == 0)
-        sim_domain->weight_density(specie);
+        speciep->calc_density();
       else if (component.compare("temperature") == 0)
-        sim_domain->weight_temperature(specie);
-      else if (component.compare("charge") == 0)
-        sim_domain->weight_charge(specie);
+        speciep->calc_temperature();
     }
 
   for (unsigned int i=0; i < geometry->domains_by_r; i++)
     for (unsigned int j = 0; j < geometry->domains_by_z; j++)
     {
       Domain *sim_domain = domains(i, j);
+      SpecieP *speciep;
+
+      for (auto ps = sim_domain->species_p.begin(); ps != sim_domain->species_p.end(); ++ps)
+        if (specie.compare((**ps).name) == 0)
+          speciep = (*ps);
 
       // update grid
       if (i < geometry->domains_by_r - 1)
       {
         Domain *dst_domain = domains(i+1, j);
+        SpecieP *speciep_dst;
+
+        for (auto ps = dst_domain->species_p.begin(); ps != dst_domain->species_p.end(); ++ps)
+          if (specie.compare((**ps).name) == 0)
+            speciep_dst = (*ps);
+
         if (component.compare("density") == 0)
-          sim_domain->density->density.overlay_x(dst_domain->density->density);
+          speciep->density_map.overlay_x(speciep_dst->density_map);
         else if (component.compare("temperature") == 0)
-          sim_domain->temperature->tmpr.overlay_x(dst_domain->temperature->tmpr);
-        else if (component.compare("charge") == 0)
-          sim_domain->charge->density.overlay_x(dst_domain->charge->density);
+          speciep->temperature_map.overlay_x(speciep_dst->temperature_map);
       }
 
       if (j < geometry->domains_by_z - 1)
       {
         Domain *dst_domain = domains(i, j + 1);
+        SpecieP *speciep_dst;
+
+        for (auto ps = dst_domain->species_p.begin(); ps != dst_domain->species_p.end(); ++ps)
+          if (specie.compare((**ps).name) == 0)
+            speciep_dst = (*ps);
+
         if (component.compare("density") == 0)
-          sim_domain->density->density.overlay_y(dst_domain->density->density);
+          speciep->density_map.overlay_y(speciep_dst->density_map);
         else if (component.compare("temperature") == 0)
-          sim_domain->temperature->tmpr.overlay_y(dst_domain->temperature->tmpr);
-	else if (component.compare("charge") == 0)
-          sim_domain->charge->density.overlay_y(dst_domain->temperature->tmpr);
+          speciep->temperature_map.overlay_y(speciep_dst->temperature_map);
       }
 
       // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
@@ -298,6 +314,11 @@ void DataWriter::merge_domains(string component, string specie)
     {
       Grid<double> value;
       Domain *sim_domain = domains(r, z);
+      SpecieP *speciep;
+
+      for (auto ps = sim_domain->species_p.begin(); ps != sim_domain->species_p.end(); ++ps)
+        if (specie.compare((**ps).name) == 0)
+          speciep = (*ps);
 
       if (component.compare("E_r") == 0)
         value = sim_domain->maxwell_solver->field_e[0];
@@ -318,11 +339,9 @@ void DataWriter::merge_domains(string component, string specie)
       else if (component.compare("J_z") == 0)
         value = sim_domain->current->current[2];
       else if (component.compare("temperature") == 0)
-        value = sim_domain->temperature->tmpr;
+        value = speciep->temperature_map;
       else if (component.compare("density") == 0)
-        value = sim_domain->density->density;
-      else if (component.compare("charge") == 0)
-        value = sim_domain->charge->density;
+        value = speciep->density_map;
       else
         LOG_S(ERROR) << "Unknown DataWriter component ``" << component << "''";
 
@@ -334,13 +353,11 @@ void DataWriter::merge_domains(string component, string specie)
     }
 }
 
-void DataWriter::merge_particle_domains(string parameter,
-                                      unsigned int component,
-                                      string specie)
+void DataWriter::merge_particle_domains ( string parameter,
+                                          unsigned int component,
+                                          string specie)
 {
   Grid<double> value;
-  // if (shape == 0)
-  // {
   for (unsigned int r = 0; r < geometry->domains_by_r; ++r)
     for (unsigned int z = 0; z < geometry->domains_by_z; ++z)
     {
@@ -411,8 +428,4 @@ void DataWriter::merge_particle_domains(string parameter,
         }
       }
     }
-  // }
-  // else
-  //   LOG_CRIT("Incorrect DataWriter shape ``" << shape
-  //            << "''(not allowed for particle sets) or size", 1);
 }

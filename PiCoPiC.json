@@ -163,14 +163,6 @@
         "end": { "r": 128, "z": 512 }
       },
       {
-        "component": "charge",
-        "specie": "electrons",
-        "schedule": 50,
-        "shape": "rec",
-        "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
-      },
-      {
         "component": "p_charge",
         "specie": "electrons",
         "schedule": 50,

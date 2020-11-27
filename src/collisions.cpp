@@ -24,21 +24,27 @@ Collisions::Collisions (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> 
   species_p = _species_p;
 
   // find electron and ion masses and charges
-  string name = "electrons";
-  string cname = "Electrons";
+  string name_el = "electrons";
+  string cname_el = "Electrons";
+
+  string name_ion = "ions";
+  string cname_ion = "Ions";
 
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
-    if (name.compare((**ps).name) == 0 || cname.compare((**ps).name) == 0)
+  {
+    if (name_el.compare((**ps).name) == 0 || cname_el.compare((**ps).name) == 0)
     {
+      specie_el = *ps;
       mass_el = (**ps).mass;
       charge_el = (**ps).charge;
     }
-    else
+    if (name_ion.compare((**ps).name) == 0 || cname_ion.compare((**ps).name) == 0)
     {
+      specie_ion = *ps;
       mass_ion = (**ps).mass;
       charge_ion = (**ps).charge;
     }
-
+  }
   map_el2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
   map_ion2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
 
@@ -49,9 +55,6 @@ Collisions::Collisions (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> 
   energy_tot_ion = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
   amount_tot_ion = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
   moment_tot_ion = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-
-  temperature_el = TemperatureCounted(_geometry, _species_p);
-  temperature_ion = TemperatureCounted(_geometry, _species_p);
 }
 
 //! TA77: clear
@@ -70,12 +73,6 @@ void Collisions::clear()
   amount_tot_ion.overlay_set(0);
   moment_tot_ion = 0;
   moment_tot_ion.overlay_set(0);
-
-  temperature_el.tmpr = 0;
-  temperature_el.tmpr.overlay_set(0);
-
-  temperature_ion.tmpr = 0;
-  temperature_ion.tmpr.overlay_set(0);
 
   for (int i = 0; i < geometry->r_grid_amount; ++i)
     for (int j = 0; j < geometry->z_grid_amount; ++j)
@@ -222,8 +219,10 @@ void Collisions::collect_weighted_params_tot_grid ()
       }
     }
   // calculate temperature of electrons and ions
-  temperature_el("electrons");
-  temperature_ion("ions");
+  specie_el->calc_temperature();
+  specie_ion->calc_temperature();
+  // temperature_el("electrons");
+  // temperature_ion("ions");
 }
 
 void Collisions::operator()()

@@ -42,17 +42,17 @@
 #include "current/currentZigZag.hpp"
 #endif
 
-#ifdef SWITCH_DENSITY_CALC_COUNTING
-#include "density/densityCounted.hpp"
-#elif defined(SWITCH_DENSITY_CALC_WEIGHTING)
-#include "density/densityWeighted.hpp"
-#endif
+// #ifdef SWITCH_DENSITY_CALC_COUNTING
+// #include "density/densityCounted.hpp"
+// #elif defined(SWITCH_DENSITY_CALC_WEIGHTING)
+// #include "density/densityWeighted.hpp"
+// #endif
 
-#ifdef SWITCH_TEMP_CALC_COUNTING
-#include "temperature/temperatureCounted.hpp"
-#elif defined(WITH_TEMP_CALC_WEIGHTING)
-#include "temperature/temperatureWeighted.hpp"
-#endif
+// #ifdef SWITCH_TEMP_CALC_COUNTING
+// #include "temperature/temperatureCounted.hpp"
+// #elif defined(WITH_TEMP_CALC_WEIGHTING)
+// #include "temperature/temperatureWeighted.hpp"
+// #endif
 
 #ifdef ENABLE_COULOMB_COLLISIONS
 #ifdef SWITCH_COULOMB_COLLISIONS_TA77S
@@ -64,7 +64,7 @@
 #endif
 #endif
 
-#include "density/densityCharge.hpp"
+// #include "density/densityCharge.hpp"
 
 using namespace std;
 
@@ -86,9 +86,9 @@ public:
   MaxwellSolverYee *maxwell_solver;
 #endif
 
-  Temperature *temperature;
-  Density *density;
-  DensityCharge *charge;
+  // Temperature *temperature;
+  // Density *density;
+  // DensityCharge *charge;
 #ifdef ENABLE_COULOMB_COLLISIONS
   Collisions *collisions;
 #endif

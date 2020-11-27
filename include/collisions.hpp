@@ -26,12 +26,7 @@
 
 #include "phys/plasma.hpp"
 
-#include "temperature/temperatureCounted.hpp"
-#include "density/densityCounted.hpp"
-
-// const double PROTON_MASS = EL_MASS * 1836;
-
-using namespace std;
+#include "specieP.hpp"
 
 class Collisions
 {
@@ -41,9 +36,6 @@ public:
 
   double charge_el;
   double charge_ion;
-
-  TemperatureCounted temperature_el;
-  TemperatureCounted temperature_ion;
 
   Collisions(void) {};
   Collisions(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
@@ -57,6 +49,8 @@ public:
 
 protected:
   vector <SpecieP *> species_p;
+  SpecieP* specie_el;
+  SpecieP* specie_ion;
   Grid < vector< vector<double> * > > map_el2cell;
   Grid < vector< vector<double> * > > map_ion2cell;
 
