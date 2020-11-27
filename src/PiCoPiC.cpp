@@ -203,9 +203,6 @@ int main(int argc, char **argv)
 
     Grid<Domain *> domains = shared_mem_blk.domains;
 
-    unsigned int r_domains = geometry_global->domains_by_r;
-    unsigned int z_domains = geometry_global->domains_by_z;
-
     LOG_S(MAX) << "Initializing Data Paths";
 
 #ifdef ENABLE_HDF5

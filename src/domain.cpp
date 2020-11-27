@@ -37,12 +37,6 @@ Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
   maxwell_solver = new MaxwellSolverYee(&geometry, time, species_p, current);
 #endif
 
-#ifdef SWITCH_TEMP_CALC_COUNTING
-  temperature = new TemperatureCounted(&geometry, species_p);
-#elif defined(SWITCH_TEMP_CALC_WEIGHTING)
-  temperature = new TemperatureWeighted(&geometry, species_p);
-#endif
-
 #ifdef ENABLE_COULOMB_COLLISIONS
 #ifdef SWITCH_COULOMB_COLLISIONS_TA77S
   collisions = new CollisionsTA77S(&geometry, time, species_p);
@@ -52,14 +46,6 @@ Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
   collisions = new CollisionsP12(&geometry, time, species_p);
 #endif // WITH_COULOMB_COLLISIONS
 #endif // ENABLE_COULOMB_COLLISIONS
-
-#ifdef SWITCH_DENSITY_CALC_COUNTING
-  density = new DensityCounted(&geometry, species_p);
-#elif defined(SWITCH_DENSITY_CALC_WEIGHTING)
-  density = new DensityWeighted(&geometry, species_p);
-#endif
-
-  charge = new DensityCharge(&geometry, species_p);
 
   // ! Linking classes:
   // ! * insert field pointers to each particles specie
@@ -89,23 +75,24 @@ void Domain::distribute()
 
 void Domain::weight_density(string specie)
 {
-  density->density = 0;
-  density->density.overlay_set(0);
-  (*density)(specie);
+  SpecieP *speciep;
+
+  for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
+    if (specie.compare((**ps).name) == 0)
+      speciep = (*ps);
+      
+  speciep->calc_density();
 }
 
 void Domain::weight_temperature(string specie)
 {
-  temperature->tmpr = 0;
-  temperature->tmpr.overlay_set(0);
-  (*temperature)(specie);
-}
+  SpecieP *speciep;
 
-void Domain::weight_charge(string specie)
-{
-  charge->density = 0;
-  charge->density.overlay_set(0);
-  (*charge)(specie);
+  for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
+    if (specie.compare((**ps).name) == 0)
+      speciep = (*ps);
+      
+  speciep->calc_temperature();
 }
 
 void Domain::weight_field_h()

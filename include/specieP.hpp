@@ -29,6 +29,7 @@
 #include "math/rand.hpp"
 #include "math/maxwellJuettner.hpp"
 #include "phys/rel.hpp"
+#include "algo/weighter.hpp"
 
 #ifdef SWITCH_MAXWELL_SOLVER_YEE
 #include "maxwellSolver/maxwellSolverYee.hpp"
@@ -135,6 +136,8 @@ public:
   TimeSim *time;
 
   double temperature; // in electronvolts
+  Grid<double> density_map;
+  Grid<double> temperature_map;
 
   double start_time;
   double bunch_length;
@@ -162,9 +165,11 @@ public:
   // void set_spatial_distribution(){};
   // void set_velocity_distribution(){};
 // private:
-  FieldH* field_h;
-  FieldE* field_e;
+  // FieldH* field_h;
+  // FieldE* field_e;
   MaxwellSolver* maxwell_solver;
+
+
 
 public:
   virtual void fullyfill_spatial_distribution (void);
@@ -188,6 +193,9 @@ public:
   void back_velocity_to_rz();
   void dump_position_to_old();
   void bind_cell_numbers ();
+
+  void calc_density ();
+  void calc_temperature ();
 
 protected:
   void rectangular_random_placement (unsigned int int_cell_number,
