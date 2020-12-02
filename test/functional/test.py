@@ -4,6 +4,7 @@ import os
 import sys
 import argparse
 import numpy as np
+import h5py
 import shutil
 import subprocess
 import gzip
@@ -98,9 +99,9 @@ class bootstrap ():
         utils.cliexec('make distclean', cwd=self.rootdir, view=self.verbose, wait=True)
         utils.cliexec('./autogen.sh', cwd=self.rootdir, view=self.verbose, wait=True)
         if self.accept_ieee:
-            utils.cliexec('./configure --disable-hdf5 --enable-ieee --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
+            utils.cliexec('./configure --enable-ieee --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
         else:
-            utils.cliexec('./configure --disable-hdf5 --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
+            utils.cliexec('./configure --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
         utils.cliexec('make build', cwd=self.rootdir, view=self.verbose, wait=True)
 
         picopic_file = os.path.join(self.rootdir, 'PiCoPiC')
@@ -157,15 +158,15 @@ class picopicTest ():
 
     def compare(self, component_name, filename):
         frame_name = self.components[component_name]
+        h5file = h5py.File(os.path.join(self.testdir, self.meta.data_path, 'data.h5'), 'r')
         true_path = os.path.join(me, 'true_data', component_name, frame_name, filename)
         test_path = os.path.join(self.testdir, self.meta.data_path, self.meta.data_path,
                                  component_name, frame_name, filename)
 
-        # with gzip.open(true_path + '.gz', 'r') as myfile:
-        #     true_data = np.fromstring(myfile.read(), dtype=float, sep=' ')
-
-        test_data = np.fromfile(test_path, dtype=float, sep=' ')
-        true_data = np.fromfile(true_path, dtype=float, sep=' ')
+        dset = h5file[os.path.join('/', component_name, frame_name, filename)]
+        shape = dset.shape
+        test_data = np.reshape(dset[...], (shape[0] * shape[1]))
+        true_data = np.fromfile('{}.dat'.format(true_path), dtype=float, sep=' ')
 
         isc = True
 
@@ -246,7 +247,7 @@ def test_example(template_name, number, accept_ieee=True,
 
     components = ['E_r', 'E_phi', 'E_z', 'H_r', 'H_phi', 'H_z', 'J_r', 'J_phi', 'J_z']
     for i in components:
-        s = t.compare(i, '{}.dat'.format(number))
+        s = t.compare(i, '{}'.format(number))
         if status: status = s
 
     return status

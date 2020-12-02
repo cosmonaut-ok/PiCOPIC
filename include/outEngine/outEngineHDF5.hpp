@@ -18,33 +18,34 @@
 #ifndef _OUT_ENGINE_HDF5_HPP_
 #define _OUT_ENGINE_HDF5_HPP_
 
-#include <sys/resource.h>
-
-#include "outEngine.hpp"
-
 #include <highfive/H5File.hpp>
 
-using namespace std;
+#include "outEngine.hpp"
 
 class OutEngineHDF5 : public OutEngine
 {
 public:
-  HighFive::File *out_file;
-
-public:
   OutEngineHDF5 () {};
-  OutEngineHDF5 (HighFive::File* _file, string _path, string _subpath,
-                 unsigned int _shape, int *_size,
-                 bool _append, bool _compress, unsigned int _compress_level);
 
-  void write_rec(string _name, Grid<double> data);
-  void write_vec(string _name, Grid<double> data);
-  void write_dot(string _name, Grid<double> data);
-  void write_1d_vector(string _name, vector<double> data);
-  void write_metadata(string _metadata);
+  OutEngineHDF5 ( std::string _group,
+                    std::vector<size_t> _offset,
+                    bool _append, unsigned short _compress );
 
-private:
-  string datafile_name;
+  OutEngineHDF5 ( HighFive::File* _file, std::string _group,
+                    std::vector<size_t> _offset,
+                    bool _append, unsigned short _compress );
+
+  void create_dataset(std::string _name, vector<unsigned int> _dims);
+  void create_path();
+  void write_metadata(std::string _metadata);
+
+  // void write_cub(string _name, Grid3D<double> data); // cube
+  void write_rec(string _name, vector<vector<double>> data);   // rectangle
+  void write_vec(string _name, vector<double> data);           // vector
+  void write_dot(string _name, double data);                   // dot
+
+// private:
+  HighFive::File *data_file;
 };
 
 #endif // end of _OUT_ENGINE_HDF5_HPP_

@@ -33,8 +33,13 @@
 using namespace std;
 using namespace picojson;
 
+#define PATH_DELIMITER "/"
+#define RANGE_DELIMITER "-"
+#define SPACE_DELIMITER "_"
+
 struct probe
 {
+  string path;
   string component;
   string specie;
   unsigned int shape;

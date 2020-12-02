@@ -212,6 +212,20 @@ public:
   T** get_grid()
   {
     return grid;
-  }
+  };
+
+  T **operator()()
+  {
+    T **ret = new T *[x_size];
+    for (unsigned int i = 0; i < x_size; ++i)
+      ret[i] = new T[y_size];
+
+    for (unsigned int i = 0; i < x_size; ++i)
+      for (unsigned int j = 0; j < y_size; ++j)
+        ret[i][j] = grid[i+o_s][j+o_s];
+
+    return ret;
+  };
+
 };
 #endif // end of _GRID_HPP_

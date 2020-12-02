@@ -35,7 +35,8 @@ using namespace MPI;
 #include "algo/grid.hpp"
 
 #include "SMB.hpp"
-#include "dataWriter.hpp"
+#include "outController.hpp"
+// #include "dataWriter.hpp"
 #include "specieP.hpp"
 #include "beamP.hpp"
 
@@ -232,32 +233,42 @@ int main(int argc, char **argv)
     }
 #endif // ENABLE_HDF5
 
-    vector<DataWriter> data_writers;
-
-    for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
-    {
-      int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
-
-      DataWriter writer (cfg.output_data->data_root, i->component,
-                         i->specie, i->shape, probe_size, i->schedule,
-                         cfg.output_data->compress, cfg.output_data->compress_level,
-                         geometry_global, sim_time_clock, domains, cfg.cfg2str());
-
-
 #ifdef ENABLE_HDF5
-#ifdef ENABLE_MPI
-      if (ID == 0)
-      {
-#endif
-        writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
-        writer.hdf5_init(cfg.cfg2str());
-#ifdef ENABLE_MPI
-      }
-#endif
-#endif // ENABLE_HDF5
+    OutController out_controller ( file, geometry_global, sim_time_clock,
+                                   cfg.probes, &shared_mem_blk, cfg.cfg2str() );
 
-      data_writers.push_back(writer);
-    }
+    out_controller.hdf5_file = file;
+#else
+    OutController out_controller ( geometry_global, sim_time_clock,
+                                   cfg.probes, &shared_mem_blk, cfg.cfg2str() );
+#endif
+
+//     vector<DataWriter> data_writers;
+
+//     for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
+//     {
+//       int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
+
+//       DataWriter writer (cfg.output_data->data_root, i->component,
+//                          i->specie, i->shape, probe_size, i->schedule,
+//                          cfg.output_data->compress, cfg.output_data->compress_level,
+//                          geometry_global, sim_time_clock, domains, cfg.cfg2str());
+
+
+// #ifdef ENABLE_HDF5
+// #ifdef ENABLE_MPI
+//       if (ID == 0)
+//       {
+// #endif
+//         writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
+//         writer.hdf5_init(cfg.cfg2str());
+// #ifdef ENABLE_MPI
+//       }
+// #endif
+// #endif // ENABLE_HDF5
+
+//       data_writers.push_back(writer);
+//     }
 
     LOG_S(INFO) << "Preparation to calculation";
 
@@ -316,8 +327,9 @@ int main(int argc, char **argv)
 #ifdef ENABLE_MPI
       if (ID == 0)
 #endif
-        for (auto i = data_writers.begin(); i != data_writers.end(); i++)
-          (*i)();
+        // for (auto i = data_writers.begin(); i != data_writers.end(); i++)
+        //   (*i)();
+      out_controller();
 
       sim_time_clock->current += sim_time_clock->step;
 
@@ -341,22 +353,22 @@ int main(int argc, char **argv)
           }
 
           // recreate all of the writers
-          data_writers.clear();
+          // data_writers.clear();
 
-          for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
-          {
-            int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
+          // for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
+          // {
+          //   int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
 
-            DataWriter writer (cfg.output_data->data_root, i->component,
-                               i->specie, i->shape, probe_size, i->schedule,
-                               cfg.output_data->compress, cfg.output_data->compress_level,
-                               geometry_global, sim_time_clock, domains, cfg.cfg2str());
+          //   DataWriter writer (cfg.output_data->data_root, i->component,
+          //                      i->specie, i->shape, probe_size, i->schedule,
+          //                      cfg.output_data->compress, cfg.output_data->compress_level,
+          //                      geometry_global, sim_time_clock, domains, cfg.cfg2str());
 
-            writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
-            writer.hdf5_init(cfg.cfg2str());
+          //   writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
+          //   writer.hdf5_init(cfg.cfg2str());
 
-            data_writers.push_back(writer);
-          }
+          //   data_writers.push_back(writer);
+          // }
           lock_.store(false, std::memory_order_relaxed);
           recreate_writers_.store(false, std::memory_order_relaxed);
         }

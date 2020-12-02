@@ -80,9 +80,9 @@ AC_ARG_ENABLE([mpi], [AC_HELP_STRING([--enable-mpi],
               [Enable openMPI support])],
               [MPI_OPTION="$enableval"], [MPI_OPTION=no])
 
-AC_ARG_ENABLE([hdf5], [AC_HELP_STRING([--disable-hdf5],
-              [Build application with hdf5 library support])],
-              [HDF5_OPTION="$enableval"], [HDF5_OPTION=yes])
+dnl AC_ARG_ENABLE([hdf5], [AC_HELP_STRING([--disable-hdf5],
+dnl               [Build application with hdf5 library support])],
+dnl               [HDF5_OPTION="$enableval"], [HDF5_OPTION=yes])
 
 AC_ARG_WITH([doc-formats], [AC_HELP_STRING([--with-doc-formats],
             [Set list of documentation formats to be generated])],
@@ -201,6 +201,7 @@ else
 fi
 
 # enable HDF5 data format support
+HDF5_OPTION=yes # there is no alternative for now. Let's hardcode it
 if test x$HDF5_OPTION = xyes; then
   AC_HAVE_LIBRARY(hdf5, , AC_MSG_WARN([No such library hdf5. You can build it locally after configuration with `make hdf5-install` before build and it includes to build paths automatically]))
   ENABLE_HDF5=true
