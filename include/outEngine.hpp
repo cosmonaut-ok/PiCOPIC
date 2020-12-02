@@ -19,48 +19,37 @@
 #define _OUT_ENGINE_HPP_
 
 #include <string>
+#include <vector>
+
 #include "algo/grid.hpp"
-
-#include "defines.hpp"
-#include "msg.hpp"
-
-using namespace std;
 
 class OutEngine
 {
 public:
-  string path;
-  string subpath;
-  unsigned int shape;
-  int size[4];
-  bool append;
-  bool compress;
-  unsigned int compress_level;
-
-
-public:
   OutEngine () {};
-  OutEngine (string _path, string _subpath, unsigned int _shape, int *_size,
-             bool _append, bool _compress, unsigned int _compress_level)
+  OutEngine ( std::string _group, std::vector<size_t> _offset,
+                bool _append, unsigned short _compress )
   {
-    path = _path;
-    subpath = _subpath;
-    shape = _shape;
+    group = _group;
+    offset = _offset;
     append = _append;
     compress = _compress;
-    compress_level = _compress_level;
-
-    for (unsigned int i = 0; i < 4; ++i)
-      size[i] = _size[i];
   };
 
-  ~OutEngine () {};
+  virtual void create_dataset(std::string _name, vector<unsigned int> _dims) = 0;
+  virtual void create_path() = 0;
+  virtual void write_metadata(std::string _metadata) = 0;
 
-  virtual void write_rec(string _name, Grid<double> data) = 0;
-  virtual void write_vec(string _name, Grid<double> data) = 0;
-  virtual void write_dot(string _name, Grid<double> data) = 0;
-  virtual void write_1d_vector(string _name, vector<double> data) = 0;
-  virtual void write_metadata(string _metadata) = 0;
+  // virtual void write_cub(string _name, Grid3D<double> data) = 0; // cube
+  virtual void write_rec(string _name, vector<vector<double>> data) = 0;   // rectangle
+  virtual void write_vec(string _name, vector<double> data) = 0;           // vector
+  virtual void write_dot(string _name, double data) = 0;                   // dot
+
+protected:
+  std::string group;
+  std::vector<size_t> offset;
+  bool append;
+  unsigned short compress;
 };
 
 #endif // end of _OUT_ENGINE_HPP_

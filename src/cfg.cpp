@@ -208,7 +208,15 @@ void Cfg::init_probes ()
     try { p_p.specie = o["specie"].get<string>().c_str(); }
     catch (std::exception& e) { p_p.specie = "unknown"; }
 
-     string p_shape = o["shape"].get<string>().c_str();
+    string p_shape = o["shape"].get<string>().c_str();
+
+    //// generate probe path
+    p_p.path = p_p.component + PATH_DELIMITER;
+
+    // add path part for specie-based probes
+    if ( p_p.component.compare("temperature") == 0
+         || p_p.component.compare("density") == 0 )
+      p_p.path += p_p.specie + PATH_DELIMITER;
 
     if ( p_shape.compare("rec") == 0 )
     {
@@ -217,30 +225,58 @@ void Cfg::init_probes ()
       p_p.r_end = (int)o["end"].get<object>()["r"].get<double>();
       p_p.z_start = (int)o["start"].get<object>()["z"].get<double>();
       p_p.z_end = (int)o["end"].get<object>()["z"].get<double>();
+
+      // add shape and size to probe path
+      p_p.path += "rec";
+      p_p.path += PATH_DELIMITER;
+      p_p.path += to_string(p_p.r_start);
+      p_p.path += RANGE_DELIMITER;
+      p_p.path += to_string(p_p.r_end);
+      p_p.path += SPACE_DELIMITER;
+      p_p.path += to_string(p_p.z_start);
+      p_p.path += RANGE_DELIMITER;
+      p_p.path += to_string(p_p.z_end);
     }
     else if ( p_shape.compare("col") == 0 )
     {
       p_p.shape = 1;
-      p_p.r_start = -1;
-      p_p.r_end = -1;
+      p_p.r_start = 0;
+      p_p.r_end = 0;
       p_p.z_end = (int)o["z"].get<double>();
-      p_p.z_start = -1;
+      p_p.z_start = 0;
+
+      // add shape and size to probe path
+      p_p.path += "col";
+      p_p.path += PATH_DELIMITER;
+      p_p.path += to_string(p_p.z_end);
     }
     else if ( p_shape.compare("row") == 0 )
     {
       p_p.shape = 2;
       p_p.r_end = (int)o["r"].get<double>();
-      p_p.r_start = -1;
-      p_p.z_start = -1;
-      p_p.z_end = -1;
+      p_p.r_start = 0;
+      p_p.z_start = 0;
+      p_p.z_end = 0;
+
+      // add shape and size to probe path
+      p_p.path += "row";
+      p_p.path += PATH_DELIMITER;
+      p_p.path += to_string(p_p.r_end);
     }
     else if ( p_shape.compare("dot") == 0 )
     {
       p_p.shape = 3;
       p_p.r_end = (int)o["r"].get<double>();
-      p_p.r_start = -1;
+      p_p.r_start = 0;
       p_p.z_end = (int)o["z"].get<double>();
-      p_p.z_start = -1;
+      p_p.z_start = 0;
+
+      // add shape and size to probe path
+      p_p.path += "dot";
+      p_p.path += PATH_DELIMITER;
+      p_p.path += to_string(p_p.r_end);
+      p_p.path += SPACE_DELIMITER;
+      p_p.path += to_string(p_p.z_end);
     }
     else
       LOG_S(FATAL) << "Unknown probe shape ``" << p_shape << "''";
@@ -250,20 +286,20 @@ void Cfg::init_probes ()
     if (p_p.r_start > p_p.r_end || p_p.z_start > p_p.z_end)
     {
       LOG_S(FATAL) << "Incorrect probe's " << p_p.component << "/" << p_shape << " shape: ["
-               << p_p.r_start << "," << p_p.r_end << ","
-               << p_p.z_start << "," << p_p.z_end << "]";
+                   << p_p.r_start << "," << p_p.r_end << ","
+                   << p_p.z_start << "," << p_p.z_end << "]";
     }
     else if (p_p.r_end > geometry->r_grid_amount)
     {
       LOG_S(FATAL) << "Probe's " << p_p.component << "/" << p_shape << " radius is out of simulation domain: "
-               << p_p.r_end << ". Must be less, than "
-               << geometry->r_grid_amount;
+                   << p_p.r_end << ". Must be less, than "
+                   << geometry->r_grid_amount;
     }
     else if (p_p.z_end > geometry->z_grid_amount)
     {
       LOG_S(FATAL) << "Probe's " << p_p.component << "/" << p_shape << " longitude is out of simulation domain: "
-               << p_p.z_end << ". Must be less, than "
-		   << geometry->z_grid_amount;
+                   << p_p.z_end << ". Must be less, than "
+                   << geometry->z_grid_amount;
     }
     else
       probes.push_back(p_p);
@@ -305,17 +341,6 @@ void Cfg::init_beam()
   else
     LOG_S(INFO) << "There is no particle beams to inject";
 }
-
-// void Cfg::init_boundary ()
-// {
-//   //! initialize boundaries and boundary conditions
-//   XMLElement *sub_root = try_first_child(xml_data, "boundary_maxwell_conditions");
-//   //
-//   boundary_maxwell_e_phi_upper = atof(try_first_child(sub_root, "e_fi_upper")->GetText());
-//   boundary_maxwell_e_phi_left = atof(try_first_child(sub_root, "e_fi_left")->GetText());
-//   boundary_maxwell_e_phi_right = atof(try_first_child(sub_root, "e_fi_right")->GetText());
-//   boundary_conditions = atoi(try_first_child(xml_data, "boundary_conditions")->GetText());
-// }
 
 void Cfg::init_geometry ()
 {

@@ -38,11 +38,11 @@ PiCoPiC follows the same principles for data output, as PDP3 data array output a
 
 ### System And Software Requirements
 
-- C++ compiler: gcc 6.X or later (8.X recommended)
+- C++ compiler: gcc 6.X or later (8.X is recommended)
 - autotools (autoconf, autoheader)
 - git (to get sources)
-- hdf5 library (1.10.5+ is recommmended)
-- 'autoconf' and 'make' utils
+- hdf5 library (1.12.X is recommmended)
+- 'make' util
 - libgomp (OpenMP spec. version 3.0+).
 - python3 + jupyter + matplotlib + numpy for visualization (anaconda - python scientific environment is recommended)
 - doxygen, latex (texlive-full), imagemagick, pandoc, pandoc-citeproc _**(optional, for documentation only)**_
@@ -57,11 +57,9 @@ PiCoPiC follows the same principles for data output, as PDP3 data array output a
 root@host# apt-get install build-essential autoconf
 ```
 
-**HDF5 library installation (optional)**:
+**HDF5 library installation**:
 
-If you going to use HDF5 format, you should build HDF5 library as prerequirement. As libhdf5 v.1.10.0 ships with debian, we need to download and compile fresh version (1.10.3) manually
-
-<u>**WARNING!** HDF5 is default picopic output format. You must take care about HDF5 library presence (see below) or switch to plaintext format with `./configure` script (see "CONFIGURE AND BUILD PROJECT").</u>
+HDF5 format is the only output format for now (plaintext is deprecated). So, you should build HDF5 library as prerequirement. libhdf5 v.1.12.X is recommended. But, v.1.10.3 (shipped with current debian stable distribution) or higher can be used. In case of use different HDF5 version from default in your OS distribution, HDF5 should be compiled manually as prerequirement. PiCoPiC's build scripts contain helper for it (**0.b** item).
 
 * 0.a. install HDF5 with package management system (perform 0.a, 0.b or install in some other way, at your option):
 ```bash
@@ -80,7 +78,7 @@ user@host$ sudo make hdf5-install
 ```bash
 user@host$ git clone https://gitlab.com/my-funny-plasma/PIC/picopic.git
 user@host$ cd picopic
-user@host$ git submodule update --init # require to enable external libraries
+user@host$ git submodule update --init --recursive # require to enable external libraries
 ```
 
 #### 2. **CONFIGURE AND BUILD PROJECT**
@@ -88,15 +86,13 @@ user@host$ git submodule update --init # require to enable external libraries
 ```bash
 # change your current directory to project's root directory
 user@host$ cd /path/to/picopic/
+# 0.b.: optional step to install HDF5 library with built-in helper and reset project's build directory
+user@host$ ./autogen.sh && ./configure && sudo make hdf5-install && sudo make distclesn
+# end of 0.b.
 user@host$ ./autogen.sh
 user@host$ ./configure [OPTIONS] # use ./configure --help to view full options list
-# 0.b.: optional step to install HDF5 library with built-in helper
-user@host$ sudo make hdf5-install
-# end of 0.b.
 user@host$ make [COMPILE FLAGS] # see below about COMPILE FLAGS
 ```
-
-<u> **WARNING!** HDF5 is default picopic output format. if you don't want to use HDF5 output format, you must disable it manually with `--disable-hdf5` option for `./configure` script </u>
 
 #### 3. **TEST (optional)**
 

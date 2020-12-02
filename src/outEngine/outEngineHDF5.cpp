@@ -19,77 +19,92 @@
 
 #include "outEngine/outEngineHDF5.hpp"
 
+using namespace std;
 using namespace HighFive;
 
-OutEngineHDF5::OutEngineHDF5 (File* _file, string _path, string _subpath,
-                              unsigned int _shape, int *_size,
-                              bool _append, bool _compress,
-                              unsigned int _compress_level)
-  : OutEngine (_path, _subpath, _shape, _size, _append, _compress, _compress_level)
+OutEngineHDF5::OutEngineHDF5 ( std::string _group,
+                                   std::vector<size_t> _offset,
+                                   bool _append, unsigned short _compress )
+  :OutEngine ( _group, _offset, _append, _compress)
 {
-  out_file = _file;
-
-  // create group with subpath name recursively
-  std::vector<std::string> group_array;
-  const char delim = '/';
-  algo::common::splitstr(subpath, delim, group_array);
-
-  string group_name;
-
-  for (auto i = group_array.begin(); i != group_array.end(); ++i)
-  {
-    group_name += delim;
-    group_name += (*i);
-
-    try
-    {
-      LOG_S(MAX) << "Creating group ``" << group_name << "''";
-      Group g = out_file->createGroup(group_name.c_str());
-      LOG_S(MAX) << "Group ``" << group_name << "'' created";
-    }
-    catch (const GroupException&)
-    {
-      LOG_S(MAX) << "Group ``" << group_name << "'' already exists. Skipping";
-    }
-  }
-
-  if (compress)
-    LOG_S(WARNING) << "compression is not supported by plaintext output engine";
+  true;
 }
 
-void OutEngineHDF5::write_rec(string _name, Grid<double> data)
+OutEngineHDF5::OutEngineHDF5 ( HighFive::File* _file, std::string _group,
+				   std::vector<size_t> _offset,
+				   bool _append, unsigned short _compress )
+  :OutEngineHDF5 ( _group, _offset, _append, _compress)
 {
-  // FIXME: workaround: set stack size to required value
-  unsigned int size_x = size[2] - size[0];
-  unsigned int size_y = size[3] - size[1];
+  data_file = _file;
+}
 
-  const rlim_t kStackSize = size_x * size_y * sizeof(double) * 1024;
-  struct rlimit rl;
-  int result;
-
-  result = getrlimit(RLIMIT_STACK, &rl);
-  if (result == 0)
-    if (rl.rlim_cur < kStackSize)
-    {
-      rl.rlim_cur = kStackSize;
-      result = setrlimit(RLIMIT_STACK, &rl);
-    };
-
+// dummy methods just to show interface
+void OutEngineHDF5::write_rec ( string _name, vector< vector<double>> data )
+{
   try
   {
-    Group group = out_file->getGroup('/' + subpath);
-
-    std::vector<size_t> dims{size_x, size_y};
+    Group group_instance = data_file->getGroup('/' + group);
 
     // Create the dataset
-    DataSet dataset = group.createDataSet<double>(_name, DataSpace(dims));
+    DataSet dataset = group_instance.getDataSet( _name );
 
-    vector<vector<double>> tmparr(size_x , vector<double> (size_y, 0));
-    for (unsigned int i = 0; i < size_x; ++i)
-      for (unsigned int j = 0; j < size_y; ++j)
-        tmparr[i][j] = data(i+size[0], j+size[1]);
+    vector<size_t> size = {data.size(), data[0].size()};
+    dataset.select(offset, size).write( data );
+  }
+  catch (Exception& error)
+  {
+    LOG_S(ERROR) << error.what();
+    LOG_S(FATAL) << "Can not write dataset ``" << _name << "'' to group ``/" << group << "''";
+  }
+}
 
-    dataset.write(tmparr);
+void OutEngineHDF5::write_vec(string _name, vector<double> data)
+{
+  try
+  {
+    Group group_instance = data_file->getGroup('/' + group);
+
+    // Create the dataset
+    DataSet dataset = group_instance.getDataSet( _name );
+
+    dataset.select(offset, {data.size()}).write( data );
+  }
+  catch (Exception& error)
+  {
+    LOG_S(ERROR) << error.what();
+    LOG_S(FATAL) << "Can not write dataset ``" << _name << "'' to group ``/" << group << "''";
+  }
+}
+
+void OutEngineHDF5::write_dot(string _name, double data)
+{
+  try
+  {
+    Group group_instance = data_file->getGroup('/' + group);
+
+    // Create the dataset
+    DataSet dataset = group_instance.getDataSet( _name );
+    dataset.write( data );
+  }
+  catch (Exception& error)
+  {
+    LOG_S(ERROR) << error.what();
+    LOG_S(FATAL) << "Can not write dataset ``" << _name << "'' to group ``/" << group << "''";
+  }
+}
+
+void OutEngineHDF5::create_dataset(std::string _name, vector<unsigned int> _dims)
+{
+  try
+  {
+    Group group_instance = data_file->getGroup('/' + group);
+
+    std::vector<size_t> dims;
+    for (unsigned int i=0; i < _dims.size(); ++i)
+      dims.push_back((size_t)_dims[i]);
+
+    // Create the dataset
+    DataSet dataset = group_instance.createDataSet<double>(_name, DataSpace(dims));
   }
   catch (FileException& error)
   {
@@ -99,7 +114,7 @@ void OutEngineHDF5::write_rec(string _name, Grid<double> data)
   catch (GroupException& error)
   {
     LOG_S(ERROR) << error.what();
-    LOG_S(FATAL) << "Can not write dataset ``" << _name << "'' to group ``/" << subpath << "''";
+    LOG_S(FATAL) << "Can not write dataset ``" << _name << "'' to group ``/" << group << "''";
   }
 
   // catch failure caused by the DataSet operations
@@ -109,142 +124,44 @@ void OutEngineHDF5::write_rec(string _name, Grid<double> data)
   }
 }
 
-void OutEngineHDF5::write_vec(string _name, Grid<double> data)
+void OutEngineHDF5::write_metadata(std::string _metadata)
 {
   try
-  {
-    Group group = out_file->getGroup('/' + subpath);
+    {
+      LOG_S(MAX) << "Creating group ``/metadata''";
+      Group group = data_file->createGroup("/metadata");
+      LOG_S(MAX) << "Group ``/metadata'' created";
 
-    std::vector<size_t> dims{2};
+      LOG_S(MAX) << "Writing metadata";
 
-    // vector by Z-component with fixed r (r_begin)
-    if (size[1] == -1 && size[0] == -1 && size[3] == -1)
-      dims[0] = data.y_size;
-    else if (size[0] == -1 && size[2] == -1 && size[1] == -1)
-      dims[0] = data.x_size;
-    else
-      LOG_S(FATAL) << "Incorrect shape for vector output";
+      Attribute attribute = group.createAttribute<std::string>("metadata", DataSpace::From(_metadata));
 
-    // Create the dataset
-    DataSet dataset = group.createDataSet<double>(_name, DataSpace(dims));
-
-    vector<double> tmparr(dims[0]);
-    for (hsize_t i = 0; i < dims[0]; ++i)
-      if (dims[0] == data.y_size)
-        tmparr[i] = data(size[2]-1, i);
-      else if (dims[0] == data.x_size)
-        tmparr[i] = data(i, size[3]-1);
-
-    dataset.write(tmparr);
-  }
-  catch(FileException& error)
-  {
-    LOG_S(ERROR) << error.what();
-  }
-
-  catch (GroupException& error)
-  {
-    LOG_S(ERROR) << error.what();
-    LOG_S(FATAL) << "Can not write dataset ``" << _name << "'' to group ``/" << subpath << "''";
-  }
-  // catch failure caused by the DataSet operations
-  catch(DataSetException& error)
-  {
-    LOG_S(ERROR) << error.what();
-  }
-}
-
-void OutEngineHDF5::write_dot(string _name, Grid<double> data)
-{
-  try
-  {
-    Group group = out_file->getGroup('/' + subpath);
-
-    // Create dataspace for the dataset in the file.
-    std::vector<size_t> dims{1};
-
-    DataSet dataset = group.createDataSet<double>(_name, DataSpace(dims));
-
-    dataset.write(data(size[2], size[3]));
-  }
-  catch(FileException& error)
-  {
-    LOG_S(ERROR) << error.what();
-  }
-
-  catch (GroupException& error)
-  {
-    LOG_S(ERROR) << error.what();
-    LOG_S(FATAL) << "Can not write dataset ``" << _name << "'' to group ``/" << subpath << "''";
-  }
-
-  // catch failure caused by the DataSet operations
-  catch(DataSetException& error)
-  {
-    LOG_S(ERROR) << error.what();
-  }
-}
-
-void OutEngineHDF5::write_1d_vector(string _name, vector<double> data)
-{
-  double* arr = &data[0];
-
-  for (unsigned int i = 0; i < data.size(); ++i)
-    arr[i] = data[i];
-
-  try
-  {
-    Group group = out_file->getGroup('/' + subpath);
-
-    // Create dataspace for the dataset in the file.
-    std::vector<size_t> dims{data.size()};
-
-    DataSet dataset = group.createDataSet<double>(_name, DataSpace(dims));
-
-    dataset.write(arr);
-  }
-  catch(FileException& error)
-  {
-    LOG_S(ERROR) << error.what();
-  }
-
+      attribute.write(_metadata);
+    }
   catch(GroupException& error)
-  {
-    LOG_S(ERROR) << error.what();
-    LOG_S(FATAL) << "Can not write dataset ``" << _name << "'' to group ``/" << subpath << "''";
-  }
+    {
+      LOG_S(MAX) << "Group ``metadata'' already exists. Skipping";
+    }
 
-  // catch failure caused by the DataSet operations
   catch(DataSetException& error)
-  {
-    LOG_S(ERROR) << error.what();
-  }
+    {
+      LOG_S(MAX) << "metadata already exists. Skipping";
+    }
 }
 
-void OutEngineHDF5::write_metadata(string _metadata)
+void OutEngineHDF5::create_path()
 {
   try
   {
-    LOG_S(MAX) << "Creating group ``/metadata''";
-    Group group = out_file->createGroup("/metadata");
-    LOG_S(MAX) << "Group ``/metadata'' created";
-
-    LOG_S(MAX) << "Writing metadata";
-    // DataSpace attr_dataspace = DataSpace(H5S_SCALAR);
-    // StrType datatype(PredType::C_S1, _metadata.size());
-
-    Attribute attribute = group.createAttribute<std::string>(
-      "metadata", DataSpace::From(_metadata));
-
-    attribute.write(_metadata);
+    LOG_S(MAX) << "Creating group ``" << group << "''";
+    Group g = data_file->createGroup(group);
+    LOG_S(MAX) << "Group ``" << group << "'' created";
   }
-  catch(GroupException& error)
+  catch (const GroupException&)
   {
-    LOG_S(MAX) << "Group ``metadata'' already exists. Skipping";
+    LOG_S(MAX) << "Group ``" << group << "'' already exists. Skipping";
   }
 
-  catch(DataSetException& error)
-  {
-    LOG_S(MAX) << "metadata already exists. Skipping";
-  }
+  if (compress)
+    LOG_S(WARNING) << "compression is not supported by plaintext output engine";
 }

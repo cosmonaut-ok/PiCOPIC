@@ -42,6 +42,8 @@
 #include "current/currentZigZag.hpp"
 #endif
 
+#include "outWriter.hpp"
+
 // #ifdef SWITCH_DENSITY_CALC_COUNTING
 // #include "density/densityCounted.hpp"
 // #elif defined(SWITCH_DENSITY_CALC_WEIGHTING)
@@ -73,6 +75,7 @@ class Domain
 public:
   vector<SpecieP *> species_p;
   Current *current;
+  vector<OutWriter> out_writers;
 
 #if defined(SWITCH_PUSHER_BORIS_ADAPTIVE) || defined(SWITCH_PUSHER_BORIS) || defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
   PusherBoris *pusher;
