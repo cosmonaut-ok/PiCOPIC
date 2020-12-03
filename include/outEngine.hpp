@@ -27,26 +27,30 @@ class OutEngine
 {
 public:
   OutEngine () {};
-  OutEngine ( std::string _group, std::vector<size_t> _offset,
-                bool _append, unsigned short _compress )
+  OutEngine ( std::string _path, vector<size_t> _size,
+              std::vector<size_t> _offset,
+              bool _append, unsigned short _compress )
   {
-    group = _group;
+    path = _path;
+    size = _size;
     offset = _offset;
     append = _append;
     compress = _compress;
   };
 
-  virtual void create_dataset(std::string _name, vector<unsigned int> _dims) = 0;
+  virtual void create_dataset() = 0; // extend dataset to number of slices
+  virtual void extend_dataset(size_t num) = 0; // extend dataset to number of slices
   virtual void create_path() = 0;
   virtual void write_metadata(std::string _metadata) = 0;
 
-  // virtual void write_cub(string _name, Grid3D<double> data) = 0; // cube
-  virtual void write_rec(string _name, vector<vector<double>> data) = 0;   // rectangle
-  virtual void write_vec(string _name, vector<double> data) = 0;           // vector
-  virtual void write_dot(string _name, double data) = 0;                   // dot
+  virtual void write_cub(size_t _slice, vector<vector<vector<double>>> data) = 0;   // rectangle
+  virtual void write_rec(size_t _slice, vector<vector<double>> data) = 0;   // rectangle
+  virtual void write_vec(size_t _slice, vector<double> data) = 0;           // vector
+  virtual void write_dot(size_t _slice, double data) = 0;                   // dot
 
 protected:
-  std::string group;
+  std::string path;
+  std::vector<size_t> size;
   std::vector<size_t> offset;
   bool append;
   unsigned short compress;

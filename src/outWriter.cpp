@@ -19,11 +19,11 @@
 
 using namespace std;
 
-OutWriter::OutWriter ( std::string _path, unsigned short _shape,
-              std::vector<short> _position, std::vector<size_t> _engine_offset,
-              unsigned short _schedule, bool _append, unsigned short _compress,
-              TimeSim *_time, Grid<double> *_values )
-  : time(_time), engine(_path, _engine_offset, _append, _compress)
+OutWriter::OutWriter ( string _path, unsigned short _shape,
+                       vector<short> _position, vector<size_t> _engine_offset,
+                       unsigned short _schedule, bool _append, unsigned short _compress,
+                       TimeSim *_time, Grid<double> *_values )
+  : time(_time)
 {
   path = _path;
   schedule = _schedule;
@@ -33,15 +33,16 @@ OutWriter::OutWriter ( std::string _path, unsigned short _shape,
 }
 
 #ifdef ENABLE_HDF5
-OutWriter::OutWriter (HighFive::File* _file, std::string _path, unsigned short _shape,
-              std::vector<short> _position, std::vector<size_t> _engine_offset,
-              unsigned short _schedule, bool _append, unsigned short _compress,
-              TimeSim *_time, Grid<double> *_values )
+OutWriter::OutWriter ( HighFive::File* _file, string _path, unsigned short _shape,
+                       vector<short> _position, vector<size_t> _engine_offset,
+                       unsigned short _schedule, bool _append, unsigned short _compress,
+                       TimeSim *_time, Grid<double> *_values )
   : OutWriter ( _path, _shape, _position, _engine_offset, _schedule,
                 _append, _compress, _time, _values)
 {
+  engine = OutEngineHDF5 (_file, _path, {128, 512}, _engine_offset, _append, _compress);
   hdf5_file = _file;
-  engine.data_file = hdf5_file;
+  // engine.data_file = hdf5_file;
 }
 #endif // ENABLE_HDF5
 
@@ -52,8 +53,8 @@ void OutWriter::operator()()
 
   if (is_run == 0)
   {
-    string frame_name = to_string((int)(ceil(current_time_step / schedule)));
-    LOG_S(MAX) << "Launching " << path << "/" << frame_name;
+    size_t slice = (size_t)(ceil(current_time_step / schedule));
+    LOG_S(MAX) << "Launching " << path << "/" << slice;
 
     switch (shape)
     {
@@ -66,7 +67,7 @@ void OutWriter::operator()()
         for (short j = position[1]; j < position[3]; ++j)
           val[i - position[0]][j - position[1]] = (*values)(i, j);
 
-      engine.write_rec(frame_name, val);
+      engine.write_rec(slice, val);
       break;
     }
     case 1: // column shape
@@ -76,7 +77,7 @@ void OutWriter::operator()()
       for (unsigned int i = 0; i < values->x_size; ++i)
         val.push_back( (*values)(i, col_offset) );
 
-      engine.write_vec(frame_name, val);
+      engine.write_vec(slice, val);
       break;
     }
     case 2: // row shape
@@ -86,12 +87,12 @@ void OutWriter::operator()()
       for (unsigned int i = 0; i < values->y_size; ++i)
         val.push_back( (*values)(row_offset, i) );
 
-      engine.write_vec(frame_name, val);
+      engine.write_vec(slice, val);
       break;
     }
     case 3: // dot shape
     {
-      engine.write_dot(frame_name, (*values)(position[2], position[3]));
+      engine.write_dot(slice, (*values)(position[2], position[3]));
       break;
     }
     }

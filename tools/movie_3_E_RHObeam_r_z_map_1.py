@@ -10,8 +10,6 @@ import matplotlib.animation as ani
 
 from picopic.plot_builder import PlotBuilder
 from picopic.h5_reader import H5Reader
-from picopic.plain_reader import PlainReader
-
 
 def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
         time_range=None, cmap=None, frame_step=1, frame_size=None, dry_run=False, view=False, use_grid=False):
@@ -29,14 +27,11 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
     # calculate/update video file path
     video_file = os.path.join(config_path, 'field_movie.avi') if not video_file else video_file
 
-    # define reader (plain reader used)
     autoselect = True
     use_cache = False
 
     # set reader
-    if os.path.isfile(os.path.join(config_path, "metadata.json")):
-        reader = PlainReader(path = config_path, use_cache=use_cache, verbose=False)
-    elif os.path.isfile(os.path.join(config_path, "data.h5")):
+    if os.path.isfile(os.path.join(config_path, "data.h5")):
         reader = H5Reader(path = config_path, use_cache=use_cache, verbose=False)
     else:
         raise EnvironmentError("There is no corresponding data/metadata files in the path " + config_path + ". Can not continue.")
