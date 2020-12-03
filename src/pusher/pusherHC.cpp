@@ -18,6 +18,8 @@
 
 #include "pusher/pusherHC.hpp"
 
+using namespace constant;
+
 void PusherHC::operator()()
 {
   // !

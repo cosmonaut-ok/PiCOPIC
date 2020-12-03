@@ -26,8 +26,8 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
   //
   // initialize domains grid
   //
-  r_domains = geometry->domains_by_r;
-  z_domains = geometry->domains_by_z;
+  r_domains = geometry->domains_amount[0];
+  z_domains = geometry->domains_amount[1];
 
   Grid<Domain*> _domains (r_domains, z_domains, 0);
   domains = _domains;
@@ -60,53 +60,51 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
 
 #ifdef ENABLE_PML
       // set PML to domains
-      if (geometry->r_size - geometry->r_size / r_domains * (i + 1)
+      if (geometry->size[0] - geometry->size[0] / r_domains * (i + 1)
           < geometry->pml_length[2])
         pml_l_rwall = geometry->pml_length[2];
-      if (j * geometry->z_size / z_domains < geometry->pml_length[1])
+      if (j * geometry->size[1] / z_domains < geometry->pml_length[1])
         pml_l_z0 = geometry->pml_length[1];
-      if (geometry->z_size - geometry->z_size / z_domains * (j + 1)
+      if (geometry->size[1] - geometry->size[1] / z_domains * (j + 1)
           < geometry->pml_length[3])
         pml_l_zwall = geometry->pml_length[3];
 #endif // ENABLE_PML
 
-      unsigned int bot_r = (unsigned int)geometry->r_grid_amount * i / r_domains;
-      unsigned int top_r = (unsigned int)geometry->r_grid_amount * (i + 1) / r_domains;
+      unsigned int bot_r = (unsigned int)geometry->cell_amount[0] * i / r_domains;
+      unsigned int top_r = (unsigned int)geometry->cell_amount[0] * (i + 1) / r_domains;
 
-      unsigned int left_z = (unsigned int)geometry->z_grid_amount * j / z_domains;
-      unsigned int right_z = (unsigned int)geometry->z_grid_amount * (j + 1) / z_domains;
+      unsigned int left_z = (unsigned int)geometry->cell_amount[1] * j / z_domains;
+      unsigned int right_z = (unsigned int)geometry->cell_amount[1] * (j + 1) / z_domains;
 
 #ifdef ENABLE_PML
       Geometry *geom_domain = new Geometry (
-        geometry->r_size / r_domains,
-        geometry->z_size / z_domains,
-        bot_r, top_r, left_z, right_z,
-        pml_l_z0 * z_domains,    // multiplying is a workaround, because domain
-        pml_l_zwall * z_domains, // doesn't know abount whole simulation domain size
-        pml_l_rwall * r_domains, // aka geometry
-        geometry->pml_sigma[0],
-        geometry->pml_sigma[1],
-        wall_r0,
-        wall_z0,
-        wall_rr,
-        wall_zz
+        { geometry->size[0] / r_domains, geometry->size[1] / z_domains},
+        { bot_r, left_z, top_r, right_z },
+        { pml_l_z0 * z_domains,    // multiplying is a workaround, because domain
+          pml_l_zwall * z_domains, // doesn't know abount whole simulation domain size
+          pml_l_rwall * r_domains }, // aka geometry
+        geometry->pml_sigma,
+        { wall_r0,
+          wall_z0,
+          wall_rr,
+          wall_zz }
         );
 
       // WORKAROUND: // used just to set PML
       // for information about global geometry
       // WARNING! don't use it in local geometries!
-      geom_domain->domains_by_r = r_domains;
-      geom_domain->domains_by_z = z_domains;
+      geom_domain->domains_amount.push_back(r_domains);
+      geom_domain->domains_amount.push_back(z_domains);
       // /WORKAROUND
 #else
       Geometry *geom_domain = new Geometry (
-        geometry->r_size / r_domains,
-        geometry->z_size / z_domains,
-        bot_r, top_r, left_z, right_z,
-        wall_r0,
-        wall_z0,
-        wall_rr,
-        wall_zz
+        { geometry->size[0] / r_domains,
+          geometry->size[1] / z_domains },
+        { bot_r, left_z, top_r, right_z },
+        { wall_r0,
+          wall_z0,
+          wall_rr,
+          wall_zz }
         );
 #endif // ENABLE_PML
 
@@ -121,9 +119,9 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
       {
         unsigned int grid_cell_macro_amount = (int)(k->macro_amount / r_domains / z_domains);
 
-        double drho_by_dz = (k->right_density - k->left_density) / geometry->z_size;
-        double ld_local = k->left_density + drho_by_dz * left_z * geom_domain->z_cell_size;
-        double rd_local = k->left_density + drho_by_dz * right_z * geom_domain->z_cell_size;
+        double drho_by_dz = (k->right_density - k->left_density) / geometry->size[1];
+        double ld_local = k->left_density + drho_by_dz * left_z * geom_domain->cell_size[1];
+        double rd_local = k->left_density + drho_by_dz * right_z * geom_domain->cell_size[1];
 
         SpecieP *pps = new SpecieP (p_id_counter,
                                     k->name,
@@ -215,8 +213,8 @@ void SMB::particles_runaway_collector ()
                   int r_cell = P_CELL_R((*o));
                   int z_cell = P_CELL_Z((*o));
 
-                  unsigned int i_dst = (unsigned int)ceil(r_cell / sim_domain->geometry.r_grid_amount);
-                  unsigned int j_dst = (unsigned int)ceil(z_cell / sim_domain->geometry.z_grid_amount);
+                  unsigned int i_dst = (unsigned int)ceil(r_cell / sim_domain->geometry.cell_amount[0]);
+                  unsigned int j_dst = (unsigned int)ceil(z_cell / sim_domain->geometry.cell_amount[1]);
 
                   if (r_cell < 0 || z_cell < 0)
                   {
@@ -227,7 +225,7 @@ void SMB::particles_runaway_collector ()
                     res = true;
                   }
 
-                  else if (r_cell >= __geometry->r_grid_amount)
+                  else if (r_cell >= __geometry->cell_amount[0])
                   {
                     if ((**ps).id >= BEAM_ID_START)
                     {
@@ -238,7 +236,7 @@ void SMB::particles_runaway_collector ()
                     else
                     {
                       LOG_S(ERROR) << "Particle's r-position is more, than geometry r-size: "
-                                   << __geometry->r_grid_amount
+                                   << __geometry->cell_amount[0]
                                    << ". Position is: ["
                                    << P_POS_R((*o)) << ", "
                                    << P_POS_Z((*o)) << "]. Removing";
@@ -248,7 +246,7 @@ void SMB::particles_runaway_collector ()
                   }
 
                   // remove out-of-simulation particles
-                  else if (z_cell >= __geometry->z_grid_amount)
+                  else if (z_cell >= __geometry->cell_amount[1])
                   {
                     if ((**ps).id >= BEAM_ID_START)
                     {
@@ -259,7 +257,7 @@ void SMB::particles_runaway_collector ()
                     else
                     {
                       LOG_S(ERROR) << "Particle's z-position is more, than geometry z-size: "
-                                   << __geometry->z_grid_amount
+                                   << __geometry->cell_amount[1]
                                    << ". Position is: ["
                                    << P_POS_R((*o)) << ", "
                                    << P_POS_Z((*o)) << "]. Removing";
@@ -312,19 +310,19 @@ void SMB::current_overlay ()
           Domain *sim_domain = domains(i, j);
 
           // update grid
-          if (i < geometry->domains_by_r - 1)
+          if (i < geometry->domains_amount[0] - 1)
           {
             Domain *dst_domain = domains(i+1, j);
             sim_domain->current->current.overlay_x(dst_domain->current->current);
           }
 
-          if (j < geometry->domains_by_z - 1)
+          if (j < geometry->domains_amount[1] - 1)
           {
             Domain *dst_domain = domains(i, j + 1);
             sim_domain->current->current.overlay_y(dst_domain->current->current);
           }
 
-          // if (i < __geometry->domains_by_r - 1 && j < __geometry->domains_by_z - 1)
+          // if (i < __geometry->domains_amount[0] - 1 && j < __geometry->domains_amount[1] - 1)
           // {
           //   Domain *dst_domain = __domains(i + 1, j + 1);
           //   sim_domain->current->current.overlay_xy(dst_domain->current->current);
@@ -345,7 +343,7 @@ void SMB::field_h_overlay ()
           Domain *sim_domain = domains(i, j);
 
           // update grid
-          if (i < geometry->domains_by_r - 1)
+          if (i < geometry->domains_amount[0] - 1)
           {
             Domain *dst_domain = domains(i+1, j);
             sim_domain->maxwell_solver->field_h.overlay_x(
@@ -356,7 +354,7 @@ void SMB::field_h_overlay ()
               );
           }
 
-          if (j < geometry->domains_by_z - 1)
+          if (j < geometry->domains_amount[1] - 1)
           {
             Domain *dst_domain = domains(i, j + 1);
             sim_domain->maxwell_solver->field_h.overlay_y(
@@ -365,7 +363,7 @@ void SMB::field_h_overlay ()
               dst_domain->maxwell_solver->field_h_at_et);
           }
 
-          // if (i < __geometry->domains_by_r - 1 && j < __geometry->domains_by_z - 1)
+          // if (i < __geometry->domains_amount[0] - 1 && j < __geometry->domains_amount[1] - 1)
           // {
           //   Domain *dst_domain = __domains(i + 1, j + 1);
           //   sim_domain->field_h->field.overlay_xy(dst_domain->field_h->field);
@@ -387,7 +385,7 @@ void SMB::field_e_overlay ()
           Domain *sim_domain = domains(i, j);
 
           // update grid
-          if (i < geometry->domains_by_r - 1)
+          if (i < geometry->domains_amount[0] - 1)
           {
             Domain *dst_domain = domains(i+1, j);
             sim_domain->maxwell_solver->field_e.overlay_x(
@@ -395,7 +393,7 @@ void SMB::field_e_overlay ()
               );
           }
 
-          if (j < geometry->domains_by_z - 1)
+          if (j < geometry->domains_amount[1] - 1)
           {
             Domain *dst_domain = domains(i, j + 1);
             sim_domain->maxwell_solver->field_e.overlay_y(
@@ -403,7 +401,7 @@ void SMB::field_e_overlay ()
               );
           }
 
-          // if (i < __geometry->domains_by_r - 1 && j < __geometry->domains_by_z - 1)
+          // if (i < __geometry->domains_amount[0] - 1 && j < __geometry->domains_amount[1] - 1)
           // {
           //   Domain *dst_domain = __domains(i + 1, j + 1);
           //   sim_domain->field_e->field.overlay_xy(dst_domain->field_e->field);

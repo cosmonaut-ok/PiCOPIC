@@ -18,6 +18,8 @@
 #include "specieP.hpp"
 #include "geometry.hpp"
 
+using namespace constant;
+
 SpecieP::SpecieP (unsigned int p_id,
                   string p_name,
                   double p_charge, // in electron charges
@@ -43,10 +45,10 @@ SpecieP::SpecieP (unsigned int p_id,
 /// spatial distributions
 #if defined(SWITCH_PLASMA_SPATIAL_REGULAR) || defined(SWITCH_PLASMA_SPATIAL_CENTERED)
   LOG_S(MAX) << "Correcting domain plasma particles macro amount to satisfy spatial distribution";
-  double r_size = geometry->r_size;
-  double z_size = geometry->z_size;
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double r_size = geometry->size[0];
+  double z_size = geometry->size[1];
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
 
   macro_amount = algo::common::nearest_divide(p_macro_amount, r_size / dr * z_size / dz);
 #else
@@ -58,8 +60,8 @@ SpecieP::SpecieP (unsigned int p_id,
 
   temperature = p_temperature;
 
-  density_map = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  temperature_map = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  density_map = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  temperature_map = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
 }
 
 SpecieP::~SpecieP()
@@ -75,10 +77,10 @@ void SpecieP::fullyfill_spatial_distribution()
 // ! gradient achived with macroparticles
 // ! mass differentiation
 {
-  rectangular_spatial_distribution(geometry->bottom_r_grid_number,
-                                   geometry->top_r_grid_number,
-                                   geometry->left_z_grid_number,
-                                   geometry->right_z_grid_number);
+  rectangular_spatial_distribution(geometry->cell_dims[0],
+                                   geometry->cell_dims[2],
+                                   geometry->cell_dims[1],
+                                   geometry->cell_dims[3]);
 }
 
 void SpecieP::linear_spatial_distribution(unsigned int int_cell_number,
@@ -87,7 +89,7 @@ void SpecieP::linear_spatial_distribution(unsigned int int_cell_number,
 // ! or tube-shaped macroparticles cloud
 {
   rectangular_spatial_distribution(int_cell_number, ext_cell_number,
-                                   0, geometry->z_size);
+                                   0, geometry->size[1]);
 }
 
 void SpecieP::rectangular_spatial_distribution(unsigned int int_cell_number,
@@ -124,8 +126,8 @@ void SpecieP::rectangular_random_placement (unsigned int int_cell_number,
 {
   //! macroparticles spatial placement
   //! for "random" and "flat" cases
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
   double dn = density[1] - density[0];
   double dl = density[0]; // dl is for "density left"
 
@@ -188,8 +190,8 @@ void SpecieP::rectangular_regular_placement (unsigned int int_cell_number,
   //! macroparticles spatial placement
   //! for "regular" case
 
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
 
   double r_size = (ext_cell_number - int_cell_number) * dr;
   double z_size = (right_cell_number - left_cell_number) * dz;
@@ -230,8 +232,8 @@ void SpecieP::rectangular_centered_placement (unsigned int int_cell_number,
   //! macroparticles spatial placement
   //! for "centered" case
 
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
   double r_cells = (ext_cell_number - int_cell_number);
   double z_cells = (right_cell_number - left_cell_number);
 
@@ -272,8 +274,8 @@ void SpecieP::set_weight (unsigned int int_cell_number,
                           unsigned int left_cell_number,
                           unsigned int right_cell_number)
 {
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
   double r_size = (ext_cell_number - int_cell_number) * dr;
   double z_size = (right_cell_number - left_cell_number) * dz;
 
@@ -292,8 +294,8 @@ void SpecieP::set_weight (unsigned int int_cell_number,
   double v_avg = v_sum / macro_amount;
 
   // set top and bottom radius cell numbers (decrease at r=r wall)
-  double top_r_num = geometry->top_r_grid_number;
-  double bot_r_num = geometry->bottom_r_grid_number;
+  double top_r_num = geometry->cell_dims[2];
+  double bot_r_num = geometry->cell_dims[0];
   if (geometry->walls[2]) top_r_num -= 1;
 
   double N_total = (density[0] + density[1]) / 2
@@ -482,20 +484,20 @@ void SpecieP::mover_cylindrical()
 
 void SpecieP::reflect ()
 {
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
   double half_dr = dr / 2.;
   double half_dz = dz / 2.;
 
-  double radius_wall = geometry->r_size - dr / 2.;
-  double longitude_wall = geometry->z_size - dz / 2.;
+  double radius_wall = geometry->size[0] - dr / 2.;
+  double longitude_wall = geometry->size[1] - dz / 2.;
 
   double radius_wallX2 = radius_wall * 2.;
   double longitude_wallX2 = longitude_wall * 2.;
 
   // shift for converting local positions into global and back
-  double r_shift = geometry->bottom_r_grid_number * dr;
-  double z_shift = geometry->left_z_grid_number * dz;
+  double r_shift = geometry->cell_dims[0] * dr;
+  double z_shift = geometry->cell_dims[1] * dz;
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
@@ -644,8 +646,8 @@ void SpecieP::bind_cell_numbers()
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
     // renumerate cells
-    int r_cell = CELL_NUMBER(P_POS_R((**p)), geometry->r_cell_size);
-    int z_cell = CELL_NUMBER(P_POS_Z((**p)), geometry->z_cell_size);
+    int r_cell = CELL_NUMBER(P_POS_R((**p)), geometry->cell_size[0]);
+    int z_cell = CELL_NUMBER(P_POS_Z((**p)), geometry->cell_size[1]);
 
     P_CELL_R((**p)) = r_cell;
     P_CELL_Z((**p)) = z_cell;
@@ -677,10 +679,10 @@ void SpecieP::calc_density()
 void SpecieP::calc_temperature()
 {
   // initialize service variables
-  Grid<double> p_abs (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  Grid<double> p_r (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  Grid<double> p_phi (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  Grid<double> p_z (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  Grid<double> p_abs (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  Grid<double> p_r (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  Grid<double> p_phi (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  Grid<double> p_z (geometry->cell_amount[0], geometry->cell_amount[1], 2);
 
   // clear grid values
   temperature_map = 0;
@@ -697,7 +699,7 @@ void SpecieP::calc_temperature()
   p_z.overlay_set(0);
 
 #ifdef SWITCH_TEMP_CALC_COUNTING
-  Grid<double> count (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  Grid<double> count (geometry->cell_amount[0], geometry->cell_amount[1], 2);
   count = 0;
   count.overlay_set(0);
 
@@ -706,8 +708,8 @@ void SpecieP::calc_temperature()
     // finding number of i and k cell. example: dr = 0.5; r = 0.4; i = 0
     unsigned int r_i = P_CELL_R((**i));
     unsigned int z_k = P_CELL_Z((**i));
-    unsigned int r_i_shift = r_i - geometry->bottom_r_grid_number;
-    unsigned int z_k_shift = z_k - geometry->left_z_grid_number;
+    unsigned int r_i_shift = r_i - geometry->cell_dims[0];
+    unsigned int z_k_shift = z_k - geometry->cell_dims[1];
 
     double vel_r_single = P_VEL_R((**i));
     double vel_phi_single = P_VEL_PHI((**i));
@@ -787,8 +789,8 @@ void SpecieP::calc_temperature()
 
 #endif // end of SWITCH_TEMP_CALC_...
 
-  for (int r = 0; r < geometry->r_grid_amount; r++)
-    for (int z = 0; z < geometry->z_grid_amount; z++)
+  for (int r = 0; r < geometry->cell_amount[0]; r++)
+    for (int z = 0; z < geometry->cell_amount[1]; z++)
     {
       double p_vec_sum_2 =
         pow(p_r(r, z), 2)

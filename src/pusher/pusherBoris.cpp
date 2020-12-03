@@ -18,6 +18,8 @@
 
 #include "pusher/pusherBoris.hpp"
 
+using namespace constant;
+
 void PusherBoris::operator()()
 {
   // !

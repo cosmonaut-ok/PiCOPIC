@@ -17,6 +17,8 @@
 
 #include "pusher/pusherVay.hpp"
 
+using namespace constant;
+
 void PusherVay::operator()()
 {
   // !

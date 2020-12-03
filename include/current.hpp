@@ -43,7 +43,7 @@ public:
   Current() {};
   Current(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : geometry(geom), time(t)
   {
-    current = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+    current = Grid3D<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
     species_p = species;
 
     current = 0;

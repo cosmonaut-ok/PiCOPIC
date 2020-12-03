@@ -57,19 +57,19 @@ public:
     species_p = _species_p;
 
     // initialize fields to zero-state
-    field_e = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-    field_h = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+    field_e = Grid3D<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+    field_h = Grid3D<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
     field_e = 0.;
     field_h = 0.;
     field_e.overlay_set(0.);
     field_h.overlay_set(0.);
 
     // initialize epsilon and sigma (for PML)
-    epsilon = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-    epsilon = EPSILON0;
-    epsilon.overlay_set(EPSILON0);
+    epsilon = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+    epsilon = constant::EPSILON0;
+    epsilon.overlay_set(constant::EPSILON0);
 
-    sigma = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+    sigma = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
     sigma = 0.;
     sigma.overlay_set(0.);
   };

@@ -153,7 +153,7 @@ void Domain::particles_back_velocity_to_rz()
 void Domain::manage_beam()
 {
   // injecting bunch
-  if (geometry.left_z_grid_number == 0) // inject only from left wall
+  if (geometry.cell_dims[1] == 0) // inject only from left wall
     for (auto i = species_p.begin(); i != species_p.end(); i++)
       (**i).inject();
 }

@@ -17,6 +17,8 @@
 
 #include "collisions/collisionsTA77S.hpp"
 
+using namespace constant;
+
 // say: TA77   - Takizuka, Abe; 1977; DOI: 10.1016/0021-9991(77)90099-7
 //      TA77S18 - TA77S et al.; 2018; DOI: 10.1002/ctpp.201700121
 
@@ -220,8 +222,8 @@ void CollisionsTA77S::collide_single(double m_real_a, double m_real_b,
 void CollisionsTA77S::collide ()
 {
   // pairing
-  for (int i = 0; i < geometry->r_grid_amount; ++i)
-    for (int j = 0; j < geometry->z_grid_amount; ++j)
+  for (int i = 0; i < geometry->cell_amount[0]; ++i)
+    for (int j = 0; j < geometry->cell_amount[1]; ++j)
     {
       unsigned int vec_size_ions = map_ion2cell(i, j).size();
       unsigned int vec_size_electrons = map_el2cell(i, j).size();
@@ -417,8 +419,8 @@ void CollisionsTA77S::collide ()
 void CollisionsTA77S::correct_velocities()
 {
   // TA77S18: correct velocities
-  for (int i = 0; i < geometry->r_grid_amount; ++i)
-    for (int j = 0; j < geometry->z_grid_amount; ++j)
+  for (int i = 0; i < geometry->cell_amount[0]; ++i)
+    for (int j = 0; j < geometry->cell_amount[1]; ++j)
     {
       unsigned int vec_size_ions = map_ion2cell(i, j).size();
       unsigned int vec_size_electrons = map_el2cell(i, j).size();

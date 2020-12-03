@@ -17,6 +17,8 @@
 
 #include "beamP.hpp"
 
+using namespace constant;
+
 BeamP::BeamP (unsigned int id, // ID for every particles specie
               string p_name,
               double p_charge, // in electron charges
@@ -50,12 +52,12 @@ BeamP::BeamP (unsigned int id, // ID for every particles specie
 
 
   // find bunch radius, compared to current domain
-  if (geometry->left_z_grid_number > 0)
+  if (geometry->cell_dims[1] > 0)
     domain_radius = 0;
-  else if (radius > geometry->top_r_grid_number * geometry->r_cell_size)
-    domain_radius = geometry->r_size;
-  else if (radius > geometry->bottom_r_grid_number * geometry->r_cell_size)
-    domain_radius = radius - geometry->bottom_r_grid_number * geometry->r_cell_size;
+  else if (radius > geometry->cell_dims[2] * geometry->cell_size[0])
+    domain_radius = geometry->size[0];
+  else if (radius > geometry->cell_dims[0] * geometry->cell_size[0])
+    domain_radius = radius - geometry->cell_dims[0] * geometry->cell_size[0];
   else
     domain_radius = 0;
 
@@ -74,14 +76,14 @@ void BeamP::inject()
     double bunch_start_time = start_time + (bunch_length + bunches_distance) / velocity * current_bunch_number;
     double bunch_finish_time = bunch_start_time + bunch_length / velocity;
 
-    if (geometry->bottom_r_grid_number * geometry->r_cell_size < radius // prevent injection for unused bunches
+    if (geometry->cell_dims[0] * geometry->cell_size[0] < radius // prevent injection for unused bunches
         && time->current >= bunch_start_time  // launch only
         && time->current < bunch_finish_time) // at injection time
     {
-      double dr = geometry->r_cell_size;
-      double dz = geometry->z_cell_size;
+      double dr = geometry->cell_size[0];
+      double dz = geometry->cell_size[1];
       double dl = velocity * time->step;
-      double half_z_cell_size = geometry->z_cell_size / 2.;
+      double half_z_cell_size = geometry->cell_size[1] / 2.;
 
       // as volume of single macro is $2 \pi r dr dz$
       // than its proportional to $r$
@@ -102,7 +104,7 @@ void BeamP::inject()
         double rand_r = math::random::uniform();
         double rand_z = math::random::uniform();
 
-        double pos_r = domain_radius * rand_r + dr / 2 + geometry->bottom_r_grid_number * geometry->r_cell_size;
+        double pos_r = domain_radius * rand_r + dr / 2 + geometry->cell_dims[0] * geometry->cell_size[0];
         // 1. set pos_r
         P_POS_R((*v)) = pos_r;
         // 2. set pos_phi
@@ -130,8 +132,8 @@ void BeamP::inject()
         P_WEIGHT((*v)) = n_per_macro;
 
         // set cell numbers
-        int r_cell = CELL_NUMBER(P_POS_R((*v)), geometry->r_cell_size);
-        int z_cell = CELL_NUMBER(P_POS_R((*v)), geometry->z_cell_size);
+        int r_cell = CELL_NUMBER(P_POS_R((*v)), geometry->cell_size[0]);
+        int z_cell = CELL_NUMBER(P_POS_R((*v)), geometry->cell_size[1]);
 
         P_CELL_R((*v)) = r_cell;
         P_CELL_Z((*v)) = z_cell;
@@ -144,8 +146,8 @@ void BeamP::inject()
 
     // increase current bunch number after whole bunch injection
     if (time->current > bunch_finish_time
-        && geometry->left_z_grid_number == 0 // print message only for domain 0,0
-        && geometry->bottom_r_grid_number == 0)
+        && geometry->cell_dims[1] == 0 // print message only for domain 0,0
+        && geometry->cell_dims[0] == 0)
     {
       LOG_S(MAX) << "Bunch #" << current_bunch_number << " of beam ``" << name << "'' has been injected";
       ++current_bunch_number;
@@ -155,11 +157,11 @@ void BeamP::inject()
 
 void BeamP::reflect ()
 {
-  double dr = geometry->r_cell_size;
+  double dr = geometry->cell_size[0];
   double half_dr = dr / 2.;
 
   // shift for converting local positions into global and back
-  double r_shift = geometry->bottom_r_grid_number * dr;
+  double r_shift = geometry->cell_dims[0] * dr;
 
   for (auto p = particles.begin(); p != particles.end(); ++p)
   {
