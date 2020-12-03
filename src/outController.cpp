@@ -33,7 +33,7 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
 // write metadata
 #ifdef ENABLE_HDF5
   hdf5_file = _file;
-  OutEngineHDF5 engine (hdf5_file, _probes[0].path, {0,0}, true, false);
+  OutEngineHDF5 engine (hdf5_file, _probes[0].path, {0,0}, {0,0}, true, false);
 #endif // end of ENABLE_HDF5
   engine.write_metadata( _metadata );
 
@@ -43,17 +43,34 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
   // setup probes for every domain
   for (auto prb = probes.begin(); prb != probes.end(); ++prb)
   {
+    vector<short> prb_size = {prb->r_start, prb->z_start, prb->r_end, prb->z_end};
+
     // initialize engine paths
 #ifdef ENABLE_HDF5
     hdf5_file = _file;
-    OutEngineHDF5 engine (hdf5_file, prb->path, {0,0}, true, false);
+    vector<size_t> hdf5_prb_size;
+
+    switch (prb->shape)
+    {
+    case 0:
+      hdf5_prb_size = {prb->r_end - prb->r_start, prb->z_end - prb->z_start};
+      break;
+    case 1:
+      hdf5_prb_size = {geometry->r_grid_amount};
+      break;
+    case 2:
+      hdf5_prb_size = {geometry->z_grid_amount};
+      break;
+    case 3:
+      hdf5_prb_size = {1};
+    }
+
+    OutEngineHDF5 engine (hdf5_file, prb->path, hdf5_prb_size, {0,0}, true, false);
 #endif // end of ENABLE_HDF5
 
-    engine.create_path();
+    engine.create_dataset();
 
     // push probes to domains
-    vector<short> prb_size = {prb->r_start, prb->z_start, prb->r_end, prb->z_end};
-
     for (unsigned int r = 0; r < geometry->domains_by_r; ++r)
       for (unsigned int z = 0; z < geometry->domains_by_z; ++z)
       {
@@ -191,11 +208,28 @@ void OutController::init_datasets()
   // create empty
   for (auto prb = probes.begin(); prb != probes.end(); ++prb)
   {
-    vector<int> prb_size = {prb->r_start, prb->z_start, prb->r_end, prb->z_end};
+    vector<size_t> prb_size = {prb->r_start, prb->z_start, prb->r_end, prb->z_end};
     vector<size_t> offset = {0, 0};
 
 #ifdef ENABLE_HDF5
-    OutEngineHDF5 engine (hdf5_file, prb->path, offset, true, false);
+    vector<size_t> hdf5_prb_size;
+
+    switch (prb->shape)
+    {
+    case 0:
+      hdf5_prb_size = {prb->r_end - prb->r_start, prb->z_end - prb->z_start};
+      break;
+    case 1:
+      hdf5_prb_size = {geometry->r_grid_amount};
+      break;
+    case 2:
+      hdf5_prb_size = {geometry->z_grid_amount};
+      break;
+    case 3:
+      hdf5_prb_size = {1};
+    }
+
+    OutEngineHDF5 engine (hdf5_file, prb->path, hdf5_prb_size, offset, true, false);
 #endif // end of ENABLE_HDF5
 
     int current_time_step = ceil(time->current / time->step);
@@ -222,7 +256,7 @@ void OutController::init_datasets()
 #endif // ENABLE_DEBUG
 
       string shape_name;
-      string frame_name = to_string((int)(ceil(current_time_step / prb->schedule)));
+      size_t slices = (size_t)(ceil(current_time_step / prb->schedule));
       vector<unsigned int> probe_size;
 
       switch (prb->shape)
@@ -246,7 +280,7 @@ void OutController::init_datasets()
         break;
       }
 
-      engine.create_dataset(frame_name, probe_size);
+      engine.extend_dataset(slices);
 
       ////
       //// calculate and overlay temperatures and densities before dump

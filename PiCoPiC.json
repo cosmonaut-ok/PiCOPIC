@@ -1,5 +1,5 @@
 {
-  "macro_amount": 5e6,
+  "macro_amount": 5e5,
   "beam_plasma_macro_size_ratio": 2,
   "log_file": "./PiCoPiC.log",
   "geometry": {
@@ -163,45 +163,13 @@
         "end": { "r": 128, "z": 512 }
       },
       {
-        "component": "p_charge",
-        "specie": "electrons",
-        "schedule": 50,
-        "shape": "rec",
-        "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
-      },
-      {
-        "component": "p_mass",
-        "specie": "electrons",
-        "schedule": 50,
-        "shape": "rec",
-        "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
-      },
-      {
         "component": "temperature",
         "specie": "ions",
         "schedule": 50,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 128, "z": 512 }
-      },
-        {
-	    "component": "velocity",
-	    "specie": "electrons",
-	    "schedule": 50,
-	    "shape": "rec",
-	    "start": { "r": 0, "z": 0 },
-	    "end": { "r": 128, "z": 512 }
-	},
-	{
-	    "component": "position",
-	    "specie": "electrons",
-	    "schedule": 50,
-	    "shape": "rec",
-	    "start": { "r": 0, "z": 0 },
-	    "end": { "r": 128, "z": 512 }
-	}
+      }
     ],
     "plot": {
       "subplot": {

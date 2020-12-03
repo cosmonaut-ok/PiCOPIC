@@ -27,22 +27,25 @@ class OutEngineHDF5 : public OutEngine
 public:
   OutEngineHDF5 () {};
 
-  OutEngineHDF5 ( std::string _group,
-                    std::vector<size_t> _offset,
-                    bool _append, unsigned short _compress );
+  OutEngineHDF5 ( std::string _path,
+                  std::vector<size_t> _size,
+                  std::vector<size_t> _offset,
+                  bool _append, unsigned short _compress );
 
-  OutEngineHDF5 ( HighFive::File* _file, std::string _group,
-                    std::vector<size_t> _offset,
-                    bool _append, unsigned short _compress );
+  OutEngineHDF5 ( HighFive::File* _file, std::string _path,
+                  std::vector<size_t> _size,
+                  std::vector<size_t> _offset,
+                  bool _append, unsigned short _compress );
 
-  void create_dataset(std::string _name, vector<unsigned int> _dims);
-  void create_path();
+  void create_dataset();
+  void extend_dataset(size_t num); // extend dataset to number of slices
+  void create_path(); // create group
   void write_metadata(std::string _metadata);
 
-  // void write_cub(string _name, Grid3D<double> data); // cube
-  void write_rec(string _name, vector<vector<double>> data);   // rectangle
-  void write_vec(string _name, vector<double> data);           // vector
-  void write_dot(string _name, double data);                   // dot
+  void write_cub(size_t _slice, vector<vector<vector<double>>> data); // cube
+  void write_rec(size_t _slice, vector<vector<double>> data);         // rectangle
+  void write_vec(size_t _slice, vector<double> data);                 // vector
+  void write_dot(size_t _slice, double data);                         // dot
 
 // private:
   HighFive::File *data_file;

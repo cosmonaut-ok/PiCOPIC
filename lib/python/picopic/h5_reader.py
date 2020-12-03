@@ -80,7 +80,6 @@ class H5Reader (Reader):
         '''get rectangle-shaped dataset by number'''
         p_type = 'rec'
         path = self.__path__(p_component, p_type, shape)
-        path += "/{}".format(number)
         size = self.__rec_size__(shape)
         if self.__verbose__:
             sys.stdout.write("Loading data set {}/{}:{}-{}_{}-{}/{}..."
@@ -88,7 +87,7 @@ class H5Reader (Reader):
             sys.stdout.flush()
         realnumber = re.sub("_.*$", "", number) if type(number) == str else number
         self.__validate_rec__(p_component, shape, number)
-        rec = self.file[path]
+        rec = self.file[path][number]
 
         if self.__verbose__:
             sys.stdout.write('done\n')
@@ -102,13 +101,12 @@ class H5Reader (Reader):
         p_type = 'col'
         shape = [0, 0, z, 0]
         path = self.__path__(p_component, p_type, shape)
-        path += "/{}".format(number)
         if self.__verbose__:
             sys.stdout.write("Loading data set {}/{}/{}..."
                              .format(p_component, p_type, shape[2], number))
             sys.stdout.flush()
         self.__validate_col__(p_component, shape, number)
-        col = self.file[path]
+        col = self.file[path][number]
         if self.__verbose__:
             sys.stdout.write('done\n')
 
@@ -120,13 +118,12 @@ class H5Reader (Reader):
         p_type = 'row'
         shape = [0, 0, 0, r]
         path = self.__path__(p_component, p_type, shape)
-        path += "/{}".format(number)
         if self.__verbose__:
             sys.stdout.write("Loading data set {}/{}/{}..."
                              .format(p_component, p_type, shape[2], number))
             sys.stdout.flush()
         self.__validate_row__(p_component, shape, number)
-        row = self.file[path]
+        row = self.file[path][number]
         if self.__verbose__:
             sys.stdout.write('done\n')
 
@@ -138,13 +135,12 @@ class H5Reader (Reader):
         p_type = 'dot'
         shape = [0, 0, z, r]
         path = self.__path__(p_component, p_type, shape)
-        path += "/{}".format(number)
         self.__validate_dot__(p_component, shape, number)
         if self.__verbose__:
             sys.stdout.write("Loading data set {}/{}_{}..."
                              .format(p_component, p_type, r, z))
             sys.stdout.flush()
-        dot = self.file[path][0]
+        dot = self.file[path][number]
         if self.__verbose__:
             sys.stdout.write('done\n')
 

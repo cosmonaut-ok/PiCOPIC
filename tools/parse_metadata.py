@@ -13,7 +13,6 @@ from pygments.styles import STYLE_MAP
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lib/python"))
 
 from picopic.h5_reader import H5Reader
-from picopic.plain_reader import PlainReader
 
 ## for phys-info
 def langmur_freq(density):
@@ -45,17 +44,10 @@ def wake_length(density, beam_velocity):
 ## for phys-info
 def phys_info(properties_path):
     # set reader
-    if os.path.isfile(properties_path):
-        try:
-            reader = H5Reader(path = properties_path, use_cache=False, verbose=False)
-        except:
-            reader = PlainReader(path = properties_path, use_cache=False, verbose=False)
-    elif os.path.isfile(os.path.join(properties_path, "metadata.json")):
-        reader = PlainReader(path = properties_path, use_cache=False, verbose=False)
-    elif os.path.isfile(os.path.join(properties_path, "data.h5")):
+    if os.path.isfile(properties_path) or os.path.isfile(os.path.join(properties_path, "data.h5")):
         reader = H5Reader(path = properties_path, use_cache=False, verbose=False)
     else:
-        reader = PlainReader(path = properties_path, use_cache=False, verbose=False)
+        raise EnvironmentError("There is no corresponding data files in the path " + args.properties_path + ". Can not continue.")
 
     config = reader.meta
 
@@ -158,22 +150,10 @@ def main():
         sys.exit(0)
 
     # set reader
-    if os.path.isfile(args.properties_path):
-        try:
-            reader = H5Reader(path = args.properties_path, use_cache=False, verbose=False)
-        except:
-            reader = PlainReader(path = args.properties_path, use_cache=False, verbose=False)
-    elif os.path.isfile(os.path.join(args.properties_path, "metadata.json")):
-        reader = PlainReader(path = args.properties_path, use_cache=False, verbose=False)
-    elif os.path.isfile(os.path.join(args.properties_path, "data.h5")):
+    if os.path.isfile(args.properties_path) or os.path.isfile(os.path.join(args.properties_path, "data.h5")):
         reader = H5Reader(path = args.properties_path, use_cache=False, verbose=False)
-    elif os.path.isfile(args.properties_path):
-        try:
-            reader = H5Reader(path = args.properties_path, use_cache=False, verbose=False)
-        except:
-            reader = PlainReader(path = args.properties_path, use_cache=False, verbose=False)
     else:
-        raise EnvironmentError("There is no corresponding data/metadata files in the path " + args.properties_path + ". Can not continue.")
+        raise EnvironmentError("There is no corresponding data files in the path " + args.properties_path + ". Can not continue.")
 
     config = reader.meta.json
     if args.bo: args.subtree = False

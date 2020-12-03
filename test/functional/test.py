@@ -28,8 +28,6 @@ sys.path.append(me + '/../../lib/python/')
 from picopic.meta_reader import MetaReader
 from picopic.plot_builder import PlotBuilder
 from picopic.h5_reader import H5Reader
-from picopic.plain_reader import PlainReader
-
 ## end import path
 
 class Util ():
@@ -137,10 +135,10 @@ class bootstrap ():
 
     def __del__(self):
         utils = Util()
-        print("Clearing testing data")
-        if not self.keep_working_dir:
-            shutil.rmtree(self.testdir, ignore_errors=True)
-        utils.cliexec('make clean', cwd=self.rootdir, view=False, wait=True)
+        # print("Clearing testing data")
+        # if not self.keep_working_dir:
+        #     shutil.rmtree(self.testdir, ignore_errors=True)
+        # utils.cliexec('make clean', cwd=self.rootdir, view=False, wait=True)
 
 
 class picopicTest ():
@@ -154,16 +152,13 @@ class picopicTest ():
         self.verbose = False
 
         self.true_data_dir = os.path.join(me, 'true_data')
-        # self.frame_name = 'frame_0:0_254:2046'
 
     def compare(self, component_name, filename):
         frame_name = self.components[component_name]
         h5file = h5py.File(os.path.join(self.testdir, self.meta.data_path, 'data.h5'), 'r')
-        true_path = os.path.join(me, 'true_data', component_name, frame_name, filename)
-        test_path = os.path.join(self.testdir, self.meta.data_path, self.meta.data_path,
-                                 component_name, frame_name, filename)
+        true_path = os.path.join(me, 'true_data', component_name, frame_name, str(filename))
 
-        dset = h5file[os.path.join('/', component_name, frame_name, filename)]
+        dset = h5file[os.path.join('/', component_name, frame_name)][filename]
         shape = dset.shape
         test_data = np.reshape(dset[...], (shape[0] * shape[1]))
         true_data = np.fromfile('{}.dat'.format(true_path), dtype=float, sep=' ')
@@ -182,10 +177,10 @@ class picopicTest ():
             isc = np.allclose(test_value_var, true_value_var, rtol=self.r_tol, atol=self.a_tol)
 
         if isc:
-            print("Data matching for " + component_name + ":" + filename,
+            print("Data matching for " + component_name + ":" + str(filename),
                   Fore.BLUE + "PASSED" + Style.RESET_ALL)
         else:
-            print("Data matching for " + component_name + ":" + filename,
+            print("Data matching for " + component_name + ":" + str(filename),
                   Fore.RED + "FAILED" + Style.RESET_ALL)
 
         if self.verbose:
@@ -247,7 +242,7 @@ def test_example(template_name, number, accept_ieee=True,
 
     components = ['E_r', 'E_phi', 'E_z', 'H_r', 'H_phi', 'H_z', 'J_r', 'J_phi', 'J_z']
     for i in components:
-        s = t.compare(i, '{}'.format(number))
+        s = t.compare(i, number)
         if status: status = s
 
     return status
@@ -310,9 +305,7 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
     r_scale = (shape[2] - shape[0]) / meta.number_r_grid
     z_scale = (shape[3] - shape[1]) / meta.number_z_grid
 
-    if os.path.isfile(os.path.join(self.config_path, "metadata.json")):
-        reader = PlainReader(path = self.config_path, use_cache=use_cache, verbose=verbose)
-    elif os.path.isfile(os.path.join(self.config_path, "data.h5")):
+    if os.path.isfile(os.path.join(self.config_path, "data.h5")):
         reader = H5Reader(path = self.config_path, use_cache=use_cache, verbose=verbose)
     else:
         raise EnvironmentError("There is no corresponding data/metadata files in the path " + config_path + ". Can not continue.")
