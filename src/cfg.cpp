@@ -289,17 +289,17 @@ void Cfg::init_probes ()
                    << p_p.r_start << "," << p_p.r_end << ","
                    << p_p.z_start << "," << p_p.z_end << "]";
     }
-    else if (p_p.r_end > geometry->r_grid_amount)
+    else if (p_p.r_end > geometry->cell_amount[0])
     {
       LOG_S(FATAL) << "Probe's " << p_p.component << "/" << p_shape << " radius is out of simulation domain: "
                    << p_p.r_end << ". Must be less, than "
-                   << geometry->r_grid_amount;
+                   << geometry->cell_amount[0];
     }
-    else if (p_p.z_end > geometry->z_grid_amount)
+    else if (p_p.z_end > geometry->cell_amount[1])
     {
       LOG_S(FATAL) << "Probe's " << p_p.component << "/" << p_shape << " longitude is out of simulation domain: "
                    << p_p.z_end << ". Must be less, than "
-                   << geometry->z_grid_amount;
+                   << geometry->cell_amount[1];
     }
     else
       probes.push_back(p_p);
@@ -352,8 +352,12 @@ void Cfg::init_geometry ()
   double radius = json_root_size["radius"].get<double>();
   double longitude = json_root_size["longitude"].get<double>();
 
-  int n_grid_r = (int)json_root_grid["radius"].get<double>();
-  int n_grid_z = (int)json_root_grid["longitude"].get<double>();
+  int n_grid_r = (size_t)json_root_grid["radius"].get<double>();
+  int n_grid_z = (size_t)json_root_grid["longitude"].get<double>();
+
+  vector<double> _size = {radius, longitude};
+  vector<size_t> _dims = {0, 0, n_grid_r, n_grid_z};
+  vector<bool> _walls = {true, true, true, true};
 
   // init PML
 #ifdef ENABLE_PML
@@ -364,22 +368,24 @@ void Cfg::init_geometry ()
   double sigma_1 = json_root_pml["sigma_1"].get<double>();
   double sigma_2 = json_root_pml["sigma_2"].get<double>();
 
-  geometry = new Geometry(radius, longitude, 0, n_grid_r, 0, n_grid_z,
-                          left_wall, right_wall, outer_wall, sigma_1, sigma_2,
-                          true, true, true, true); // init all walls
+  vector<double> _pml = {0, left_wall, right_wall, outer_wall};
+  vector<double> _sigma = {sigma_1, sigma_2};
+
+  geometry = new Geometry ( _size, _dims, _pml, _sigma, _walls);
   #else
-  geometry = new Geometry(radius, longitude, 0, n_grid_r, 0, n_grid_z,
-                          true, true, true, true); // init all walls
+  geometry = new Geometry ( _size, _dims, _walls);
 #endif
+  vector<size_t> domains (2, 0);
+  geometry->domains_amount = domains;
 
   //
 #ifdef ENABLE_SINGLETHREAD
   LOG_S(INFO) << "Singlethread mode. Reducing domains amount to 1";
-  geometry->domains_by_r = 1;
-  geometry->domains_by_z = 1;
+  geometry->domains_amount[0] = 1;
+  geometry->domains_amount[1] = 1;
 #else
-  geometry->domains_by_r = (int)json_root["domains_amount"].get<object>()["radius"].get<double>();
-  geometry->domains_by_z = (int)json_root["domains_amount"].get<object>()["longitude"].get<double>();
+  geometry->domains_amount[0] = (int)json_root["domains_amount"].get<object>()["radius"].get<double>();
+  geometry->domains_amount[1] = (int)json_root["domains_amount"].get<object>()["longitude"].get<double>();
 #endif
 }
 
@@ -413,13 +419,13 @@ void Cfg::weight_macro_amount()
   double norm_sum = 0;
 
 // increase normalization sum for particle species (assume, that specie size times species amount)
-  norm_sum += geometry->r_grid_amount * geometry->z_grid_amount * particle_species.size();
+  norm_sum += geometry->cell_amount[0] * geometry->cell_amount[1] * particle_species.size();
 
 // increase normalization sum for particle beams
   for (auto b = particle_beams.begin(); b != particle_beams.end(); ++b)
   {
-    double beam_r_grid_size = (*b).bunch_radius / geometry->r_cell_size;
-    double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->z_cell_size;
+    double beam_r_grid_size = (*b).bunch_radius / geometry->cell_size[0];
+    double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->cell_size[1];
 
     norm_sum += beam_r_grid_size * beam_z_grid_size * beam_macro_ratio;
   }
@@ -474,7 +480,7 @@ void Cfg::weight_macro_amount()
 #endif
   for (auto p_s = particle_species.begin(); p_s != particle_species.end(); ++p_s)
   {
-    (*p_s).macro_amount = (unsigned int)(geometry->r_grid_amount * geometry->z_grid_amount * norm);
+    (*p_s).macro_amount = (unsigned int)(geometry->cell_amount[0] * geometry->cell_amount[1] * norm);
     LOG_S(INFO) << "Macro amount for ``" << (*p_s).name << "'' speice is " << (*p_s).macro_amount;
   }
 
@@ -482,8 +488,8 @@ void Cfg::weight_macro_amount()
   // with respect to normalization
   for (auto b = particle_beams.begin(); b != particle_beams.end(); ++b)
   {
-    double beam_r_grid_size = (*b).bunch_radius / geometry->r_cell_size;
-    double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->z_cell_size;
+    double beam_r_grid_size = (*b).bunch_radius / geometry->cell_size[0];
+    double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->cell_size[1];
 
     (*b).macro_amount = (unsigned int)(beam_r_grid_size * beam_z_grid_size * norm * beam_macro_ratio);
     LOG_S(INFO) << "Macro amount for ``" << (*b).name << "'' beam is " << (*b).macro_amount;
@@ -499,22 +505,22 @@ bool Cfg::method_limitations_check ()
   double ion_temperature = 0;
 
   // grid limitations
-  if ((fmod(geometry->domains_by_r, 2) != 0 && geometry->domains_by_r != 1) || (fmod(geometry->domains_by_z, 2) != 0 && geometry->domains_by_z != 1))
+  if ((fmod(geometry->domains_amount[0], 2) != 0 && geometry->domains_amount[0] != 1) || (fmod(geometry->domains_amount[1], 2) != 0 && geometry->domains_amount[1] != 1))
     {
       LOG_S(FATAL) << "Amount of domains should be multiple of 2, or 1";
     }
 
-  // if (geometry->r_grid_amount / geometry->domains_by_r < MIN_DOMAIN_GRID_AMOUNT)
+  // if (geometry->cell_amount[0] / geometry->domains_amount[0] < MIN_DOMAIN_GRID_AMOUNT)
   //   {
   //     LOG_S(FATAL) << "Too small domain size by r. Must be ``" << MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
   //   }
 
-  // if (geometry->z_grid_amount / geometry->domains_by_z < MIN_DOMAIN_GRID_AMOUNT)
+  // if (geometry->cell_amount[1] / geometry->domains_amount[1] < MIN_DOMAIN_GRID_AMOUNT)
   //   {
   //     LOG_S(FATAL) << "Too small domain size by z. Must be ``" << MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
   //   }
 
-  // if (geometry->r_grid_amount / geometry->domains_by_r * geometry->z_grid_amount / geometry->domains_by_z < MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT)
+  // if (geometry->cell_amount[0] / geometry->domains_amount[0] * geometry->cell_amount[1] / geometry->domains_amount[1] < MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT)
   //   {
   //     LOG_S(FATAL) << "Too small domain size. Must be ``" << MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
   //   }
@@ -555,8 +561,8 @@ bool Cfg::method_limitations_check ()
   unsigned int time_multiplicator = 100;
 
   // particle should not fly more, than 1 cell per time step
-  double max_time_c = min(geometry->r_cell_size / constant::LIGHT_VEL,
-                          geometry->z_cell_size / constant::LIGHT_VEL);
+  double max_time_c = min(geometry->cell_size[0] / constant::LIGHT_VEL,
+                          geometry->cell_size[1] / constant::LIGHT_VEL);
   double max_time_wp = 2 / plasma_freq / time_multiplicator;
   double max_time = min(max_time_c, max_time_wp);
 
@@ -576,33 +582,33 @@ bool Cfg::method_limitations_check ()
 
   if ( electron_temperature != 0)
   {
-    if (geometry->r_cell_size > debye_length * debye_multiplicator
-	|| geometry->z_cell_size > debye_length * debye_multiplicator)
+    if (geometry->cell_size[0] > debye_length * debye_multiplicator
+	|| geometry->cell_size[1] > debye_length * debye_multiplicator)
     {
       LOG_S(ERROR) << "Too large grid size: ``"
-	       << geometry->r_cell_size << " x " << geometry->z_cell_size
+	       << geometry->cell_size[0] << " x " << geometry->cell_size[1]
 	       << " m.''. Should be less, than ``"
 	       << debye_length * debye_multiplicator
 		   << " m.''";
     }
 
     // \f$ L >> R_{debye} \f$
-    if (geometry->r_size < debye_length * debye_multiplicator
-    	|| geometry->z_size < debye_length * debye_multiplicator)
+    if (geometry->size[0] < debye_length * debye_multiplicator
+    	|| geometry->size[1] < debye_length * debye_multiplicator)
     {
       LOG_S(ERROR) << "Too small system size: ``"
-    	       << geometry->r_size << " x " << geometry->z_size
+    	       << geometry->size[0] << " x " << geometry->size[1]
     	       << " m.''. Should be more, than ``"
     	       <<  debye_length * debye_multiplicator
     		   << " m.''";
     }
 
     // \f$ L << N_{particles} * R_{debye} \f$
-    if (geometry->r_size > debye_length * full_macro_amount * debye_multiplicator
-	|| geometry->z_size > debye_length * full_macro_amount * debye_multiplicator)
+    if (geometry->size[0] > debye_length * full_macro_amount * debye_multiplicator
+	|| geometry->size[1] > debye_length * full_macro_amount * debye_multiplicator)
     {
       LOG_S(ERROR) << "Too large system size: ``"
-	       << geometry->r_size << " x " << geometry->z_size
+	       << geometry->size[0] << " x " << geometry->size[1]
 	       << " m.''. Should be less, than ``"
 	       <<  debye_length * full_macro_amount * debye_multiplicator
 	       << " m.''";
@@ -611,12 +617,12 @@ bool Cfg::method_limitations_check ()
 
   unsigned int grid_multiplicator = 10;
 
-  if (geometry->r_grid_amount * geometry->r_grid_amount * grid_multiplicator > full_macro_amount)
+  if (geometry->cell_amount[0] * geometry->cell_amount[0] * grid_multiplicator > full_macro_amount)
   {
     LOG_S(WARNING) << "Too small amount of macroparticles: ``"
              << full_macro_amount
              << "''. Should be more, than ``"
-             <<  geometry->r_grid_amount * geometry->r_grid_amount * grid_multiplicator
+             <<  geometry->cell_amount[0] * geometry->cell_amount[0] * grid_multiplicator
              << "''. You could get not relevant results";
   }
 

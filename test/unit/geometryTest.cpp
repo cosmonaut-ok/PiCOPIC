@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 #include "geometry.hpp"
-#include "geometry.cpp"
-
 
 TEST(geometry, constructor)
 {
@@ -22,18 +20,18 @@ TEST(geometry, constructor)
   bool wall_z0 = true;
   bool wall_zz = true;
 
-  Geometry geometry (radius, longitude,
-                     bot_ngr, top_ngr, left_ngz, right_ngz,
-                     pml_l_z0, pml_l_zwall, pml_l_rwall, pml_sigma1, pml_sigma2,
-                     wall_r0, wall_rr, wall_z0, wall_zz);
+  Geometry geometry ({radius, longitude},
+                     {bot_ngr, left_ngz, top_ngr, right_ngz},
+                     {0, pml_l_z0, pml_l_zwall, pml_l_rwall}, {pml_sigma1, pml_sigma2},
+                     {wall_r0, wall_rr, wall_z0, wall_zz});
 
   Geometry geometry_empty ();
 
-  ASSERT_EQ(geometry.r_grid_amount, 10);
-  ASSERT_EQ(geometry.z_grid_amount, 20);
+  ASSERT_EQ(geometry.cell_amount[0], 10);
+  ASSERT_EQ(geometry.cell_amount[1], 20);
 
-  ASSERT_EQ(geometry.r_cell_size, 0.06);
-  ASSERT_EQ(geometry.z_cell_size, 0.06);
+  ASSERT_EQ(geometry.cell_size[0], 0.06);
+  ASSERT_EQ(geometry.cell_size[1], 0.06);
 
   for (unsigned int i = 1; i < 3; ++i)
     ASSERT_EQ(geometry.pml_length[i], 0.01);

@@ -21,6 +21,7 @@
 //      TA77S18 - P12 et al.; 2018; DOI: 10.1002/ctpp.201700121
 
 using namespace std;
+using namespace constant;
 
 CollisionsP12::CollisionsP12 (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p) : Collisions ( _geometry, _time, _species_p)
 {}
@@ -335,8 +336,8 @@ void CollisionsP12::collide ()
   ncol = 0;
 
   // pairing
-  for (int i = 0; i < geometry->r_grid_amount; ++i)
-    for (int j = 0; j < geometry->z_grid_amount; ++j)
+  for (int i = 0; i < geometry->cell_amount[0]; ++i)
+    for (int j = 0; j < geometry->cell_amount[1]; ++j)
     {
       unsigned int vec_size_ions = map_ion2cell(i, j).size();
       unsigned int vec_size_electrons = map_el2cell(i, j).size();
@@ -540,8 +541,8 @@ void CollisionsP12::collide ()
     double t_el;
     double t_ion;
     double g_counter;
-    for (int i = 0; i < geometry->r_grid_amount; ++i)
-      for (int j = 0; j < geometry->z_grid_amount; ++j)
+    for (int i = 0; i < geometry->cell_amount[0]; ++i)
+      for (int j = 0; j < geometry->cell_amount[1]; ++j)
 	{
 	  // get temperatures, densities and debye length
 	  t_el += get_el_temperature(i, j);
@@ -559,7 +560,7 @@ void CollisionsP12::collide ()
     LOG_S(WARNING) << "Value of s-parameter for P12 collisions is too large: " << s_mean;
     LOG_S(WARNING) << "\t other helpul info:";
     LOG_S(WARNING) << "\t\t domain number (r, z): "
-                   << geometry->bottom_r_grid_number / geometry->r_grid_amount << "," << geometry->left_z_grid_number / geometry->z_grid_amount;
+                   << geometry->cell_dims[0] / geometry->cell_amount[0] << "," << geometry->cell_dims[1] / geometry->cell_amount[1];
     LOG_S(WARNING) << "\t\t L coulomb mean: " << L_mean;
     LOG_S(WARNING) << "\t\t Debye length mean: " << L_mean;
     LOG_S(WARNING) << "\t\t Density mean (el, ion): " << d_el << "," << d_ion;

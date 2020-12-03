@@ -17,12 +17,14 @@
 
 #include "current/currentZigZag.hpp"
 
+using namespace constant;
+
 void CurrentZigZag::current_distribution()
 {
   current.overlay_set(0);
 
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
   double dt = time->step;
 
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
@@ -46,10 +48,10 @@ void CurrentZigZag::current_distribution()
       int k_o = CELL_NUMBER(z_pos_old, dz);
 
       //! shift also to take overlaying into account
-      int i_o_shift = i_o - geometry->bottom_r_grid_number;
-      int i_n_shift = i_n - geometry->bottom_r_grid_number;
-      int k_o_shift = k_o - geometry->left_z_grid_number;
-      int k_n_shift = k_n - geometry->left_z_grid_number;
+      int i_o_shift = i_o - geometry->cell_dims[0];
+      int i_n_shift = i_n - geometry->cell_dims[0];
+      int k_o_shift = k_o - geometry->cell_dims[1];
+      int k_n_shift = k_n - geometry->cell_dims[1];
 
       // find number of cell for middle point
       // between \f$ r_{old} \f$ and \f$ r_{new} \f$

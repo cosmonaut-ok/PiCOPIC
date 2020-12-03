@@ -56,10 +56,10 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
       hdf5_prb_size = {prb->r_end - prb->r_start, prb->z_end - prb->z_start};
       break;
     case 1:
-      hdf5_prb_size = {geometry->r_grid_amount};
+      hdf5_prb_size = {geometry->cell_amount[0]};
       break;
     case 2:
-      hdf5_prb_size = {geometry->z_grid_amount};
+      hdf5_prb_size = {geometry->cell_amount[1]};
       break;
     case 3:
       hdf5_prb_size = {1};
@@ -71,15 +71,15 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
     engine.create_dataset();
 
     // push probes to domains
-    for (unsigned int r = 0; r < geometry->domains_by_r; ++r)
-      for (unsigned int z = 0; z < geometry->domains_by_z; ++z)
+    for (unsigned int r = 0; r < geometry->domains_amount[0]; ++r)
+      for (unsigned int z = 0; z < geometry->domains_amount[1]; ++z)
       {
         Domain *dmn = smb->domains(r, z);
 
-        vector<int> domain_size = { dmn->geometry.bottom_r_grid_number,
-                                    dmn->geometry.left_z_grid_number,
-                                    dmn->geometry.top_r_grid_number,
-                                    dmn->geometry.right_z_grid_number };
+        vector<int> domain_size = { dmn->geometry.cell_dims[0],
+                                    dmn->geometry.cell_dims[1],
+                                    dmn->geometry.cell_dims[2],
+                                    dmn->geometry.cell_dims[3] };
 
         // check if probe possition intersects the domain
         if (
@@ -126,27 +126,27 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
             eff_prb_size[3] = prb_size[3];
 
           // shift to the begining
-          eff_prb_size[0] -= dmn->geometry.bottom_r_grid_number;
-          eff_prb_size[2] -= dmn->geometry.bottom_r_grid_number;
-          eff_prb_size[1] -= dmn->geometry.left_z_grid_number;
-          eff_prb_size[3] -= dmn->geometry.left_z_grid_number;
+          eff_prb_size[0] -= dmn->geometry.cell_dims[0];
+          eff_prb_size[2] -= dmn->geometry.cell_dims[0];
+          eff_prb_size[1] -= dmn->geometry.cell_dims[1];
+          eff_prb_size[3] -= dmn->geometry.cell_dims[1];
 
           // calculate effective engine offset
           vector<size_t> eff_engine_offset;
 
           if (prb->shape == 0 || prb->shape == 1)
           {
-            if (dmn->geometry.bottom_r_grid_number <= prb_size[0])
+            if (dmn->geometry.cell_dims[0] <= prb_size[0])
               eff_engine_offset.push_back(0);
             else
-              eff_engine_offset.push_back(dmn->geometry.bottom_r_grid_number - prb_size[0]);
+              eff_engine_offset.push_back(dmn->geometry.cell_dims[0] - prb_size[0]);
           }
           if (prb->shape == 0 || prb->shape == 2)
           {
-            if (dmn->geometry.left_z_grid_number <= prb_size[1])
+            if (dmn->geometry.cell_dims[1] <= prb_size[1])
               eff_engine_offset.push_back(0);
             else
-              eff_engine_offset.push_back(dmn->geometry.left_z_grid_number - prb_size[1]);
+              eff_engine_offset.push_back(dmn->geometry.cell_dims[1] - prb_size[1]);
           }
           Grid<double> *value;
 
@@ -220,10 +220,10 @@ void OutController::init_datasets()
       hdf5_prb_size = {prb->r_end - prb->r_start, prb->z_end - prb->z_start};
       break;
     case 1:
-      hdf5_prb_size = {geometry->r_grid_amount};
+      hdf5_prb_size = {geometry->cell_amount[0]};
       break;
     case 2:
-      hdf5_prb_size = {geometry->z_grid_amount};
+      hdf5_prb_size = {geometry->cell_amount[1]};
       break;
     case 3:
       hdf5_prb_size = {1};
@@ -268,11 +268,11 @@ void OutController::init_datasets()
         break;
       case 1:
         shape_name = "col";
-        probe_size.push_back(geometry->r_grid_amount);
+        probe_size.push_back(geometry->cell_amount[0]);
         break;
       case 2:
         shape_name = "row";
-        probe_size.push_back(geometry->z_grid_amount);
+        probe_size.push_back(geometry->cell_amount[1]);
         break;
       case 3:
         shape_name = "dot";
@@ -286,8 +286,8 @@ void OutController::init_datasets()
       //// calculate and overlay temperatures and densities before dump
       ///
       // calculate temperature and/or density before dump
-      for (unsigned int r = 0; r < geometry->domains_by_r; ++r)
-        for (unsigned int z = 0; z < geometry->domains_by_z; ++z)
+      for (unsigned int r = 0; r < geometry->domains_amount[0]; ++r)
+        for (unsigned int z = 0; z < geometry->domains_amount[1]; ++z)
         {
           Domain *sim_domain = smb->domains(r, z);
           SpecieP *speciep;
@@ -303,8 +303,8 @@ void OutController::init_datasets()
         }
 
       // overlay domains before dump
-      for (unsigned int i=0; i < geometry->domains_by_r; i++)
-        for (unsigned int j = 0; j < geometry->domains_by_z; j++)
+      for (unsigned int i=0; i < geometry->domains_amount[0]; i++)
+        for (unsigned int j = 0; j < geometry->domains_amount[1]; j++)
         {
           Domain *sim_domain = smb->domains(i, j);
           SpecieP *speciep;
@@ -314,7 +314,7 @@ void OutController::init_datasets()
               speciep = (*ps);
 
           // update grid
-          if (i < geometry->domains_by_r - 1)
+          if (i < geometry->domains_amount[0] - 1)
           {
             Domain *dst_domain = smb->domains(i+1, j);
             SpecieP *speciep_dst;
@@ -329,7 +329,7 @@ void OutController::init_datasets()
               speciep->temperature_map.overlay_x(speciep_dst->temperature_map);
           }
 
-          if (j < geometry->domains_by_z - 1)
+          if (j < geometry->domains_amount[1] - 1)
           {
             Domain *dst_domain = smb->domains(i, j + 1);
             SpecieP *speciep_dst;
@@ -344,7 +344,7 @@ void OutController::init_datasets()
               speciep->temperature_map.overlay_y(speciep_dst->temperature_map);
           }
 
-          // if (i < geometry_global->domains_by_r - 1 && j < geometry_global->domains_by_z - 1)
+          // if (i < geometry_global->domains_amount[0] - 1 && j < geometry_global->domains_amount[1] - 1)
           // {
           //   Domain *dst_domain = smb->domains(i + 1, j + 1);
           //   sim_domain->current->current.overlay_xy(dst_domain->current->current);
@@ -375,8 +375,8 @@ void OutController::operator()()
 {
   init_datasets();
 
-  for (unsigned int r = 0; r < geometry->domains_by_r; ++r)
-    for (unsigned int z = 0; z < geometry->domains_by_z; ++z)
+  for (unsigned int r = 0; r < geometry->domains_amount[0]; ++r)
+    for (unsigned int z = 0; z < geometry->domains_amount[1]; ++z)
     {
       Domain *dmn = smb->domains(r, z);
       LOG_S(MAX) << "Launching writers for domain ``" << r << "," << z << "''";

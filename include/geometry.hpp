@@ -18,74 +18,75 @@
 #ifndef _GEOMETRY_HPP_
 #define _GEOMETRY_HPP_
 
+#include <vector>
+
 #include "defines.hpp"
 #include "constant.hpp"
 #include "msg.hpp"
 
-using namespace constant;
-
-class Geometry
+struct Geometry
 {
 public:
-  double r_size;
-  double z_size;
+  std::vector<double> size;
+  std::vector<size_t> cell_dims;
+  std::vector<size_t> cell_amount;
+  std::vector<double> cell_size;
 
-  int top_r_grid_number;
-  int bottom_r_grid_number;
-  int left_z_grid_number;
-  int right_z_grid_number;
-
-  int r_grid_amount;
-  int z_grid_amount;
-
-  double r_cell_size;
-  double z_cell_size;
-
-  bool walls[4]; // ex. [true, true, false, false]
+  // bool walls[4]; // ex. [true, true, false, false]
+  std::vector<bool> walls;
 
   //! comparative pml lengths on walls
   //! r=0, z=0, r=wall, z=wall
-  double pml_length[4] = {0, 0, 0, 0}; // [0, 0, 0, 0]
-  double pml_sigma[2] = {0, 0}; // [0, 0]
+  std::vector<double> pml_length;
+  std::vector<double> pml_sigma;
+  std::vector<size_t> domains_amount;
 
-  bool is_near_z_axis;
+  // Geometry constructors
+  Geometry ( std::vector<double> _size,
+             std::vector<size_t> _cell_dims,
+             std::vector<double> _pml_length,
+             std::vector<double> _pml_sigma,
+             std::vector<bool> _walls )
+  {
+    size = _size;
+    cell_dims = _cell_dims;
 
-  unsigned int domains_by_r;
-  unsigned int domains_by_z;
+    // cell dimensions format is {a0, b0, c0, ... a1, b1, c1, ...}
+    // so beginings and endings of the edge points are separated
+    // by half of array length
+    size_t half_length = (size_t)(cell_dims.size() / 2.);
+    for (size_t i = 0; i < half_length; ++i)
+      cell_amount.push_back(cell_dims[i+half_length] - cell_dims[i]);
 
-  Geometry(double rs, double zs,
-           int bot_ngr, int top_ngr, int left_ngz, int right_ngz,
-           double pml_l_z0,
-           double pml_l_zwall, double pml_l_rwall, double pml_sigma1,
-           double pml_sigma2,
-           bool wall_r0, bool wall_z0, bool wall_rr, bool wall_zz);
-  Geometry(double rs, double zs,
-           int bot_ngr, int top_ngr, int left_ngz, int right_ngz,
-           bool wall_r0, bool wall_z0, bool wall_rr, bool wall_zz);
+    for (unsigned int i = 0; i < size.size(); ++i)
+      cell_size.push_back(size[i] / cell_amount[i]);
+
+    walls = _walls;
+    pml_length = _pml_length;
+    pml_sigma = _pml_sigma;
+  };
+
+  Geometry ( std::vector<double> _size,
+             std::vector<size_t> _cell_dims,
+             std::vector<bool> _walls)
+    : Geometry ( _size, _cell_dims, {0, 0, 0, 0}, {0, 0}, _walls)
+  {};
+
   Geometry() {};
 
-  ~Geometry(void);
-
-private:
-  void set_pml(double comparative_l_1, double comparative_l_2, double comparative_l_3,
-               double sigma1, double sigma2);
-
-
+  ~Geometry() {};
 };
-
-//! *_OVERLAY is for shifting cell param from overlay to normal
-//! *_OVERLAY_REVERSE is for shifting cell param from normal to overlay
 
 // some geometry-related macros
 //! \f$ ( \pi \times (dr * (i+0.5))^2 - \pi \times (dr * (i-0.5))^2 ) * dz \f$
-#define CELL_VOLUME(i, dr, dz) PI * (dz) * (dr) * (dr) * (2.0 * i + 1)
+#define CELL_VOLUME(i, dr, dz) constant::PI * (dz) * (dr) * (dr) * (2.0 * i + 1)
 
 //! volume of the cylindrical ring (internal cylinder on r1 is cut out)
-#define CYL_RNG_VOL(z, r1, r2) PI * (z) * ((r2) * (r2) - (r1) * (r1))
+#define CYL_RNG_VOL(z, r1, r2) constant::PI * (z) * ((r2) * (r2) - (r1) * (r1))
 
 //! volume of the cylinder
 // #define CYL_VOL(z, r) PI * (z) * (r) * (r) / 4.
-#define CYL_VOL(z, r) PI * (z) * (r) * (r)
+#define CYL_VOL(z, r) constant::PI * (z) * (r) * (r)
 
 // #define PARTICLE_VOLUME(x,y) (PI * dz * dr * dr * 2.0 * i)
 

@@ -21,6 +21,7 @@
 //      TA77S18 - SK98 et al.; 2018; DOI: 10.1002/ctpp.201700121
 
 using namespace std;
+using namespace constant;
 
 CollisionsSK98::CollisionsSK98 (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p) : Collisions ( _geometry, _time, _species_p)
 {}
@@ -245,8 +246,8 @@ void CollisionsSK98::collide_single(double m_real_a, double m_real_b,
 void CollisionsSK98::collide ()
 {
   // pairing
-  for (int i = 0; i < geometry->r_grid_amount; ++i)
-    for (int j = 0; j < geometry->z_grid_amount; ++j)
+  for (int i = 0; i < geometry->cell_amount[0]; ++i)
+    for (int j = 0; j < geometry->cell_amount[1]; ++j)
     {
       unsigned int vec_size_ions = map_ion2cell(i, j).size();
       unsigned int vec_size_electrons = map_el2cell(i, j).size();

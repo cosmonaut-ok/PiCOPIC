@@ -27,10 +27,10 @@
 template <typename T>
 void weight_cylindrical(Geometry *geometry, Grid<T> *grid, double pos_r, double pos_z, T weight_value)
 {
-  T dr = (T)geometry->r_cell_size;
-  T dz = (T)geometry->z_cell_size;
-  int bottom_shift = geometry->bottom_r_grid_number;
-  int left_shift = geometry->left_z_grid_number;
+  T dr = (T)geometry->cell_size[0];
+  T dz = (T)geometry->cell_size[1];
+  int bottom_shift = geometry->cell_dims[0];
+  int left_shift = geometry->cell_dims[1];
   T r1, r2, r3; // radiuses
   T dz1, dz2; // longitudes
 
@@ -51,7 +51,7 @@ void weight_cylindrical(Geometry *geometry, Grid<T> *grid, double pos_r, double 
     r1 =  pos_r - 0.5 * dr;
     r2 = (r_i + 0.5) * dr;
     r3 = pos_r + 0.5 * dr;
-    v_0 = 2. * PI * dz * dr * pos_r;
+    v_0 = 2. * constant::PI * dz * dr * pos_r;
     dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
     dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
     rho_w_value = weight_value / v_0;
@@ -80,11 +80,11 @@ void weight_cylindrical(Geometry *geometry, Grid<T> *grid, double pos_r, double 
     r3 = pos_r + 0.5 * dr;
     dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
     dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
-    v_0 = PI * dz * (2. * pos_r * pos_r + dr * dr / 2.);
+    v_0 = constant::PI * dz * (2. * pos_r * pos_r + dr * dr / 2.);
     rho_w_value = weight_value / v_0;
 
     // weighting in ro[i][k] cell
-    value = PI * dz1 * (dr * dr / 2. - pos_r * dr + pos_r * pos_r) / v_1;
+    value = constant::PI * dz1 * (dr * dr / 2. - pos_r * dr + pos_r * pos_r) / v_1;
 
     grid->inc(r_i_shift, z_k_shift, rho_w_value * value);
 
@@ -93,7 +93,7 @@ void weight_cylindrical(Geometry *geometry, Grid<T> *grid, double pos_r, double 
     grid->inc(r_i_shift + 1, z_k_shift, rho_w_value * value);
 
     // weighting in ro[i][k + 1] cell
-    value = PI * dz2 * (dr * dr / 2. - pos_r * dr + pos_r * pos_r) / v_1;
+    value = constant::PI * dz2 * (dr * dr / 2. - pos_r * dr + pos_r * pos_r) / v_1;
     grid->inc(r_i_shift, z_k_shift + 1, rho_w_value * value);
 
     // weighting in ro[i + 1][k + 1] cell
@@ -107,7 +107,7 @@ void weight_cylindrical(Geometry *geometry, Grid<T> *grid, double pos_r, double 
     r3 = pos_r + 0.5 * dr;
     dz1 = (z_k + 0.5) * dz - (pos_z - 0.5 * dz);
     dz2 = (pos_z + 0.5 * dz) - (z_k + 0.5) * dz;
-    v_0 = 2. * PI * dz * dr * pos_r;
+    v_0 = 2. * constant::PI * dz * dr * pos_r;
     v_1 = CYL_VOL(dz, dr);
     v_2 = CELL_VOLUME(r_i + 1, dr, dz);
 

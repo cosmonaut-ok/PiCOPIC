@@ -17,6 +17,8 @@
 
 #include "current/currentVB.hpp"
 
+using namespace constant;
+
 void CurrentVB::simple_current_distribution(double radius_new,
                                           double longitude_new,
                                           double radius_old,
@@ -26,11 +28,11 @@ void CurrentVB::simple_current_distribution(double radius_new,
                                           double p_charge)
 {
   //! shift also to take overlaying into account
-  int i_n_shift = i_n - geometry->bottom_r_grid_number;
-  int k_n_shift = k_n - geometry->left_z_grid_number;
+  int i_n_shift = i_n - geometry->cell_dims[0];
+  int k_n_shift = k_n - geometry->cell_dims[1];
 
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
   double wj = 0;
   double delta_t = time->step;
 
@@ -174,8 +176,8 @@ void CurrentVB::rz_current_distribution()
 {
   current.overlay_set(0);
 
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
 
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
     for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
@@ -397,8 +399,8 @@ void CurrentVB::azimuthal_current_distribution()
 {
   current.overlay_set(0);
 
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
 
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
     for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
@@ -420,8 +422,8 @@ void CurrentVB::azimuthal_current_distribution()
       double p_charge = (**ps).charge * P_WEIGHT((**i));
 
       //! shift also to take overlaying into account
-      int r_i_shift = r_i - geometry->bottom_r_grid_number;
-      int z_k_shift = z_k - geometry->left_z_grid_number;
+      int r_i_shift = r_i - geometry->cell_dims[0];
+      int z_k_shift = z_k - geometry->cell_dims[1];
 
       double pos_r = (P_POS_R((**i)) + P_POS_OLD_R((**i))) / 2;
       double pos_z = (P_POS_Z((**i)) + P_POS_OLD_Z((**i))) / 2;;
@@ -501,8 +503,8 @@ void CurrentVB::strict_motion_distribution(double radius_new,
                                          double longitude_old,
                                          double p_charge)
 {
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
 
   // defining number of cell
   int i_n = CELL_NUMBER(radius_new, dr);
@@ -511,8 +513,8 @@ void CurrentVB::strict_motion_distribution(double radius_new,
   int k_o = CELL_NUMBER(longitude_old, dz);;
 
   //! shift also to take overlaying into account
-  int i_n_shift = i_n - geometry->bottom_r_grid_number;
-  int k_n_shift = k_n - geometry->left_z_grid_number;
+  int i_n_shift = i_n - geometry->cell_dims[0];
+  int k_n_shift = k_n - geometry->cell_dims[1];
 
   if ((abs(radius_new - radius_old) < MNZL)
       && (abs(longitude_new - longitude_old) < MNZL))

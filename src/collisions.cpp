@@ -18,6 +18,7 @@
 #include "collisions.hpp"
 
 using namespace std;
+using namespace constant;
 
 Collisions::Collisions (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p):geometry(_geometry),time(_time)
 {
@@ -45,16 +46,16 @@ Collisions::Collisions (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> 
       charge_ion = (**ps).charge;
     }
   }
-  map_el2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  map_ion2cell = Grid<vector< vector<double> * >> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  map_el2cell = Grid<vector< vector<double> * >> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  map_ion2cell = Grid<vector< vector<double> * >> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
 
-  energy_tot_el = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  amount_tot_el = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  moment_tot_el = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  energy_tot_el = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  amount_tot_el = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  moment_tot_el = Grid3D<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
 
-  energy_tot_ion = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  amount_tot_ion = Grid<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
-  moment_tot_ion = Grid3D<double> (geometry->r_grid_amount, geometry->z_grid_amount, 2);
+  energy_tot_ion = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  amount_tot_ion = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  moment_tot_ion = Grid3D<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
 }
 
 //! TA77: clear
@@ -74,8 +75,8 @@ void Collisions::clear()
   moment_tot_ion = 0;
   moment_tot_ion.overlay_set(0);
 
-  for (int i = 0; i < geometry->r_grid_amount; ++i)
-    for (int j = 0; j < geometry->z_grid_amount; ++j)
+  for (int i = 0; i < geometry->cell_amount[0]; ++i)
+    for (int j = 0; j < geometry->cell_amount[1]; ++j)
     {
       map_el2cell(i, j).clear();
       map_ion2cell(i, j).clear();
@@ -93,8 +94,8 @@ void Collisions::sort_to_cells()
       int k_n = P_CELL_Z((**i));
 
       //! shift also to take overlaying into account
-      int i_n_shift = i_n - geometry->bottom_r_grid_number;
-      int k_n_shift = k_n - geometry->left_z_grid_number;
+      int i_n_shift = i_n - geometry->cell_dims[0];
+      int k_n_shift = k_n - geometry->cell_dims[1];
 
       // TODO: push_back particle to sorter
       string name = "ions";
@@ -109,8 +110,8 @@ void Collisions::sort_to_cells()
 //! TA77: 6. resort cell elements randomly to simply prepare the pairs
 void Collisions::random_sort ()
 {
-  for (int i = 0; i < geometry->r_grid_amount; ++i)
-    for (int j = 0; j < geometry->z_grid_amount; ++j)
+  for (int i = 0; i < geometry->cell_amount[0]; ++i)
+    for (int j = 0; j < geometry->cell_amount[1]; ++j)
     {
       std::srand ( unsigned ( std::time(0) ) );
       std::random_shuffle(map_el2cell(i, j).begin(), map_el2cell(i, j).end());
@@ -161,17 +162,17 @@ double Collisions::get_ion_temperature(int i, int j)
 
 double Collisions::geometry_cell_volume(int i)
 {
-  double dr = geometry->r_cell_size;
-  double dz = geometry->z_cell_size;
-  double shift = geometry->bottom_r_grid_number;
+  double dr = geometry->cell_size[0];
+  double dz = geometry->cell_size[1];
+  double shift = geometry->cell_dims[0];
 
   return CELL_VOLUME(i+shift, dr, dz);
 }
 
 void Collisions::collect_weighted_params_tot_grid ()
 {
-  for (int i = 0; i < geometry->r_grid_amount; ++i)
-    for (int j = 0; j < geometry->z_grid_amount; ++j)
+  for (int i = 0; i < geometry->cell_amount[0]; ++i)
+    for (int j = 0; j < geometry->cell_amount[1]; ++j)
     {
       unsigned int vec_size_ions = map_ion2cell(i, j).size();
       unsigned int vec_size_electrons = map_el2cell(i, j).size();
