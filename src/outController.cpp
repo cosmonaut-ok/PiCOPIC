@@ -21,12 +21,12 @@
 OutController::OutController ( HighFive::File* _file,
                                Geometry *_geometry, TimeSim *_time,
                                vector<probe> &_probes, SMB *_smb,
-                               std::string _metadata )
+                               std::string _metadata)
   : geometry(_geometry), time(_time), smb(_smb)
 #else
 OutController::OutController ( Geometry *_geometry, TimeSim *_time,
                                vector<probe> &_probes, SMB *_smb,
-                               std::string _metadata )
+                               std::string _metadata)
   : geometry(_geometry), time(_time), smb(_smb)
 #endif
 {
@@ -76,10 +76,10 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
       {
         Domain *dmn = smb->domains(r, z);
 
-        vector<int> domain_size = { dmn->geometry.cell_dims[0],
-                                    dmn->geometry.cell_dims[1],
-                                    dmn->geometry.cell_dims[2],
-                                    dmn->geometry.cell_dims[3] };
+        vector<size_t> domain_size = { dmn->geometry.cell_dims[0],
+                                       dmn->geometry.cell_dims[1],
+                                       dmn->geometry.cell_dims[2],
+                                       dmn->geometry.cell_dims[3] };
 
         // check if probe possition intersects the domain
         if (
@@ -134,20 +134,12 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
           // calculate effective engine offset
           vector<size_t> eff_engine_offset;
 
-          if (prb->shape == 0 || prb->shape == 1)
-          {
-            if (dmn->geometry.cell_dims[0] <= prb_size[0])
-              eff_engine_offset.push_back(0);
-            else
-              eff_engine_offset.push_back(dmn->geometry.cell_dims[0] - prb_size[0]);
-          }
-          if (prb->shape == 0 || prb->shape == 2)
-          {
-            if (dmn->geometry.cell_dims[1] <= prb_size[1])
-              eff_engine_offset.push_back(0);
-            else
-              eff_engine_offset.push_back(dmn->geometry.cell_dims[1] - prb_size[1]);
-          }
+          if (prb->shape == 0 || prb->shape == 1 || prb->shape == 3)
+            eff_engine_offset.push_back(eff_prb_size[0] + dmn->geometry.cell_dims[0] - prb->r_start);
+
+          if (prb->shape == 0 || prb->shape == 2 || prb->shape == 3)
+            eff_engine_offset.push_back(eff_prb_size[1] + dmn->geometry.cell_dims[1] - prb->z_start);
+
           Grid<double> *value;
 
           // map outWriter to the grid of values
@@ -284,7 +276,7 @@ void OutController::init_datasets()
 
       ////
       //// calculate and overlay temperatures and densities before dump
-      ///
+      ////
       // calculate temperature and/or density before dump
       for (unsigned int r = 0; r < geometry->domains_amount[0]; ++r)
         for (unsigned int z = 0; z < geometry->domains_amount[1]; ++z)
@@ -351,7 +343,7 @@ void OutController::init_datasets()
           // }
         }
 
-#ifndef DEBUG
+#ifndef ENABLE_DEBUG
       string dump_step = to_string((int)current_time_step / prb->schedule);
       std::ostringstream time_conv;
       time_conv << time->current;

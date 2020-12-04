@@ -36,7 +36,6 @@ using namespace MPI;
 
 #include "SMB.hpp"
 #include "outController.hpp"
-// #include "dataWriter.hpp"
 #include "specieP.hpp"
 #include "beamP.hpp"
 
@@ -90,7 +89,9 @@ void signal_handler( int signum )
 #ifdef ENABLE_HDF5
     delete file;
 #endif // ENABLE_HDF5
-    std::cerr << "Signal ``" << signum << "'' received. Exiting" << std::endl;
+
+    const char * sigstr = strsignal(signum);
+    std::cerr << "Signal ``" << strdup(sigstr) << " (" << signum << ")'' received. Exiting" << std::endl;
     exit(signum);
   }
 }
@@ -168,7 +169,17 @@ int main(int argc, char **argv)
   ////!
   LOG_S(INFO) << "Initialization";
 
-  //// init MPI
+  // string cfgname;
+  string cfgname = parse_argv_get_config(argc, argv);
+
+  LOG_S(MAX) << "Reading Configuration File ``" << cfgname << "''";
+  Cfg cfg = Cfg(cfgname);
+
+  LOG_S(MAX) << "Initializing Geometry, Time and Simulation Domains";
+  Geometry* geometry_global = cfg.geometry;
+
+  TimeSim* sim_time_clock = cfg.time;
+
 #ifdef ENABLE_MPI
   try
   {
@@ -181,26 +192,32 @@ int main(int argc, char **argv)
     const int ID = COMM_WORLD.Get_rank ();
 
     // number of tasks
-    const size_t NTASKS = NPROCS - 1;
-    LOG_S(WARNING) << "Number of tasks is: " << NTASKS;
+    LOG_S(INFO) << "Number of MPI processes is: " << NPROCS;
 
     // size of each task
     const size_t SZ = 1024 * 1024;
-#endif // ENABLE_MPI
 
-    // string cfgname;
-    string cfgname = parse_argv_get_config(argc, argv);
+    Geometry* geometry_smb = geometry_global;
 
-    LOG_S(MAX) << "Reading Configuration File ``" << cfgname << "''";
-    Cfg cfg = Cfg(cfgname);
+    // update macro amount per task
+    cfg.macro_amount /= NPROCS;
 
-    LOG_S(MAX) << "Initializing Geometry, Time and Simulation Domains";
-    Geometry* geometry_global = cfg.geometry;
+    // update cell dimensions
+    size_t smb_cell_amount = geometry_global->cell_amount[1] / NPROCS;
 
-    TimeSim* sim_time_clock = cfg.time;
+    size_t smb_cell_begin = smb_cell_amount * ID;
+    size_t smb_cell_end = smb_cell_amount * ( ID + 1 );
+
+    geometry_smb->cell_amount[1] = smb_cell_amount;
+    geometry_smb->cell_dims[1] = smb_cell_begin;
+    geometry_smb->cell_dims[3] = smb_cell_end;
 
     // define a shared memory block
+    SMB shared_mem_blk ( &cfg, geometry_smb, sim_time_clock);
+#else
+    // define a shared memory block
     SMB shared_mem_blk ( &cfg, geometry_global, sim_time_clock);
+#endif // ENABLE_MPI
 
     Grid<Domain *> domains = shared_mem_blk.domains;
 
@@ -221,9 +238,17 @@ int main(int argc, char **argv)
     try
     {
 #ifdef ENABLE_MPI
-      if (ID == 0)
+      file = new HighFive::File (
+        hdf5_filepath.c_str(),
+        HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Excl,
+        HighFive::MPIOFileDriver(COMM_WORLD, MPI_INFO_NULL)
+        );
+#else
+      file = new HighFive::File (
+        hdf5_filepath.c_str(),
+        HighFive::File::Create | HighFive::File::Excl
+        );
 #endif // ENABLE_MPI
-        file = new HighFive::File(hdf5_filepath.c_str(), HighFive::File::Create | HighFive::File::Excl);
     }
     catch (const HighFive::FileException& error)
     {
@@ -243,44 +268,9 @@ int main(int argc, char **argv)
                                    cfg.probes, &shared_mem_blk, cfg.cfg2str() );
 #endif
 
-//     vector<DataWriter> data_writers;
-
-//     for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
-//     {
-//       int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
-
-//       DataWriter writer (cfg.output_data->data_root, i->component,
-//                          i->specie, i->shape, probe_size, i->schedule,
-//                          cfg.output_data->compress, cfg.output_data->compress_level,
-//                          geometry_global, sim_time_clock, domains, cfg.cfg2str());
-
-
-// #ifdef ENABLE_HDF5
-// #ifdef ENABLE_MPI
-//       if (ID == 0)
-//       {
-// #endif
-//         writer.hdf5_file = file; // pass pointer to opened HDF5 file to outEngineHDF5's object
-//         writer.hdf5_init(cfg.cfg2str());
-// #ifdef ENABLE_MPI
-//       }
-// #endif
-// #endif // ENABLE_HDF5
-
-//       data_writers.push_back(writer);
-//     }
-
     LOG_S(INFO) << "Preparation to calculation";
 
     shared_mem_blk.distribute();
-// #pragma omp parallel for collapse(2)
-//   for (unsigned int i=0; i < r_domains; i++)
-//     for (unsigned int j = 0; j < z_domains; j++)
-//     {
-//       Domain *sim_domain = domains(i, j);
-
-//       sim_domain->distribute(); // spatial and velocity distribution
-//     }
 
     //! Main calculation loop
     LOG_S(INFO) << "Launching calculation";
@@ -325,10 +315,12 @@ int main(int argc, char **argv)
 
 //// output data
 #ifdef ENABLE_MPI
-      if (ID == 0)
-#endif
-        // for (auto i = data_writers.begin(); i != data_writers.end(); i++)
-        //   (*i)();
+      LOG_S(MAX) << "Launching writers for SMB with ID: ``" << ID
+                 << "'' at ``" << sim_time_clock->current << "''";
+#else
+      LOG_S(MAX) << "Launching writers for SMB at ``"
+                 << sim_time_clock->current << "''";
+#endif // ENABLE_MPI
       out_controller();
 
       sim_time_clock->current += sim_time_clock->step;

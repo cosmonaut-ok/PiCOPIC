@@ -70,11 +70,15 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
         pml_l_zwall = geometry->pml_length[3];
 #endif // ENABLE_PML
 
-      unsigned int bot_r = (unsigned int)geometry->cell_amount[0] * i / r_domains;
-      unsigned int top_r = (unsigned int)geometry->cell_amount[0] * (i + 1) / r_domains;
+      size_t bot_r = (size_t)(geometry->cell_amount[0] * i / r_domains
+                              + geometry->cell_dims[0]);
+      size_t top_r = (size_t)(geometry->cell_amount[0] * (i + 1) / r_domains
+                              + geometry->cell_dims[0]);
 
-      unsigned int left_z = (unsigned int)geometry->cell_amount[1] * j / z_domains;
-      unsigned int right_z = (unsigned int)geometry->cell_amount[1] * (j + 1) / z_domains;
+      size_t left_z = (size_t)(geometry->cell_amount[1] * j / z_domains
+                               + geometry->cell_dims[1]);
+      size_t right_z = (size_t)(geometry->cell_amount[1] * (j + 1) / z_domains
+                                + geometry->cell_dims[1]);
 
 #ifdef ENABLE_PML
       Geometry *geom_domain = new Geometry (
@@ -213,8 +217,14 @@ void SMB::particles_runaway_collector ()
                   int r_cell = P_CELL_R((*o));
                   int z_cell = P_CELL_Z((*o));
 
-                  unsigned int i_dst = (unsigned int)ceil(r_cell / sim_domain->geometry.cell_amount[0]);
-                  unsigned int j_dst = (unsigned int)ceil(z_cell / sim_domain->geometry.cell_amount[1]);
+                  // this is unshifted domain numbers (local for SMB)
+                  unsigned int i_dst = (unsigned int)ceil (
+                    ( r_cell - __geometry->cell_dims[0] ) // we should make cell numbers local for SMB
+                    / sim_domain->geometry.cell_amount[0] );
+
+                  unsigned int j_dst = (unsigned int)ceil (
+                    ( z_cell - __geometry->cell_dims[1] ) // we should make cell numbers local for SMB
+                    / sim_domain->geometry.cell_amount[1] );
 
                   if (r_cell < 0 || z_cell < 0)
                   {
@@ -225,7 +235,7 @@ void SMB::particles_runaway_collector ()
                     res = true;
                   }
 
-                  else if (r_cell >= __geometry->cell_amount[0])
+                  else if (r_cell >= __geometry->cell_dims[2])
                   {
                     if ((**ps).id >= BEAM_ID_START)
                     {
@@ -236,7 +246,7 @@ void SMB::particles_runaway_collector ()
                     else
                     {
                       LOG_S(ERROR) << "Particle's r-position is more, than geometry r-size: "
-                                   << __geometry->cell_amount[0]
+                                   << __geometry->size[0]
                                    << ". Position is: ["
                                    << P_POS_R((*o)) << ", "
                                    << P_POS_Z((*o)) << "]. Removing";
@@ -246,7 +256,7 @@ void SMB::particles_runaway_collector ()
                   }
 
                   // remove out-of-simulation particles
-                  else if (z_cell >= __geometry->cell_amount[1])
+                  else if (z_cell >= __geometry->cell_dims[3])
                   {
                     if ((**ps).id >= BEAM_ID_START)
                     {
@@ -257,7 +267,7 @@ void SMB::particles_runaway_collector ()
                     else
                     {
                       LOG_S(ERROR) << "Particle's z-position is more, than geometry z-size: "
-                                   << __geometry->cell_amount[1]
+                                   << __geometry->cell_size[1]
                                    << ". Position is: ["
                                    << P_POS_R((*o)) << ", "
                                    << P_POS_Z((*o)) << "]. Removing";
