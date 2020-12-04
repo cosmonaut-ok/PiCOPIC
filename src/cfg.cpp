@@ -352,8 +352,8 @@ void Cfg::init_geometry ()
   double radius = json_root_size["radius"].get<double>();
   double longitude = json_root_size["longitude"].get<double>();
 
-  int n_grid_r = (size_t)json_root_grid["radius"].get<double>();
-  int n_grid_z = (size_t)json_root_grid["longitude"].get<double>();
+  size_t n_grid_r = (size_t)json_root_grid["radius"].get<double>();
+  size_t n_grid_z = (size_t)json_root_grid["longitude"].get<double>();
 
   vector<double> _size = {radius, longitude};
   vector<size_t> _dims = {0, 0, n_grid_r, n_grid_z};

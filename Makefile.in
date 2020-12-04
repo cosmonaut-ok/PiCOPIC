@@ -198,7 +198,7 @@ hdf5: prepare
 	wget -qO- "@HDF5_URL@" | tar xjf -; \
 	cd @HDF5_VERSION@; \
 	./autogen.sh; \
-	./configure --enable-cxx --enable-build-mode=production --prefix=@prefix@ $(HDF5_ADDITIONAL_OPTIONS); \
+	./configure --enable-build-mode=production --prefix=@prefix@ $(HDF5_ADDITIONAL_OPTIONS); \
 	make)
 
 hdf5-install: hdf5
