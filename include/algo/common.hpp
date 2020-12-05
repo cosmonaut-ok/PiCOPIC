@@ -20,6 +20,7 @@
 
 #include <math.h>
 #include <vector>
+#include <string>
 #include <algorithm>  // std::transform
 #include <sys/stat.h> // stat
 #include <fstream>    // std::ifstream
@@ -48,7 +49,7 @@ namespace algo::common
 {
   double sqrt_recip (float x);
   bool to_bool (string str);
-  char* get_simulation_duration ();
+  std::string get_simulation_duration ();
   bool directory_exists (const std::string& path);
   bool make_directory (const std::string& path);
   double sq_rt (double x);

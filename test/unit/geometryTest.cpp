@@ -6,10 +6,10 @@ TEST(geometry, constructor)
   double radius = 0.6;
   double longitude = 1.2;
 
-  int bot_ngr = 10;
-  int top_ngr = 20;
-  int left_ngz = 11;
-  int right_ngz = 31;
+  size_t bot_ngr = 10;
+  size_t top_ngr = 20;
+  size_t left_ngz = 11;
+  size_t right_ngz = 31;
   double pml_l_z0 = 0.01;
   double pml_l_zwall = 0.01;
   double pml_l_rwall = 0.01;

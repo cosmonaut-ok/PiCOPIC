@@ -45,6 +45,7 @@
 
 #include "algo/common.hpp"
 #include "defines.hpp"
+#include "timeSim.hpp"
 
 #define MSG(message) std::cout << message << std::endl;
 
@@ -54,4 +55,11 @@
 
 #define MSG_FIXME(message) if (ENABLE_FIXME) std::cerr << "FIXME: " << message << "." << std::endl;
 
+namespace msg
+{
+  void print_header ( int print_header_step, TimeSim *time );
+  void print_values ( std::string probe_name, std::string shape_name,
+                      unsigned int probe_schedule, TimeSim *time );
+  void print_final ();
+};
 #endif // end of _MSG_HPP_

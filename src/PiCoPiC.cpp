@@ -349,7 +349,7 @@ int main(int argc, char **argv)
 
           // for (auto i = cfg.probes.begin(); i != cfg.probes.end(); ++i)
           // {
-          //   int probe_size[4] = {i->r_start, i->z_start, i->r_end, i->z_end};
+          //   int probe_size[4] = {i->dims[0], i->dims[1], i->dims[2], i->dims[3]};
 
           //   DataWriter writer (cfg.output_data->data_root, i->component,
           //                      i->specie, i->shape, probe_size, i->schedule,
@@ -377,11 +377,7 @@ int main(int argc, char **argv)
     delete file;
 #endif
 
-#ifndef DEBUG
-    MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
-#endif
-
-    LOG_S(INFO) << "SIMULATION COMPLETE";
+    msg::print_final();
 
 #ifdef ENABLE_MPI
     Finalize();

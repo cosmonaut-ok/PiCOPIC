@@ -221,84 +221,88 @@ void Cfg::init_probes ()
     if ( p_shape.compare("rec") == 0 )
     {
       p_p.shape = 0;
-      p_p.r_start = (int)o["start"].get<object>()["r"].get<double>();
-      p_p.r_end = (int)o["end"].get<object>()["r"].get<double>();
-      p_p.z_start = (int)o["start"].get<object>()["z"].get<double>();
-      p_p.z_end = (int)o["end"].get<object>()["z"].get<double>();
+      p_p.dims.push_back((size_t)o["start"].get<object>()["r"].get<double>());
+      p_p.dims.push_back((size_t)o["start"].get<object>()["z"].get<double>());
+      p_p.dims.push_back((size_t)o["end"].get<object>()["r"].get<double>());
+      p_p.dims.push_back((size_t)o["end"].get<object>()["z"].get<double>());
+
+      // p_p.dims[2] = (int)o["end"].get<object>()["r"].get<double>();
+      // p_p.dims[1] = (int)o["start"].get<object>()["z"].get<double>();
+      // p_p.dims[3] = (int)o["end"].get<object>()["z"].get<double>();
 
       // add shape and size to probe path
       p_p.path += "rec";
       p_p.path += PATH_DELIMITER;
-      p_p.path += to_string(p_p.r_start);
+      p_p.path += to_string(p_p.dims[0]);
       p_p.path += RANGE_DELIMITER;
-      p_p.path += to_string(p_p.r_end);
+      p_p.path += to_string(p_p.dims[2]);
       p_p.path += SPACE_DELIMITER;
-      p_p.path += to_string(p_p.z_start);
+      p_p.path += to_string(p_p.dims[1]);
       p_p.path += RANGE_DELIMITER;
-      p_p.path += to_string(p_p.z_end);
+      p_p.path += to_string(p_p.dims[3]);
     }
     else if ( p_shape.compare("col") == 0 )
     {
       p_p.shape = 1;
-      p_p.r_start = 0;
-      p_p.r_end = 0;
-      p_p.z_end = (int)o["z"].get<double>();
-      p_p.z_start = 0;
+      p_p.dims[0] = 0;
+      p_p.dims[2] = 0;
+      p_p.dims[3] = (int)o["z"].get<double>();
+      p_p.dims[1] = 0;
 
       // add shape and size to probe path
       p_p.path += "col";
       p_p.path += PATH_DELIMITER;
-      p_p.path += to_string(p_p.z_end);
+      p_p.path += to_string(p_p.dims[3]);
     }
     else if ( p_shape.compare("row") == 0 )
     {
       p_p.shape = 2;
-      p_p.r_end = (int)o["r"].get<double>();
-      p_p.r_start = 0;
-      p_p.z_start = 0;
-      p_p.z_end = 0;
+      p_p.dims[2] = (int)o["r"].get<double>();
+      p_p.dims[0] = 0;
+      p_p.dims[1] = 0;
+      p_p.dims[3] = 0;
 
       // add shape and size to probe path
       p_p.path += "row";
       p_p.path += PATH_DELIMITER;
-      p_p.path += to_string(p_p.r_end);
+      p_p.path += to_string(p_p.dims[2]);
     }
     else if ( p_shape.compare("dot") == 0 )
     {
       p_p.shape = 3;
-      p_p.r_end = (int)o["r"].get<double>();
-      p_p.r_start = 0;
-      p_p.z_end = (int)o["z"].get<double>();
-      p_p.z_start = 0;
+      p_p.dims[2] = (int)o["r"].get<double>();
+      p_p.dims[0] = 0;
+      p_p.dims[3] = (int)o["z"].get<double>();
+      p_p.dims[1] = 0;
 
       // add shape and size to probe path
       p_p.path += "dot";
       p_p.path += PATH_DELIMITER;
-      p_p.path += to_string(p_p.r_end);
+      p_p.path += to_string(p_p.dims[2]);
       p_p.path += SPACE_DELIMITER;
-      p_p.path += to_string(p_p.z_end);
+      p_p.path += to_string(p_p.dims[3]);
     }
     else
       LOG_S(FATAL) << "Unknown probe shape ``" << p_shape << "''";
 
     p_p.schedule = (int)o["schedule"].get<double>();
 
-    if (p_p.r_start > p_p.r_end || p_p.z_start > p_p.z_end)
+    if (p_p.dims[0] > p_p.dims[2] || p_p.dims[1] > p_p.dims[3])
     {
       LOG_S(FATAL) << "Incorrect probe's " << p_p.component << "/" << p_shape << " shape: ["
-                   << p_p.r_start << "," << p_p.r_end << ","
-                   << p_p.z_start << "," << p_p.z_end << "]";
+                   << p_p.dims[0] << "," << p_p.dims[2] << ","
+                   << p_p.dims[1] << "," << p_p.dims[3] << "]";
     }
-    else if (p_p.r_end > geometry->cell_amount[0])
+    else if (p_p.dims[2] > geometry->cell_amount[0])
     {
       LOG_S(FATAL) << "Probe's " << p_p.component << "/" << p_shape << " radius is out of simulation domain: "
-                   << p_p.r_end << ". Must be less, than "
+                   << p_p.dims[2] << ". Must be less, than "
                    << geometry->cell_amount[0];
     }
-    else if (p_p.z_end > geometry->cell_amount[1])
+    else if (p_p.dims[3] > geometry->cell_amount[1])
     {
       LOG_S(FATAL) << "Probe's " << p_p.component << "/" << p_shape << " longitude is out of simulation domain: "
-                   << p_p.z_end << ". Must be less, than "
+                   << p_p.dims[3] << ". Must be less, than "
                    << geometry->cell_amount[1];
     }
     else

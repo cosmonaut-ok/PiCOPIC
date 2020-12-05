@@ -43,7 +43,7 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
   // setup probes for every domain
   for (auto prb = probes.begin(); prb != probes.end(); ++prb)
   {
-    vector<short> prb_size = {prb->r_start, prb->z_start, prb->r_end, prb->z_end};
+    vector<size_t> prb_size = {prb->dims[0], prb->dims[1], prb->dims[2], prb->dims[3]};
 
     // initialize engine paths
 #ifdef ENABLE_HDF5
@@ -53,7 +53,7 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
     switch (prb->shape)
     {
     case 0:
-      hdf5_prb_size = {prb->r_end - prb->r_start, prb->z_end - prb->z_start};
+      hdf5_prb_size = {prb->dims[2] - prb->dims[0], prb->dims[3] - prb->dims[1]};
       break;
     case 1:
       hdf5_prb_size = {geometry->cell_amount[0]};
@@ -135,10 +135,10 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
           vector<size_t> eff_engine_offset;
 
           if (prb->shape == 0 || prb->shape == 1 || prb->shape == 3)
-            eff_engine_offset.push_back(eff_prb_size[0] + dmn->geometry.cell_dims[0] - prb->r_start);
+            eff_engine_offset.push_back(eff_prb_size[0] + dmn->geometry.cell_dims[0] - prb->dims[0]);
 
           if (prb->shape == 0 || prb->shape == 2 || prb->shape == 3)
-            eff_engine_offset.push_back(eff_prb_size[1] + dmn->geometry.cell_dims[1] - prb->z_start);
+            eff_engine_offset.push_back(eff_prb_size[1] + dmn->geometry.cell_dims[1] - prb->dims[1]);
 
           Grid<double> *value;
 
@@ -200,7 +200,7 @@ void OutController::init_datasets()
   // create empty
   for (auto prb = probes.begin(); prb != probes.end(); ++prb)
   {
-    vector<size_t> prb_size = {prb->r_start, prb->z_start, prb->r_end, prb->z_end};
+    vector<size_t> prb_size = {prb->dims[0], prb->dims[1], prb->dims[2], prb->dims[3]};
     vector<size_t> offset = {0, 0};
 
 #ifdef ENABLE_HDF5
@@ -209,7 +209,7 @@ void OutController::init_datasets()
     switch (prb->shape)
     {
     case 0:
-      hdf5_prb_size = {prb->r_end - prb->r_start, prb->z_end - prb->z_start};
+      hdf5_prb_size = {prb->dims[2] - prb->dims[0], prb->dims[3] - prb->dims[1]};
       break;
     case 1:
       hdf5_prb_size = {geometry->cell_amount[0]};
@@ -229,23 +229,8 @@ void OutController::init_datasets()
 
     if (is_run == 0)
     {
-      //// print header
-#ifndef ENABLE_DEBUG
-      int print_header_step = 30;
-      if (time->print_header_counter % print_header_step == 0)
-      {
-        MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
-        MSG(left << setw(13) << "|    Step"
-            << left << setw(14) << "| Saved Frame"
-            << left << setw(50) << "|                Dumping Probe Name"
-            << left << setw(8) << "| Shape"
-            << left << setw(19) << "| Model Time (sec)"
-            << left << setw(22) << "| Simulation Duration"
-            << left << "|"
-          );
-        MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
-      }
-#endif // ENABLE_DEBUG
+      //// print header every 30 values
+      msg::print_header (30, time);
 
       string shape_name;
       size_t slices = (size_t)(ceil(current_time_step / prb->schedule));
@@ -255,8 +240,8 @@ void OutController::init_datasets()
       {
       case 0:
         shape_name = "rec";
-        probe_size.push_back(prb->r_end - prb->r_start);
-        probe_size.push_back(prb->z_end - prb->z_start);
+        probe_size.push_back(prb->dims[2] - prb->dims[0]);
+        probe_size.push_back(prb->dims[3] - prb->dims[1]);
         break;
       case 1:
         shape_name = "col";
@@ -343,22 +328,7 @@ void OutController::init_datasets()
           // }
         }
 
-#ifndef ENABLE_DEBUG
-      string dump_step = to_string((int)current_time_step / prb->schedule);
-      std::ostringstream time_conv;
-      time_conv << time->current;
-      std::string cur_time_str = time_conv.str();
-
-      MSG(left << setw(13) << "| " + to_string(current_time_step)
-          << left << setw(14) << "| " + dump_step
-          << left << setw(50) << "| " + prb->path
-          << left << setw(8) << "| " + shape_name
-          << left << setw(19) << "| " + cur_time_str
-          << left << setw(22) << "| " + (string)algo::common::get_simulation_duration()
-          << left << "|"
-        );
-#endif
-      ++time->print_header_counter;
+      msg::print_values (prb->path, shape_name, prb->schedule, time);
     }
   }
 }

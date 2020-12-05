@@ -18,6 +18,7 @@
 #ifndef _CFG_HPP_
 #define _CFG_HPP_
 
+#include <vector>
 #include <sstream> // std::stringstream
 #include <fstream> // std::ifstream
 
@@ -43,10 +44,11 @@ struct probe
   string component;
   string specie;
   unsigned int shape;
-  int r_start;
-  int r_end;
-  int z_start;
-  int z_end;
+  std::vector<size_t> dims;
+  // int r_start;
+  // int r_end;
+  // int z_start;
+  // int z_end;
   unsigned int schedule;
 };
 

@@ -59,7 +59,7 @@ namespace algo::common
     return b;
   }
 
-  char* get_simulation_duration()
+  std::string get_simulation_duration()
   // get the time, spent since simulation launched (in "d h m s" format)
   {
     double time_sec = std::time(nullptr) - SIMULATION_START_TIME;
@@ -96,7 +96,7 @@ namespace algo::common
     else
       sprintf(the_time, "%.0fs", time_sec);
 
-    return the_time;
+    return (std::string)the_time;
   }
 
 // Make directory and check if it exists
