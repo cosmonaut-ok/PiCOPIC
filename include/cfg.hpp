@@ -31,30 +31,29 @@
 #include "geometry.hpp"
 #include "timeSim.hpp"
 
-using namespace std;
-using namespace picojson;
-
 #define PATH_DELIMITER "/"
 #define RANGE_DELIMITER "-"
 #define SPACE_DELIMITER "_"
 
+#define SPECIE_HASH_SALT 1394
+#define BEAM_HASH_SALT 18132
+
+#define MIN_DOMAIN_GRID_AMOUNT 64
+
 struct probe
 {
-  string path;
-  string component;
-  string specie;
+  std::string path;
+  std::string component;
+  std::string specie;
   unsigned int shape;
   std::vector<size_t> dims;
-  // int r_start;
-  // int r_end;
-  // int z_start;
-  // int z_end;
   unsigned int schedule;
 };
 
 struct particle_specie
 {
-  char *name;
+  unsigned int id;
+  std::string name;
   unsigned int mass;
   int charge;
   double macro_amount;
@@ -91,7 +90,7 @@ public:
   Cfg(const std::string json_file_name);
   ~Cfg(void);
 
-  string cfg2str();
+  std::string cfg2str();
 
 public:
   char *log_file;
@@ -173,10 +172,7 @@ public:
   vector<probe> probes;
 
 private:
-  value json_data;
-//   XMLElement* xml_data;
-//   XMLElement* try_first_child(XMLElement* element, const char* name);
-//   const char* try_atribute(XMLElement* element, const char* name);
+  picojson::value json_data;
 
   void init_particles();
   void init_probes();

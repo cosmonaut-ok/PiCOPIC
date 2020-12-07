@@ -129,7 +129,6 @@ public:
   //! - P_COS(particles_variable, particle_number)
   //! - P_ALIVE(particles_variable, particle_number)
   vector< vector<double> * > particles;
-  vector< vector<double> * > particles_old;
 
   Geometry *geometry;
 
@@ -138,6 +137,12 @@ public:
   double temperature; // in electronvolts
   Grid<double> density_map;
   Grid<double> temperature_map;
+
+  Grid<double> p_abs;
+  Grid<double> p_r;
+  Grid<double> p_phi;
+  Grid<double> p_z;
+  Grid<double> count;
 
   double start_time;
   double bunch_length;
@@ -162,11 +167,6 @@ public:
 
   ~SpecieP();
 
-  // void set_spatial_distribution(){};
-  // void set_velocity_distribution(){};
-// private:
-  // FieldH* field_h;
-  // FieldE* field_e;
   MaxwellSolver* maxwell_solver;
 
 

@@ -17,8 +17,16 @@
 
 #include "SMB.hpp"
 
+#ifdef ENABLE_MPI
+#include <mpi.h>
+// using namespace MPI;
+#endif // ENABLE_MPI
+
+using namespace std;
+
 // SMB constructor
-SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
+SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time,
+           int _world_rank, int _world_size)
   : cfg(_cfg), time(_time), geometry(_geometry)
 {
   LOG_S(MAX) << "Initializing Geometry, Particle Species and Simulation Domains";
@@ -28,6 +36,9 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
   //
   r_domains = geometry->domains_amount[0];
   z_domains = geometry->domains_amount[1];
+
+  world_rank = _world_rank;
+  world_size = _world_size;
 
   Grid<Domain*> _domains (r_domains, z_domains, 0);
   domains = _domains;
@@ -50,13 +61,13 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
 
       // set walls to domains
       if (i == 0)
-        wall_r0 = true;
+        wall_r0 = geometry->walls[0];
       if (i == r_domains - 1)
-        wall_rr = true;
+        wall_rr = geometry->walls[2];
       if (j == 0)
-        wall_z0 = true;
+        wall_z0 = geometry->walls[1];
       if (j == z_domains - 1)
-        wall_zz = true;
+        wall_zz = geometry->walls[3];
 
 #ifdef ENABLE_PML
       // set PML to domains
@@ -127,7 +138,7 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
         double ld_local = k->left_density + drho_by_dz * left_z * geom_domain->cell_size[1];
         double rd_local = k->left_density + drho_by_dz * right_z * geom_domain->cell_size[1];
 
-        SpecieP *pps = new SpecieP (p_id_counter,
+        SpecieP *pps = new SpecieP (k->id,
                                     k->name,
                                     k->charge, k->mass, grid_cell_macro_amount,
                                     ld_local, rd_local,
@@ -143,7 +154,7 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
         {
           if (bm->bunches_amount > 0)
           {
-            BeamP *beam = new BeamP (b_id_counter, ((string)"beam_").append(bm->name),
+            BeamP *beam = new BeamP (bm->id, bm->name,
                                      bm->charge, bm->mass, bm->macro_amount,
                                      bm->start_time, bm->bunch_radius, bm->density,
                                      bm->bunches_amount, bm->bunch_length,
@@ -157,7 +168,6 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time )
 
       Domain *sim_domain = new Domain(*geom_domain, species_p, time);
       domains.set(i, j, sim_domain);
-      // LOG_S(FATAL) << domains(1,1);
     };
 
 
@@ -188,6 +198,20 @@ void SMB::particles_runaway_collector ()
   // ! collects particles, that runaways from their __domains and moves it to
   // ! domain, corresponding to their actual position
   // ! also, erase particles, that run out of simulation domain
+
+  // ! General description of send/recv particles to/from +/-1 SMB:
+  // ! 1. form queues to send particles to +/-1 SMB (vectors of particle pointers)
+  // ! 2. clear particles from domains (unpoint from vectors)
+  // ! 3. send to +/-1 SMB
+  // ! 4. recv from +/-1 SMB
+  // ! 5. add new particles to local SMB's domains
+
+  // create vectors to place particles,
+  // scheduled to be sent to other SMBs
+
+  vector< vector<double> * > queue_particles_plus;
+  vector< vector<double> * > queue_particles_minus;
+
   int j_c = 0;
   int r_c = 0;
 
@@ -205,11 +229,12 @@ void SMB::particles_runaway_collector ()
 
           for (auto ps = sim_domain->species_p.begin(); ps != sim_domain->species_p.end(); ++ps)
           {
-            (**ps).particles.erase(
-              std::remove_if(
+            (**ps).particles.erase (
+              std::remove_if (
                 (**ps).particles.begin(), (**ps).particles.end(),
-                [ &j_c, &r_c, &ps, &__domains, &sim_domain, &i, &j,
-                  &__geometry ] ( vector <double> * & o )
+                [ &j_c, &r_c, &ps, &__domains, &sim_domain,
+                  &queue_particles_minus, &queue_particles_plus,
+                  &i, &j, &__geometry ] ( vector <double> * & o )
                 {
                   bool res = false;
 
@@ -234,10 +259,29 @@ void SMB::particles_runaway_collector ()
                     ++r_c;
                     res = true;
                   }
-
+                  ////
+                  //// check for conditions to send particle to previous/next SMB
+                  ////
+                  // send particle to previous SMB
+#ifdef ENABLE_MPI
+                  else if (z_cell < __geometry->cell_dims[1])
+                  {
+                    o->push_back((**ps).id);
+                    queue_particles_minus.push_back(o);
+                    res = true;
+                  }
+                  // send particle to next SMB
+                  else if (z_cell >= __geometry->cell_dims[3])
+                  {
+                    o->push_back((**ps).id);
+                    queue_particles_plus.push_back(o);
+                    res = true;
+                  }
+#endif // ENABLE_MPI
                   else if (r_cell >= __geometry->cell_dims[2])
                   {
-                    if ((**ps).id >= BEAM_ID_START)
+                    // ``beam_'' at the begining of the name
+                    if ((**ps).name.find("beam_") == 0)
                     {
                       LOG_S(MAX) << "Beam particle is out of simulation domain: ["
                                  << P_POS_R((*o)) << ", "
@@ -302,8 +346,232 @@ void SMB::particles_runaway_collector ()
           }
         }
     }
+
+#ifdef ENABLE_MPI
+  ////
+  //// send particles to other domain
+  ////
+
+  unsigned int prtls_plus = queue_particles_plus.size();
+  unsigned int prtls_minus = queue_particles_minus.size();
+
+  if (world_rank < world_size - 1)
+  {
+    MPI_Send (
+      /* data         = */ &prtls_plus,
+      /* count        = */ 1,
+      /* datatype     = */ MPI_UNSIGNED,
+      /* destination  = */ world_rank + 1,
+      /* tag          = */ 0,
+      /* communicator = */ MPI_COMM_WORLD);
+
+    LOG_S(MAX) << "Number of particles to be sent from MPI node ``"
+               << world_rank
+               << "'' to node ``" << world_rank + 1
+               << "'' is ``" << prtls_plus << "''";
+
+    if (prtls_plus > 0)
+      for (unsigned prtl = 0; prtl < prtls_plus; ++prtl)
+      {
+        double dbuf[P_VEC_SIZE+1];
+        for (unsigned int i = 0; i <= P_VEC_SIZE; ++i)
+          dbuf[i] = (*queue_particles_plus[prtl])[i];
+
+        MPI_Send (
+          /* data         = */ dbuf,
+          /* count        = */ P_VEC_SIZE+1,
+          /* datatype     = */ MPI_DOUBLE,
+          /* destination  = */ world_rank + 1,
+          /* tag          = */ 0,
+          /* communicator = */ MPI_COMM_WORLD);
+      }
+  }
+
+  if (world_rank > 0)
+  {
+    MPI_Send (
+      /* data         = */ &prtls_minus,
+      /* count        = */ 1,
+      /* datatype     = */ MPI_UNSIGNED,
+      /* destination  = */ world_rank - 1,
+      /* tag          = */ 0,
+      /* communicator = */ MPI_COMM_WORLD);
+
+    LOG_S(MAX) << "Number of particles to be sent from MPI node ``"
+               << world_rank
+               << "'' to node ``" << world_rank - 1
+               << "'' is ``" << prtls_minus << "''";
+
+    if (prtls_minus > 0)
+      for (unsigned prtl = 0; prtl < prtls_minus; ++prtl)
+      {
+        double dbuf[P_VEC_SIZE+1];
+        for (unsigned int i = 0; i <= P_VEC_SIZE; ++i)
+          dbuf[i] = (*queue_particles_minus[prtl])[i];
+
+        MPI_Send (
+          /* data         = */ dbuf,
+          /* count        = */ P_VEC_SIZE+1,
+          /* datatype     = */ MPI_DOUBLE,
+          /* destination  = */ world_rank - 1,
+          /* tag          = */ 0,
+          /* communicator = */ MPI_COMM_WORLD);
+      }
+  }
+
+  ////
+  //// receive particles from other MPI nodes
+  ////
+  if (world_rank > 0)
+  {
+    unsigned int howrcv; // how many particles to receive
+
+    MPI_Recv (
+      /* data         = */ &howrcv,
+      /* count        = */ 1,
+      /* datatype     = */ MPI_UNSIGNED,
+      /* source       = */ world_rank - 1,
+      /* tag          = */ 0,
+      /* communicator = */ MPI_COMM_WORLD,
+      /* status       = */ MPI_STATUS_IGNORE);
+
+    LOG_S(MAX) << "Number of particles to be received from MPI node ``"
+               << world_rank - 1
+               << "'' to node ``" << world_rank
+               << "'' is ``" << howrcv << "''";
+
+    if (howrcv > 0)
+      for (unsigned int i = 0; i < howrcv; ++i)
+      {
+        double dbuf[P_VEC_SIZE+1];
+
+        MPI_Recv (
+          /* data         = */ dbuf,
+          /* count        = */ P_VEC_SIZE+1,
+          /* datatype     = */ MPI_DOUBLE,
+          /* source       = */ world_rank-1,
+          /* tag          = */ 0,
+          /* communicator = */ MPI_COMM_WORLD,
+          /* status       = */ MPI_STATUS_IGNORE);
+
+        // create vector and copy buffer there
+        vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
+        for (unsigned int v=0; v < P_VEC_SIZE; ++v)
+          (*n)[v] = dbuf[v];
+
+        // get specie ID for particle
+        unsigned int prtl_id = (unsigned int)dbuf[P_VEC_SIZE];
+
+        // find proper domain for particle
+        int r_cell = P_CELL_R((*n));
+        int z_cell = P_CELL_Z((*n));
+
+        // FIXME: this is a hardcode
+        Domain *sim_domain = domains(0, 0);
+
+        unsigned int i_dst = (unsigned int)ceil (
+          ( r_cell - geometry->cell_dims[0] ) // we should make cell numbers local for SMB
+          / sim_domain->geometry.cell_amount[0] );
+
+        unsigned int j_dst = (unsigned int)ceil (
+          ( z_cell - geometry->cell_dims[1] ) // we should make cell numbers local for SMB
+          / sim_domain->geometry.cell_amount[1] );
+
+        Domain *dst_domain = domains(i_dst, j_dst);
+
+        // find proper specie for particle in domain
+        for (auto sp = dst_domain->species_p.begin(); sp != dst_domain->species_p.end(); ++sp)
+          if ((**sp).id == prtl_id)
+            (**sp).particles.push_back(n);
+      }
+  }
+
+  if (world_rank < world_size - 1)
+  {
+    unsigned int howrcv; // how many particles to receive
+
+    MPI_Recv(
+      /* data         = */ &howrcv,
+      /* count        = */ 1,
+      /* datatype     = */ MPI_UNSIGNED,
+      /* source       = */ world_rank + 1,
+      /* tag          = */ 0,
+      /* communicator = */ MPI_COMM_WORLD,
+      /* status       = */ MPI_STATUS_IGNORE);
+
+    LOG_S(MAX) << "Number of particles to be received from MPI node "
+               << world_rank + 1
+               << " is " << howrcv;
+
+    if (howrcv > 0)
+      for (unsigned int i = 0; i < howrcv; ++i)
+      {
+        double dbuf[P_VEC_SIZE+1];
+
+        MPI_Recv (
+          /* data         = */ dbuf,
+          /* count        = */ P_VEC_SIZE+1,
+          /* datatype     = */ MPI_DOUBLE,
+          /* source       = */ world_rank+1,
+          /* tag          = */ 0,
+          /* communicator = */ MPI_COMM_WORLD,
+          /* status       = */ MPI_STATUS_IGNORE);
+
+        // create vector and copy buffer there
+        vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
+        for (unsigned int v=0; v < P_VEC_SIZE; ++v)
+          (*n)[v] = dbuf[v];
+
+        // get specie ID for particle
+        unsigned int prtl_id = (unsigned int)dbuf[P_VEC_SIZE];
+
+        // find proper domain for particle
+        int r_cell = P_CELL_R((*n));
+        int z_cell = P_CELL_Z((*n));
+
+        // this is unshifted domain numbers (local for SMB)
+        Domain *sim_domain = domains(0, 0);
+
+        unsigned int i_dst = (unsigned int)ceil (
+          ( r_cell - geometry->cell_dims[0] ) // we should make cell numbers local for SMB
+          / sim_domain->geometry.cell_amount[0] );
+
+        unsigned int j_dst = (unsigned int)ceil (
+          ( z_cell - geometry->cell_dims[1] ) // we should make cell numbers local for SMB
+          / sim_domain->geometry.cell_amount[1] );
+
+        Domain *dst_domain = domains(i_dst, j_dst);
+
+        // find proper specie for particle in domain
+        for (auto sp = dst_domain->species_p.begin(); sp != dst_domain->species_p.end(); ++sp)
+          if ((**sp).id == prtl_id)
+            (**sp).particles.push_back(n);
+      }
+  }
+
+  // send/receive and update domain species, then continue
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  // clear temporary particle vectors after barrier
+  for (auto q = queue_particles_minus.begin(); q != queue_particles_minus.end(); ++q)
+    {
+      (**q).clear();
+      delete *q;
+    }
+  queue_particles_minus.clear();
+  for (auto q = queue_particles_plus.begin(); q != queue_particles_plus.end(); ++q)
+    {
+      (**q).clear();
+      delete *q;
+    }
+  queue_particles_plus.clear();
+#endif // ENABLE_MPI
+  ////
+  ////
+  ////
+
   if (j_c > 0)
-    LOG_S(MAX) << "Amount of particles to jump between domains: " << j_c;
+    LOG_S(MAX) << "Amount of particles to jump between OMP domains: " << j_c;
   if (r_c > 0)
     LOG_S(MAX) << "Amount of particles to remove: " << r_c;
 }
@@ -339,6 +607,10 @@ void SMB::current_overlay ()
           // }
         }
     }
+
+#ifdef ENABLE_MPI
+  MPI_Barrier(MPI_COMM_WORLD);
+#endif // ENABLE_MPI
 }
 
 void SMB::field_h_overlay ()
@@ -381,6 +653,10 @@ void SMB::field_h_overlay ()
           // }
         }
     }
+
+#ifdef ENABLE_MPI
+  MPI_Barrier(MPI_COMM_WORLD);
+#endif // ENABLE_MPI
 }
 
 void SMB::field_e_overlay ()
@@ -418,6 +694,10 @@ void SMB::field_e_overlay ()
           // }
         }
     }
+
+#ifdef ENABLE_MPI
+  MPI_Barrier(MPI_COMM_WORLD);
+#endif // ENABLE_MPI
 }
 
 

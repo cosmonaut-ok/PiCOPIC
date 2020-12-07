@@ -62,6 +62,16 @@ SpecieP::SpecieP (unsigned int p_id,
 
   density_map = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
   temperature_map = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+
+  // initialize service variables for temperature calculation
+  p_abs = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  p_r = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  p_phi = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  p_z = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+
+#ifdef SWITCH_TEMP_CALC_COUNTING
+  count = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+#endif // SWITCH_TEMP_CALC_COUNTING
 }
 
 SpecieP::~SpecieP()
@@ -678,12 +688,6 @@ void SpecieP::calc_density()
 
 void SpecieP::calc_temperature()
 {
-  // initialize service variables
-  Grid<double> p_abs (geometry->cell_amount[0], geometry->cell_amount[1], 2);
-  Grid<double> p_r (geometry->cell_amount[0], geometry->cell_amount[1], 2);
-  Grid<double> p_phi (geometry->cell_amount[0], geometry->cell_amount[1], 2);
-  Grid<double> p_z (geometry->cell_amount[0], geometry->cell_amount[1], 2);
-
   // clear grid values
   temperature_map = 0;
   temperature_map.overlay_set(0);
@@ -699,7 +703,6 @@ void SpecieP::calc_temperature()
   p_z.overlay_set(0);
 
 #ifdef SWITCH_TEMP_CALC_COUNTING
-  Grid<double> count (geometry->cell_amount[0], geometry->cell_amount[1], 2);
   count = 0;
   count.overlay_set(0);
 

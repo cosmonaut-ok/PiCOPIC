@@ -59,6 +59,7 @@ namespace algo::common
   void splitstr (std::string const &str, const char delim,
                  std::vector<std::string> &out);
   unsigned int nearest_divide (unsigned int number, double what);
+  unsigned int hash_from_string(const std::string& str, unsigned int salt);
 
   // template is workaround, because c++ does not see Grid class template
   // from inside of custom namespace (for unknown reason)

@@ -21,12 +21,12 @@
 OutController::OutController ( HighFive::File* _file,
                                Geometry *_geometry, TimeSim *_time,
                                vector<probe> &_probes, SMB *_smb,
-                               std::string _metadata)
+                               std::string _metadata, bool _print_progress_table)
   : geometry(_geometry), time(_time), smb(_smb)
 #else
 OutController::OutController ( Geometry *_geometry, TimeSim *_time,
                                vector<probe> &_probes, SMB *_smb,
-                               std::string _metadata)
+                               std::string _metadata, bool _print_progress_table)
   : geometry(_geometry), time(_time), smb(_smb)
 #endif
 {
@@ -36,6 +36,8 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
   OutEngineHDF5 engine (hdf5_file, _probes[0].path, {0,0}, {0,0}, true, false);
 #endif // end of ENABLE_HDF5
   engine.write_metadata( _metadata );
+
+  print_progress_table = _print_progress_table;
 
   // initialize probes
   probes = _probes;
@@ -230,7 +232,8 @@ void OutController::init_datasets()
     if (is_run == 0)
     {
       //// print header every 30 values
-      msg::print_header (30, time);
+      if (print_progress_table)
+	msg::print_header (30, time);
 
       string shape_name;
       size_t slices = (size_t)(ceil(current_time_step / prb->schedule));
@@ -327,8 +330,8 @@ void OutController::init_datasets()
           //   sim_domain->current->current.overlay_xy(dst_domain->current->current);
           // }
         }
-
-      msg::print_values (prb->path, shape_name, prb->schedule, time);
+      if (print_progress_table)
+	msg::print_values (prb->path, shape_name, prb->schedule, time);
     }
   }
 }
