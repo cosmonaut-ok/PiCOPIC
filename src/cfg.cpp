@@ -17,7 +17,8 @@
 
 #include "cfg.hpp"
 
-#define MIN_DOMAIN_GRID_AMOUNT 64
+using namespace std;
+using namespace picojson;
 
 Cfg::Cfg(const std::string json_file_name)
 {
@@ -176,7 +177,12 @@ void Cfg::init_particles()
 
     object& o = i->get<object>();
 
-    p_s.name = (char*)o["name"].get<string>().c_str();
+    string specie_name = o["name"].get<string>();
+
+    unsigned int current_specie_id = algo::common::hash_from_string(specie_name, SPECIE_HASH_SALT);
+
+    p_s.id = current_specie_id;
+    p_s.name = specie_name;
     p_s.mass = (int)o["mass"].get<double>();
     p_s.charge = (int)o["charge"].get<double>();
     // p_s.left_density = o["density"].get<object>()["left"].get<double>();
@@ -186,6 +192,8 @@ void Cfg::init_particles()
     p_s.temperature = o["temperature"].get<double>();
 
     particle_species.push_back(p_s);
+
+    ++current_specie_id;
   }
 }
 
@@ -326,7 +334,13 @@ void Cfg::init_beam()
       object& o = i->get<object>();
       object& b_o = o["bunch"].get<object>();
 
-      p_b.name = (char*)o["name"].get<string>().c_str();
+      string beam_name = "beam_" + o["name"].get<string>();
+
+      // ! calculate current beam ID from its name:
+      unsigned int current_beam_id = algo::common::hash_from_string(beam_name, BEAM_HASH_SALT);
+
+      p_b.id = current_beam_id;
+      p_b.name = beam_name;
       p_b.mass = (int)o["mass"].get<double>();
       p_b.charge = (int)o["charge"].get<double>();
       p_b.start_time = o["start_time"].get<double>();
@@ -341,6 +355,8 @@ void Cfg::init_beam()
       p_b.current_bunch_number = 0;
 
       particle_beams.push_back(p_b);
+
+      // ++current_beam_id;
     }
   else
     LOG_S(INFO) << "There is no particle beams to inject";
@@ -534,20 +550,20 @@ bool Cfg::method_limitations_check ()
   {
     full_macro_amount += (*i).macro_amount; // calculate total number of macroparticles
 
-    if (strcmp((*i).name, "Electrons") == 0
-        || strcmp((*i).name, "electrons") == 0
-        || strcmp((*i).name, "Electron") == 0
-        || strcmp((*i).name, "electron") == 0
-        || (*i).mass == 1)
+    if (i->name.compare("Electrons") == 0
+        || i->name.compare("electrons") == 0
+        || i->name.compare("Electron") == 0
+        || i->name.compare("electron") == 0
+        || i->mass == 1)
     {
       electron_density = ((*i).left_density + (*i).right_density) / 2;
       electron_temperature = (*i).temperature;
     }
 
-    if (strcmp((*i).name, "Ions") == 0
-        || strcmp((*i).name, "ions") == 0
-        || strcmp((*i).name, "Ion") == 0
-        || strcmp((*i).name, "ion") == 0)
+    if (i->name.compare("Ions") == 0
+        || i->name.compare("ions") == 0
+        || i->name.compare("Ion") == 0
+        || i->name.compare("ion") == 0)
     {
       ion_density = ((*i).left_density + (*i).right_density) / 2;
       ion_temperature = (*i).temperature;

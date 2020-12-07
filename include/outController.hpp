@@ -51,10 +51,12 @@ public:
   OutController() {};
 #ifdef ENABLE_HDF5
   OutController(HighFive::File *_file, Geometry *_geometry, TimeSim *_time,
-                vector<probe> &_probes, SMB *_smb, std::string _metadata);
+                vector<probe> &_probes, SMB *_smb, std::string _metadata,
+		bool _print_progress_table);
 #else
   OutController(Geometry *_geometry, TimeSim *_time,
-                vector<probe> &_probes, SMB *_smb, std::string _metadata);
+                vector<probe> &_probes, SMB *_smb, std::string _metadata,
+		bool _print_progress_table);
 #endif
   ~OutController() {};
 
@@ -62,6 +64,7 @@ public:
 
 private:
   void init_datasets();
+  bool print_progress_table;
 };
 
 #endif // end of _OUT_CONTROLLER_HPP_

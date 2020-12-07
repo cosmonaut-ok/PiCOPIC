@@ -22,7 +22,12 @@
 #include <omp.h>
 // #else
 // #define omp_get_thread_num() 0
-#endif
+#endif // _OPENMP
+
+#ifdef ENABLE_MPI
+#include <mpi.h>
+// using namespace MPI;
+#endif // ENABLE_MPI
 
 #include "defines.hpp"
 #include "constant.hpp"
@@ -32,8 +37,6 @@
 
 #include "cfg.hpp"
 #include "timeSim.hpp"
-
-using namespace std;
 
 #define BEAM_ID_START 1000
 
@@ -48,10 +51,13 @@ private:
   Geometry *geometry;
   Cfg *cfg;
   TimeSim *time;
+  int world_rank;
+  int world_size;
 
 public:
   SMB ( void ) {};
-  SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time );
+  SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time,
+        int _world_rank, int _world_size);
 
   ~SMB( void ) {};
 

@@ -179,7 +179,7 @@ int main(int argc, char **argv)
   Geometry* geometry_global = cfg.geometry;
 
   TimeSim* sim_time_clock = cfg.time;
-
+  bool print_progress_table = true;
 #ifdef ENABLE_MPI
   try
   {
@@ -197,13 +197,19 @@ int main(int argc, char **argv)
     // size of each task
     const size_t SZ = 1024 * 1024;
 
+    if (ID != 0)
+      print_progress_table = false;
+
     Geometry* geometry_smb = geometry_global;
 
     // update macro amount per task
     cfg.macro_amount /= NPROCS;
+    for (auto k = cfg.particle_species.begin(); k != cfg.particle_species.end(); ++k)
+      k->macro_amount /= NPROCS;
 
     // update cell dimensions
     size_t smb_cell_amount = geometry_global->cell_amount[1] / NPROCS;
+    double smb_z_size = geometry_global->size[1] / NPROCS;
 
     size_t smb_cell_begin = smb_cell_amount * ID;
     size_t smb_cell_end = smb_cell_amount * ( ID + 1 );
@@ -211,15 +217,20 @@ int main(int argc, char **argv)
     geometry_smb->cell_amount[1] = smb_cell_amount;
     geometry_smb->cell_dims[1] = smb_cell_begin;
     geometry_smb->cell_dims[3] = smb_cell_end;
+    geometry_smb->size[1] = smb_z_size;
+
+    // remove walls for SMBs at requirement
+    if (ID < NPROCS - 1)
+      geometry_smb->walls[3] = false;
+    if (ID > 0)
+      geometry_smb->walls[1] = false;
 
     // define a shared memory block
-    SMB shared_mem_blk ( &cfg, geometry_smb, sim_time_clock);
+    SMB shared_mem_blk ( &cfg, geometry_smb, sim_time_clock, ID, NPROCS);
 #else
     // define a shared memory block
-    SMB shared_mem_blk ( &cfg, geometry_global, sim_time_clock);
+    SMB shared_mem_blk ( &cfg, geometry_global, sim_time_clock, 0, 1);
 #endif // ENABLE_MPI
-
-    Grid<Domain *> domains = shared_mem_blk.domains;
 
     LOG_S(MAX) << "Initializing Data Paths";
 
@@ -260,12 +271,14 @@ int main(int argc, char **argv)
 
 #ifdef ENABLE_HDF5
     OutController out_controller ( file, geometry_global, sim_time_clock,
-                                   cfg.probes, &shared_mem_blk, cfg.cfg2str() );
+                                   cfg.probes, &shared_mem_blk, cfg.cfg2str(),
+                                   print_progress_table );
 
     out_controller.hdf5_file = file;
 #else
     OutController out_controller ( geometry_global, sim_time_clock,
-                                   cfg.probes, &shared_mem_blk, cfg.cfg2str() );
+                                   cfg.probes, &shared_mem_blk, cfg.cfg2str(),
+                                   print_progress_table );
 #endif
 
     LOG_S(INFO) << "Preparation to calculation";
@@ -376,8 +389,8 @@ int main(int argc, char **argv)
 #ifdef ENABLE_HDF5
     delete file;
 #endif
-
-    msg::print_final();
+    if (print_progress_table)
+      msg::print_final();
 
 #ifdef ENABLE_MPI
     Finalize();

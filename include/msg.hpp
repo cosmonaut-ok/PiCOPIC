@@ -61,5 +61,5 @@ namespace msg
   void print_values ( std::string probe_name, std::string shape_name,
                       unsigned int probe_schedule, TimeSim *time );
   void print_final ();
-};
+}
 #endif // end of _MSG_HPP_
