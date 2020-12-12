@@ -2,7 +2,6 @@
 
 set -e
 
-# HOSTS=${1}
 PROCS=${1}
 
 if test -z ${PROCS}; then
@@ -17,7 +16,9 @@ echo "localhost slots=${PROCS}" > ${TMPFILE}
 
 rm -f ./data.h5
 make
-export OMP_NUM_THREADS=$(( ($PROCESSORS + 1) / $PROCS))
-mpirun -display-map -x OMP_NUM_THREADS=8 --hostfile ${TMPFILE} -n $PROCS -H localhost --mca btl_tcp_if_exclude docker0 ./PiCoPiC ## xterm -e gdb ./PiCoPiC
+# export OMP_NUM_THREADS=1 # $(( ($PROCESSORS + 1) / $PROCS))
+# mpirun -display-map -x OMP_NUM_THREADS=$(( ($PROCESSORS + 1) / $PROCS)) --hostfile ${TMPFILE} -n $PROCS -H localhost --mca btl_tcp_if_exclude docker0 ./PiCoPiC ## xterm -e gdb ./PiCoPiC
+mpirun -display-map --hostfile ${TMPFILE} -n $PROCS -H localhost --mca btl_tcp_if_exclude docker0 ./PiCoPiC ## xterm -e gdb ./PiCoPiC
+# mpirun -display-map -x OMP_NUM_THREADS=8 --hostfile ${TMPFILE} -n $PROCS -H localhost --mca btl_tcp_if_exclude docker0 xterm -e gdb ./PiCoPiC
 # mpirun -display-map -x OMP_NUM_THREADS=8 --hostfile ${TMPFILE} -n $PROCS -H localhost --mca btl_tcp_if_exclude docker0 valgrind --tool=massif --depth=10 ./PiCoPiC
 rm -f ${TMPFILE}

@@ -329,12 +329,12 @@ void SMB::particles_runaway_collector ()
                     for (auto pd = dst_domain->species_p.begin(); pd != dst_domain->species_p.end(); ++pd)
                       if ((**pd).id == (**ps).id)
                       {
-                        LOG_S(MAX) << "Particle with specie "
-                                   << (**ps).id
-                                   << " jump from domain "
+                        LOG_S(MAX) << "Particle with specie ``"
+                                   << (**ps).name
+                                   << "'' jumps from domain ``"
                                    << i << "," << j
-                                   << " to domain "
-                                   << i_dst << "," << j_dst;
+                                   << "'' to domain ``"
+                                   << i_dst << "," << j_dst << "''";
                         (**pd).particles.push_back(o);
                       }
 
@@ -347,7 +347,15 @@ void SMB::particles_runaway_collector ()
         }
     }
 
+  if (j_c > 0)
+    LOG_S(MAX) << "Amount of particles to jump between OMP domains: " << j_c;
+  if (r_c > 0)
+    LOG_S(MAX) << "Amount of particles to remove: " << r_c;
+
 #ifdef ENABLE_MPI
+
+  MPI_Barrier(MPI_COMM_WORLD); // FIXME: most likely it is not needed
+
   ////
   //// send particles to other domain
   ////
@@ -569,11 +577,6 @@ void SMB::particles_runaway_collector ()
   ////
   ////
   ////
-
-  if (j_c > 0)
-    LOG_S(MAX) << "Amount of particles to jump between OMP domains: " << j_c;
-  if (r_c > 0)
-    LOG_S(MAX) << "Amount of particles to remove: " << r_c;
 }
 
 void SMB::current_overlay ()
@@ -609,7 +612,180 @@ void SMB::current_overlay ()
     }
 
 #ifdef ENABLE_MPI
+  ////
+  //// send particles to other domain
+  ////
+  vector<MPICommOverlay> domains_plus;
+  vector<MPICommOverlay> domains_minus;
+
+  vector<MPICommOverlay> domains_plus_recv;
+  vector<MPICommOverlay> domains_minus_recv;
+
+  for (unsigned int i = 0; i < r_domains; ++i)
+  {
+    // send to +1 rank
+    Domain *sim_domain_plus = domains(i, z_domains - 1);
+
+    int domain_r_size = sim_domain_plus->current->current[0].x_size;
+    int domain_r_real_size = sim_domain_plus->current->current[0].x_real_size;
+    int domain_o_s = sim_domain_plus->current->current[0].o_s;
+    int domain_z_real_size = sim_domain_plus->current->current[0].y_real_size;
+
+    MPICommOverlay item_plus (domain_r_real_size, i, 0);
+    MPICommOverlay item_plus_recv (domain_r_real_size, i, 0);
+
+    for (int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+      int d_r_s = domain_z_real_size - domain_o_s * 2;
+
+      item_plus.col_0_0[j_s] = sim_domain_plus->current->current[0](j, d_r_s  - 4);
+      item_plus.col_0_1[j_s] = sim_domain_plus->current->current[1](j, d_r_s  - 4);
+      item_plus.col_0_2[j_s] = sim_domain_plus->current->current[2](j, d_r_s  - 4);
+
+      item_plus.col_1_0[j_s] = sim_domain_plus->current->current[0](j, d_r_s  - 3);
+      item_plus.col_1_1[j_s] = sim_domain_plus->current->current[1](j, d_r_s  - 3);
+      item_plus.col_1_2[j_s] = sim_domain_plus->current->current[2](j, d_r_s  - 3);
+
+      item_plus.col_2_0[j_s] = sim_domain_plus->current->current[0](j, d_r_s - 2);
+      item_plus.col_2_1[j_s] = sim_domain_plus->current->current[1](j, d_r_s - 2);
+      item_plus.col_2_2[j_s] = sim_domain_plus->current->current[2](j, d_r_s - 2);
+
+      item_plus.col_3_0[j_s] = sim_domain_plus->current->current[0](j, d_r_s - 1);
+      item_plus.col_3_1[j_s] = sim_domain_plus->current->current[1](j, d_r_s - 1);
+      item_plus.col_3_2[j_s] = sim_domain_plus->current->current[2](j, d_r_s - 1);
+
+    }
+
+    domains_plus.push_back( item_plus );
+    domains_plus_recv.push_back( item_plus_recv );
+
+    // send to -1 rank
+    Domain *sim_domain_minus = domains(i, 0);
+
+    domain_r_size = sim_domain_minus->current->current[0].x_size;
+    domain_o_s = sim_domain_minus->current->current[0].o_s;
+
+    MPICommOverlay item_minus (domain_r_size + 2 * domain_o_s, i, 0);
+    MPICommOverlay item_minus_recv (domain_r_size + 2 * domain_o_s, i, 0);
+
+    for (int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+
+      item_minus.col_0_0[j_s] = sim_domain_minus->current->current[0](j, 0 - domain_o_s);
+      item_minus.col_0_1[j_s] = sim_domain_minus->current->current[1](j, 0 - domain_o_s);
+      item_minus.col_0_2[j_s] = sim_domain_minus->current->current[2](j, 0 - domain_o_s);
+
+      item_minus.col_1_0[j_s] = sim_domain_minus->current->current[0](j, 1 - domain_o_s);
+      item_minus.col_1_1[j_s] = sim_domain_minus->current->current[1](j, 1 - domain_o_s);
+      item_minus.col_1_2[j_s] = sim_domain_minus->current->current[2](j, 1 - domain_o_s);
+
+      item_minus.col_2_0[j_s] = sim_domain_minus->current->current[0](j, 2 - domain_o_s);
+      item_minus.col_2_1[j_s] = sim_domain_minus->current->current[1](j, 2 - domain_o_s);
+      item_minus.col_2_2[j_s] = sim_domain_minus->current->current[2](j, 2 - domain_o_s);
+
+      item_minus.col_3_0[j_s] = sim_domain_minus->current->current[0](j, 3 - domain_o_s);
+      item_minus.col_3_1[j_s] = sim_domain_minus->current->current[1](j, 3 - domain_o_s);
+      item_minus.col_3_2[j_s] = sim_domain_minus->current->current[2](j, 3 - domain_o_s);
+    }
+
+    domains_minus.push_back( item_minus );
+    domains_minus_recv.push_back( item_minus_recv );
+  }
+
+  if (world_rank < world_size - 1)
+    for (auto i = domains_plus.begin(); i != domains_plus.end(); ++i)
+    {
+      // LOG_S(WARNING) << "1 Sending from " << world_rank << " to " << world_rank + 1;
+      MPI_Send(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank + 1, 0, MPI_COMM_WORLD);
+    }
+
+  if (world_rank > 0)
+     for (auto i = domains_minus_recv.begin(); i != domains_minus_recv.end(); ++i)
+     {
+       // LOG_S(WARNING) << "2 Receiving from " << world_rank - 1 << " at " << world_rank;
+       MPI_Recv(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank - 1, 0, MPI_COMM_WORLD, NULL);
+     }
+
+  if (world_rank > 0)
+    for (auto i = domains_minus.begin(); i != domains_minus.end(); ++i)
+    {
+      // LOG_S(WARNING) << "3 Sending from " << world_rank << " to " << world_rank - 1;
+      MPI_Send(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank - 1, 0, MPI_COMM_WORLD);
+    }
+
+  if (world_rank < world_size - 1)
+    for (auto i = domains_plus_recv.begin(); i != domains_plus_recv.end(); ++i)
+    {
+      // LOG_S(WARNING) << "4 Receiving from " << world_rank + 1 << " at " << world_rank;
+      MPI_Recv(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank + 1, 0, MPI_COMM_WORLD, NULL);
+    }
+
   MPI_Barrier(MPI_COMM_WORLD);
+
+  ////////////////////////////////////////////////////////////
+
+  for (auto i = domains_minus_recv.begin(); i != domains_minus_recv.end(); ++i)
+  {
+    Domain *dst_domain_minus = domains(i->dst_domain[0], 0);
+
+    int domain_r_size = dst_domain_minus->current->current[0].x_size;
+    int domain_o_s = dst_domain_minus->current->current[0].o_s;
+    int domain_z_size = dst_domain_minus->current->current[0].y_size;
+
+    for (int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+
+      dst_domain_minus->current->current[0].inc(j, 0 - domain_o_s, i->col_0_0[j_s]);
+      dst_domain_minus->current->current[1].inc(j, 0 - domain_o_s, i->col_0_1[j_s]);
+      dst_domain_minus->current->current[2].inc(j, 0 - domain_o_s, i->col_0_2[j_s]);
+
+      dst_domain_minus->current->current[0].inc(j, 1 - domain_o_s, i->col_1_0[j_s]);
+      dst_domain_minus->current->current[1].inc(j, 1 - domain_o_s, i->col_1_1[j_s]);
+      dst_domain_minus->current->current[2].inc(j, 1 - domain_o_s, i->col_1_2[j_s]);
+
+      dst_domain_minus->current->current[0].inc(j, 2 - domain_o_s, i->col_2_0[j_s]);
+      dst_domain_minus->current->current[1].inc(j, 2 - domain_o_s, i->col_2_1[j_s]);
+      dst_domain_minus->current->current[2].inc(j, 2 - domain_o_s, i->col_2_2[j_s]);
+
+      dst_domain_minus->current->current[0].inc(j, 3 - domain_o_s, i->col_3_0[j_s]);
+      dst_domain_minus->current->current[1].inc(j, 3 - domain_o_s, i->col_3_1[j_s]);
+      dst_domain_minus->current->current[2].inc(j, 3 - domain_o_s, i->col_3_2[j_s]);
+    }
+  }
+
+  for (auto i = domains_plus_recv.begin(); i != domains_plus_recv.end(); ++i)
+  {
+    Domain *dst_domain_plus = domains(i->dst_domain[0], z_domains - 1);
+
+    int domain_r_size = dst_domain_plus->current->current[0].x_size;
+    int domain_o_s = dst_domain_plus->current->current[0].o_s;
+    int domain_z_real_size = dst_domain_plus->current->current[0].y_real_size;
+
+    for (unsigned int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+      int d_r_s = domain_z_real_size - domain_o_s * 2;
+
+      dst_domain_plus->current->current[0].inc(j, d_r_s - 1, i->col_3_0[j_s]);
+      dst_domain_plus->current->current[1].inc(j, d_r_s - 1, i->col_3_1[j_s]);
+      dst_domain_plus->current->current[2].inc(j, d_r_s - 1, i->col_3_2[j_s]);
+
+      dst_domain_plus->current->current[0].inc(j, d_r_s - 2, i->col_2_0[j_s]);
+      dst_domain_plus->current->current[1].inc(j, d_r_s - 2, i->col_2_1[j_s]);
+      dst_domain_plus->current->current[2].inc(j, d_r_s - 2, i->col_2_2[j_s]);
+
+      dst_domain_plus->current->current[0].inc(j, d_r_s - 3, i->col_1_0[j_s]);
+      dst_domain_plus->current->current[1].inc(j, d_r_s - 3, i->col_1_1[j_s]);
+      dst_domain_plus->current->current[2].inc(j, d_r_s - 3, i->col_1_2[j_s]);
+
+      dst_domain_plus->current->current[0].inc(j, d_r_s - 4, i->col_0_0[j_s]);
+      dst_domain_plus->current->current[1].inc(j, d_r_s - 4, i->col_0_1[j_s]);
+      dst_domain_plus->current->current[2].inc(j, d_r_s - 4, i->col_0_2[j_s]);
+    }
+  }
 #endif // ENABLE_MPI
 }
 
@@ -655,7 +831,180 @@ void SMB::field_h_overlay ()
     }
 
 #ifdef ENABLE_MPI
+  ////
+  //// send particles to other domain
+  ////
+  vector<MPICommOverlay> domains_plus;
+  vector<MPICommOverlay> domains_minus;
+
+  vector<MPICommOverlay> domains_plus_recv;
+  vector<MPICommOverlay> domains_minus_recv;
+
+  for (unsigned int i = 0; i < r_domains; ++i)
+  {
+    // send to +1 rank
+    Domain *sim_domain_plus = domains(i, z_domains - 1);
+
+    int domain_r_size = sim_domain_plus->maxwell_solver->field_h_at_et[0].x_size;
+    int domain_r_real_size = sim_domain_plus->maxwell_solver->field_h_at_et[0].x_real_size;
+    int domain_o_s = sim_domain_plus->maxwell_solver->field_h_at_et[0].o_s;
+    int domain_z_real_size = sim_domain_plus->maxwell_solver->field_h_at_et[0].y_real_size;
+
+    MPICommOverlay item_plus (domain_r_real_size, i, 0);
+    MPICommOverlay item_plus_recv (domain_r_real_size, i, 0);
+
+    for (int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+      int d_r_s = domain_z_real_size - domain_o_s * 2;
+
+      item_plus.col_0_0[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[0](j, d_r_s  - 4);
+      item_plus.col_0_1[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[1](j, d_r_s  - 4);
+      item_plus.col_0_2[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[2](j, d_r_s  - 4);
+
+      item_plus.col_1_0[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[0](j, d_r_s  - 3);
+      item_plus.col_1_1[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[1](j, d_r_s  - 3);
+      item_plus.col_1_2[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[2](j, d_r_s  - 3);
+
+      item_plus.col_2_0[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[0](j, d_r_s - 2);
+      item_plus.col_2_1[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[1](j, d_r_s - 2);
+      item_plus.col_2_2[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[2](j, d_r_s - 2);
+
+      item_plus.col_3_0[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[0](j, d_r_s - 1);
+      item_plus.col_3_1[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[1](j, d_r_s - 1);
+      item_plus.col_3_2[j_s] = sim_domain_plus->maxwell_solver->field_h_at_et[2](j, d_r_s - 1);
+
+    }
+
+    domains_plus.push_back( item_plus );
+    domains_plus_recv.push_back( item_plus_recv );
+
+    // send to -1 rank
+    Domain *sim_domain_minus = domains(i, 0);
+
+    domain_r_size = sim_domain_minus->maxwell_solver->field_h_at_et[0].x_size;
+    domain_o_s = sim_domain_minus->maxwell_solver->field_h_at_et[0].o_s;
+
+    MPICommOverlay item_minus (domain_r_size + 2 * domain_o_s, i, 0);
+    MPICommOverlay item_minus_recv (domain_r_size + 2 * domain_o_s, i, 0);
+
+    for (int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+
+      item_minus.col_0_0[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[0](j, 0 - domain_o_s);
+      item_minus.col_0_1[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[1](j, 0 - domain_o_s);
+      item_minus.col_0_2[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[2](j, 0 - domain_o_s);
+
+      item_minus.col_1_0[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[0](j, 1 - domain_o_s);
+      item_minus.col_1_1[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[1](j, 1 - domain_o_s);
+      item_minus.col_1_2[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[2](j, 1 - domain_o_s);
+
+      item_minus.col_2_0[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[0](j, 2 - domain_o_s);
+      item_minus.col_2_1[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[1](j, 2 - domain_o_s);
+      item_minus.col_2_2[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[2](j, 2 - domain_o_s);
+
+      item_minus.col_3_0[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[0](j, 3 - domain_o_s);
+      item_minus.col_3_1[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[1](j, 3 - domain_o_s);
+      item_minus.col_3_2[j_s] = sim_domain_minus->maxwell_solver->field_h_at_et[2](j, 3 - domain_o_s);
+    }
+
+    domains_minus.push_back( item_minus );
+    domains_minus_recv.push_back( item_minus_recv );
+  }
+
+  if (world_rank < world_size - 1)
+    for (auto i = domains_plus.begin(); i != domains_plus.end(); ++i)
+    {
+      // LOG_S(WARNING) << "1 Sending from " << world_rank << " to " << world_rank + 1;
+      MPI_Send(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank + 1, 0, MPI_COMM_WORLD);
+    }
+
+  if (world_rank > 0)
+     for (auto i = domains_minus_recv.begin(); i != domains_minus_recv.end(); ++i)
+     {
+       // LOG_S(WARNING) << "2 Receiving from " << world_rank - 1 << " at " << world_rank;
+       MPI_Recv(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank - 1, 0, MPI_COMM_WORLD, NULL);
+     }
+
+  if (world_rank > 0)
+    for (auto i = domains_minus.begin(); i != domains_minus.end(); ++i)
+    {
+      // LOG_S(WARNING) << "3 Sending from " << world_rank << " to " << world_rank - 1;
+      MPI_Send(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank - 1, 0, MPI_COMM_WORLD);
+    }
+
+  if (world_rank < world_size - 1)
+    for (auto i = domains_plus_recv.begin(); i != domains_plus_recv.end(); ++i)
+    {
+      // LOG_S(WARNING) << "4 Receiving from " << world_rank + 1 << " at " << world_rank;
+      MPI_Recv(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank + 1, 0, MPI_COMM_WORLD, NULL);
+    }
+
   MPI_Barrier(MPI_COMM_WORLD);
+
+  ////////////////////////////////////////////////////////////
+
+  for (auto i = domains_minus_recv.begin(); i != domains_minus_recv.end(); ++i)
+  {
+    Domain *dst_domain_minus = domains(i->dst_domain[0], 0);
+
+    int domain_r_size = dst_domain_minus->maxwell_solver->field_h_at_et[0].x_size;
+    int domain_o_s = dst_domain_minus->maxwell_solver->field_h_at_et[0].o_s;
+    int domain_z_size = dst_domain_minus->maxwell_solver->field_h_at_et[0].y_size;
+
+    for (int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+
+      dst_domain_minus->maxwell_solver->field_h_at_et[0].inc(j, 0 - domain_o_s, i->col_0_0[j_s]);
+      dst_domain_minus->maxwell_solver->field_h_at_et[1].inc(j, 0 - domain_o_s, i->col_0_1[j_s]);
+      dst_domain_minus->maxwell_solver->field_h_at_et[2].inc(j, 0 - domain_o_s, i->col_0_2[j_s]);
+
+      dst_domain_minus->maxwell_solver->field_h_at_et[0].inc(j, 1 - domain_o_s, i->col_1_0[j_s]);
+      dst_domain_minus->maxwell_solver->field_h_at_et[1].inc(j, 1 - domain_o_s, i->col_1_1[j_s]);
+      dst_domain_minus->maxwell_solver->field_h_at_et[2].inc(j, 1 - domain_o_s, i->col_1_2[j_s]);
+
+      dst_domain_minus->maxwell_solver->field_h_at_et[0].inc(j, 2 - domain_o_s, i->col_2_0[j_s]);
+      dst_domain_minus->maxwell_solver->field_h_at_et[1].inc(j, 2 - domain_o_s, i->col_2_1[j_s]);
+      dst_domain_minus->maxwell_solver->field_h_at_et[2].inc(j, 2 - domain_o_s, i->col_2_2[j_s]);
+
+      dst_domain_minus->maxwell_solver->field_h_at_et[0].inc(j, 3 - domain_o_s, i->col_3_0[j_s]);
+      dst_domain_minus->maxwell_solver->field_h_at_et[1].inc(j, 3 - domain_o_s, i->col_3_1[j_s]);
+      dst_domain_minus->maxwell_solver->field_h_at_et[2].inc(j, 3 - domain_o_s, i->col_3_2[j_s]);
+    }
+  }
+
+  for (auto i = domains_plus_recv.begin(); i != domains_plus_recv.end(); ++i)
+  {
+    Domain *dst_domain_plus = domains(i->dst_domain[0], z_domains - 1);
+
+    int domain_r_size = dst_domain_plus->maxwell_solver->field_h_at_et[0].x_size;
+    int domain_o_s = dst_domain_plus->maxwell_solver->field_h_at_et[0].o_s;
+    int domain_z_real_size = dst_domain_plus->maxwell_solver->field_h_at_et[0].y_real_size;
+
+    for (unsigned int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+      int d_r_s = domain_z_real_size - domain_o_s * 2;
+
+      dst_domain_plus->maxwell_solver->field_h_at_et[0].inc(j, d_r_s - 1, i->col_3_0[j_s]);
+      dst_domain_plus->maxwell_solver->field_h_at_et[1].inc(j, d_r_s - 1, i->col_3_1[j_s]);
+      dst_domain_plus->maxwell_solver->field_h_at_et[2].inc(j, d_r_s - 1, i->col_3_2[j_s]);
+
+      dst_domain_plus->maxwell_solver->field_h_at_et[0].inc(j, d_r_s - 2, i->col_2_0[j_s]);
+      dst_domain_plus->maxwell_solver->field_h_at_et[1].inc(j, d_r_s - 2, i->col_2_1[j_s]);
+      dst_domain_plus->maxwell_solver->field_h_at_et[2].inc(j, d_r_s - 2, i->col_2_2[j_s]);
+
+      dst_domain_plus->maxwell_solver->field_h_at_et[0].inc(j, d_r_s - 3, i->col_1_0[j_s]);
+      dst_domain_plus->maxwell_solver->field_h_at_et[1].inc(j, d_r_s - 3, i->col_1_1[j_s]);
+      dst_domain_plus->maxwell_solver->field_h_at_et[2].inc(j, d_r_s - 3, i->col_1_2[j_s]);
+
+      dst_domain_plus->maxwell_solver->field_h_at_et[0].inc(j, d_r_s - 4, i->col_0_0[j_s]);
+      dst_domain_plus->maxwell_solver->field_h_at_et[1].inc(j, d_r_s - 4, i->col_0_1[j_s]);
+      dst_domain_plus->maxwell_solver->field_h_at_et[2].inc(j, d_r_s - 4, i->col_0_2[j_s]);
+    }
+  }
 #endif // ENABLE_MPI
 }
 
@@ -696,7 +1045,180 @@ void SMB::field_e_overlay ()
     }
 
 #ifdef ENABLE_MPI
+  ////
+  //// send particles to other domain
+  ////
+  vector<MPICommOverlay> domains_plus;
+  vector<MPICommOverlay> domains_minus;
+
+  vector<MPICommOverlay> domains_plus_recv;
+  vector<MPICommOverlay> domains_minus_recv;
+
+  for (unsigned int i = 0; i < r_domains; ++i)
+  {
+    // send to +1 rank
+    Domain *sim_domain_plus = domains(i, z_domains - 1);
+
+    int domain_r_size = sim_domain_plus->maxwell_solver->field_e[0].x_size;
+    int domain_r_real_size = sim_domain_plus->maxwell_solver->field_e[0].x_real_size;
+    int domain_o_s = sim_domain_plus->maxwell_solver->field_e[0].o_s;
+    int domain_z_real_size = sim_domain_plus->maxwell_solver->field_e[0].y_real_size;
+
+    MPICommOverlay item_plus (domain_r_real_size, i, 0);
+    MPICommOverlay item_plus_recv (domain_r_real_size, i, 0);
+
+    for (int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+      int d_r_s = domain_z_real_size - domain_o_s * 2;
+
+      item_plus.col_0_0[j_s] = sim_domain_plus->maxwell_solver->field_e[0](j, d_r_s  - 4);
+      item_plus.col_0_1[j_s] = sim_domain_plus->maxwell_solver->field_e[1](j, d_r_s  - 4);
+      item_plus.col_0_2[j_s] = sim_domain_plus->maxwell_solver->field_e[2](j, d_r_s  - 4);
+
+      item_plus.col_1_0[j_s] = sim_domain_plus->maxwell_solver->field_e[0](j, d_r_s  - 3);
+      item_plus.col_1_1[j_s] = sim_domain_plus->maxwell_solver->field_e[1](j, d_r_s  - 3);
+      item_plus.col_1_2[j_s] = sim_domain_plus->maxwell_solver->field_e[2](j, d_r_s  - 3);
+
+      item_plus.col_2_0[j_s] = sim_domain_plus->maxwell_solver->field_e[0](j, d_r_s - 2);
+      item_plus.col_2_1[j_s] = sim_domain_plus->maxwell_solver->field_e[1](j, d_r_s - 2);
+      item_plus.col_2_2[j_s] = sim_domain_plus->maxwell_solver->field_e[2](j, d_r_s - 2);
+
+      item_plus.col_3_0[j_s] = sim_domain_plus->maxwell_solver->field_e[0](j, d_r_s - 1);
+      item_plus.col_3_1[j_s] = sim_domain_plus->maxwell_solver->field_e[1](j, d_r_s - 1);
+      item_plus.col_3_2[j_s] = sim_domain_plus->maxwell_solver->field_e[2](j, d_r_s - 1);
+
+    }
+
+    domains_plus.push_back( item_plus );
+    domains_plus_recv.push_back( item_plus_recv );
+
+    // send to -1 rank
+    Domain *sim_domain_minus = domains(i, 0);
+
+    domain_r_size = sim_domain_minus->maxwell_solver->field_e[0].x_size;
+    domain_o_s = sim_domain_minus->maxwell_solver->field_e[0].o_s;
+
+    MPICommOverlay item_minus (domain_r_size + 2 * domain_o_s, i, 0);
+    MPICommOverlay item_minus_recv (domain_r_size + 2 * domain_o_s, i, 0);
+
+    for (int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+
+      item_minus.col_0_0[j_s] = sim_domain_minus->maxwell_solver->field_e[0](j, 0 - domain_o_s);
+      item_minus.col_0_1[j_s] = sim_domain_minus->maxwell_solver->field_e[1](j, 0 - domain_o_s);
+      item_minus.col_0_2[j_s] = sim_domain_minus->maxwell_solver->field_e[2](j, 0 - domain_o_s);
+
+      item_minus.col_1_0[j_s] = sim_domain_minus->maxwell_solver->field_e[0](j, 1 - domain_o_s);
+      item_minus.col_1_1[j_s] = sim_domain_minus->maxwell_solver->field_e[1](j, 1 - domain_o_s);
+      item_minus.col_1_2[j_s] = sim_domain_minus->maxwell_solver->field_e[2](j, 1 - domain_o_s);
+
+      item_minus.col_2_0[j_s] = sim_domain_minus->maxwell_solver->field_e[0](j, 2 - domain_o_s);
+      item_minus.col_2_1[j_s] = sim_domain_minus->maxwell_solver->field_e[1](j, 2 - domain_o_s);
+      item_minus.col_2_2[j_s] = sim_domain_minus->maxwell_solver->field_e[2](j, 2 - domain_o_s);
+
+      item_minus.col_3_0[j_s] = sim_domain_minus->maxwell_solver->field_e[0](j, 3 - domain_o_s);
+      item_minus.col_3_1[j_s] = sim_domain_minus->maxwell_solver->field_e[1](j, 3 - domain_o_s);
+      item_minus.col_3_2[j_s] = sim_domain_minus->maxwell_solver->field_e[2](j, 3 - domain_o_s);
+    }
+
+    domains_minus.push_back( item_minus );
+    domains_minus_recv.push_back( item_minus_recv );
+  }
+
+  if (world_rank < world_size - 1)
+    for (auto i = domains_plus.begin(); i != domains_plus.end(); ++i)
+    {
+      // LOG_S(WARNING) << "1 Sending from " << world_rank << " to " << world_rank + 1;
+      MPI_Send(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank + 1, 0, MPI_COMM_WORLD);
+    }
+
+  if (world_rank > 0)
+     for (auto i = domains_minus_recv.begin(); i != domains_minus_recv.end(); ++i)
+     {
+       // LOG_S(WARNING) << "2 Receiving from " << world_rank - 1 << " at " << world_rank;
+       MPI_Recv(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank - 1, 0, MPI_COMM_WORLD, NULL);
+     }
+
+  if (world_rank > 0)
+    for (auto i = domains_minus.begin(); i != domains_minus.end(); ++i)
+    {
+      // LOG_S(WARNING) << "3 Sending from " << world_rank << " to " << world_rank - 1;
+      MPI_Send(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank - 1, 0, MPI_COMM_WORLD);
+    }
+
+  if (world_rank < world_size - 1)
+    for (auto i = domains_plus_recv.begin(); i != domains_plus_recv.end(); ++i)
+    {
+      // LOG_S(WARNING) << "4 Receiving from " << world_rank + 1 << " at " << world_rank;
+      MPI_Recv(MPI_BOTTOM, 1, i->mpi_dtype(), world_rank + 1, 0, MPI_COMM_WORLD, NULL);
+    }
+
   MPI_Barrier(MPI_COMM_WORLD);
+
+  ////////////////////////////////////////////////////////////
+
+  for (auto i = domains_minus_recv.begin(); i != domains_minus_recv.end(); ++i)
+  {
+    Domain *dst_domain_minus = domains(i->dst_domain[0], 0);
+
+    int domain_r_size = dst_domain_minus->maxwell_solver->field_e[0].x_size;
+    int domain_o_s = dst_domain_minus->maxwell_solver->field_e[0].o_s;
+    int domain_z_size = dst_domain_minus->maxwell_solver->field_e[0].y_size;
+
+    for (int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+
+      dst_domain_minus->maxwell_solver->field_e[0].inc(j, 0 - domain_o_s, i->col_0_0[j_s]);
+      dst_domain_minus->maxwell_solver->field_e[1].inc(j, 0 - domain_o_s, i->col_0_1[j_s]);
+      dst_domain_minus->maxwell_solver->field_e[2].inc(j, 0 - domain_o_s, i->col_0_2[j_s]);
+
+      dst_domain_minus->maxwell_solver->field_e[0].inc(j, 1 - domain_o_s, i->col_1_0[j_s]);
+      dst_domain_minus->maxwell_solver->field_e[1].inc(j, 1 - domain_o_s, i->col_1_1[j_s]);
+      dst_domain_minus->maxwell_solver->field_e[2].inc(j, 1 - domain_o_s, i->col_1_2[j_s]);
+
+      dst_domain_minus->maxwell_solver->field_e[0].inc(j, 2 - domain_o_s, i->col_2_0[j_s]);
+      dst_domain_minus->maxwell_solver->field_e[1].inc(j, 2 - domain_o_s, i->col_2_1[j_s]);
+      dst_domain_minus->maxwell_solver->field_e[2].inc(j, 2 - domain_o_s, i->col_2_2[j_s]);
+
+      dst_domain_minus->maxwell_solver->field_e[0].inc(j, 3 - domain_o_s, i->col_3_0[j_s]);
+      dst_domain_minus->maxwell_solver->field_e[1].inc(j, 3 - domain_o_s, i->col_3_1[j_s]);
+      dst_domain_minus->maxwell_solver->field_e[2].inc(j, 3 - domain_o_s, i->col_3_2[j_s]);
+    }
+  }
+
+  for (auto i = domains_plus_recv.begin(); i != domains_plus_recv.end(); ++i)
+  {
+    Domain *dst_domain_plus = domains(i->dst_domain[0], z_domains - 1);
+
+    int domain_r_size = dst_domain_plus->maxwell_solver->field_e[0].x_size;
+    int domain_o_s = dst_domain_plus->maxwell_solver->field_e[0].o_s;
+    int domain_z_real_size = dst_domain_plus->maxwell_solver->field_e[0].y_real_size;
+
+    for (unsigned int j = -domain_o_s; j < domain_r_size + domain_o_s; ++j)
+    {
+      int j_s = j + domain_o_s;
+      int d_r_s = domain_z_real_size - domain_o_s * 2;
+
+      dst_domain_plus->maxwell_solver->field_e[0].inc(j, d_r_s - 1, i->col_3_0[j_s]);
+      dst_domain_plus->maxwell_solver->field_e[1].inc(j, d_r_s - 1, i->col_3_1[j_s]);
+      dst_domain_plus->maxwell_solver->field_e[2].inc(j, d_r_s - 1, i->col_3_2[j_s]);
+
+      dst_domain_plus->maxwell_solver->field_e[0].inc(j, d_r_s - 2, i->col_2_0[j_s]);
+      dst_domain_plus->maxwell_solver->field_e[1].inc(j, d_r_s - 2, i->col_2_1[j_s]);
+      dst_domain_plus->maxwell_solver->field_e[2].inc(j, d_r_s - 2, i->col_2_2[j_s]);
+
+      dst_domain_plus->maxwell_solver->field_e[0].inc(j, d_r_s - 3, i->col_1_0[j_s]);
+      dst_domain_plus->maxwell_solver->field_e[1].inc(j, d_r_s - 3, i->col_1_1[j_s]);
+      dst_domain_plus->maxwell_solver->field_e[2].inc(j, d_r_s - 3, i->col_1_2[j_s]);
+
+      dst_domain_plus->maxwell_solver->field_e[0].inc(j, d_r_s - 4, i->col_0_0[j_s]);
+      dst_domain_plus->maxwell_solver->field_e[1].inc(j, d_r_s - 4, i->col_0_1[j_s]);
+      dst_domain_plus->maxwell_solver->field_e[2].inc(j, d_r_s - 4, i->col_0_2[j_s]);
+    }
+  }
 #endif // ENABLE_MPI
 }
 
