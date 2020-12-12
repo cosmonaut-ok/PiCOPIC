@@ -27,12 +27,17 @@ class Grid
   T **grid;
 
 private:
+  // unsigned int o_s; // overlay shift
+
+  // unsigned int x_real_size;
+  // unsigned int y_real_size;
+
+public:
   unsigned int o_s; // overlay shift
 
   unsigned int x_real_size;
   unsigned int y_real_size;
-
-public:
+  
   unsigned int x_size;
   unsigned int y_size;
 

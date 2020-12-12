@@ -41,10 +41,10 @@ def run(config_path, specie, clim, video_file=None, time_range=None, cmap=None, 
     # TODO: estimate clim
     # if not clim: clim = [0,2]
     clim_1 = [0,1e15]
-    clim_2 = [4e19,3.5e20]
+    clim_2 = [5e16,1.5e17]
     clim_3 = [5e16,1.5e17]
-    clim_4 = [0,25]
-    clim_5 = [0,250]
+    clim_4 = [0,20]
+    clim_5 = [0,10000]
 
     if not frame_size: frame_size = [0, 0, reader.meta.geometry_grid[0], reader.meta.geometry_grid[1]]
     frame_src_size=[-1, -1, -1, -1]
@@ -65,9 +65,9 @@ def run(config_path, specie, clim, video_file=None, time_range=None, cmap=None, 
     plot = PlotBuilder(frame_size[3] - frame_size[1],
                        frame_size[2] - frame_size[0],
                        fig_color=reader.meta.figure_color,
-                       fig_width=reader.meta.figure_width * 2,
-                       fig_height=reader.meta.figure_height * 2,
-                       fig_dpi=reader.meta.figure_dpi,
+                       fig_width=19.2,
+                       fig_height=10.8,
+                       fig_dpi=150,
                        font_family=reader.meta.figure_font_family,
                        font_name=reader.meta.figure_font_name,
                        font_size=12, # reader.meta.figure_font_size,

@@ -30,7 +30,7 @@ namespace msg
     {
       MSG("+------------+-------------+-------------------------------------------------+-------+------------------+---------------------+");
       MSG(std::left << std::setw(13) << "|    Step"
-          << std::left << std::setw(14) << "| Saved Frame"
+          << std::left << std::setw(14) << "| Frame"
           << std::left << std::setw(50) << "|                Dumping Probe Name"
           << std::left << std::setw(8) << "| Shape"
           << std::left << std::setw(19) << "| Model Time (sec)"

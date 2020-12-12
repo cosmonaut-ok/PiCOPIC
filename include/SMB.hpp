@@ -40,6 +40,127 @@
 
 #define BEAM_ID_START 1000
 
+#ifdef ENABLE_MPI
+//// MPI comm overlay struct
+struct MPICommOverlay
+{
+  size_t len;
+
+  std::vector<double> col_0_0;
+  std::vector<double> col_0_1;
+  std::vector<double> col_0_2;
+  std::vector<double> col_1_0;
+  std::vector<double> col_1_1;
+  std::vector<double> col_1_2;
+  std::vector<double> col_2_0;
+  std::vector<double> col_2_1;
+  std::vector<double> col_2_2;
+  std::vector<double> col_3_0;
+  std::vector<double> col_3_1;
+  std::vector<double> col_3_2;
+
+  std::vector<int> dst_domain;
+
+  MPICommOverlay() : dtype(MPI_DATATYPE_NULL) {}
+  MPICommOverlay(size_t _len, unsigned int _r, unsigned int _z) : dtype(MPI_DATATYPE_NULL)
+  {
+    len = _len;
+
+    dst_domain.push_back(_r);
+    dst_domain.push_back(_z);
+
+    for (unsigned int i = 0; i < len; ++i)
+    {
+      col_0_0.push_back(0);
+      col_0_1.push_back(0);
+      col_0_2.push_back(0);
+      col_1_0.push_back(0);
+      col_1_1.push_back(0);
+      col_1_2.push_back(0);
+      col_2_0.push_back(0);
+      col_2_1.push_back(0);
+      col_2_2.push_back(0);
+      col_3_0.push_back(0);
+      col_3_1.push_back(0);
+      col_3_2.push_back(0);
+    }
+  };
+  ~MPICommOverlay()
+  {
+    if (dtype != MPI_DATATYPE_NULL)
+      MPI_Type_free(&dtype);
+  };
+
+  const MPI_Datatype mpi_dtype()
+  {
+    if (dtype == MPI_DATATYPE_NULL)
+      make_dtype();
+    return dtype;
+  };
+
+  void invalidate_dtype()
+  {
+    if (dtype != MPI_DATATYPE_NULL)
+      MPI_Type_free(&dtype);
+  }
+
+  void make_dtype()
+  {
+    const int nblock = 14;
+    int block_count[nblock] =
+      {
+        1,
+        col_0_0.size(),
+        col_0_1.size(),
+        col_0_2.size(),
+        col_1_0.size(),
+        col_1_1.size(),
+        col_1_2.size(),
+        col_2_0.size(),
+        col_2_1.size(),
+        col_2_2.size(),
+        col_3_0.size(),
+        col_3_1.size(),
+        col_3_2.size(),
+        dst_domain.size()
+      };
+
+    MPI_Datatype block_type[nblock] =
+      {
+        MPI_INT,
+        MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE,
+        MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE,
+        MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE,
+        MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE,
+        MPI_INT
+      };
+    MPI_Aint offset[nblock];
+    MPI_Get_address(&len, &offset[0]);
+    MPI_Get_address(&col_0_0[0], &offset[1]);
+    MPI_Get_address(&col_0_1[0], &offset[2]);
+    MPI_Get_address(&col_0_2[0], &offset[3]);
+    MPI_Get_address(&col_1_0[0], &offset[4]);
+    MPI_Get_address(&col_1_1[0], &offset[5]);
+    MPI_Get_address(&col_1_2[0], &offset[6]);
+    MPI_Get_address(&col_2_0[0], &offset[7]);
+    MPI_Get_address(&col_2_1[0], &offset[8]);
+    MPI_Get_address(&col_2_2[0], &offset[9]);
+    MPI_Get_address(&col_3_0[0], &offset[10]);
+    MPI_Get_address(&col_3_1[0], &offset[11]);
+    MPI_Get_address(&col_3_2[0], &offset[12]);
+    MPI_Get_address(&dst_domain[0], &offset[13]);
+
+    MPI_Type_create_struct(nblock, block_count, offset, block_type, &dtype);
+    MPI_Type_commit(&dtype);
+  };
+
+private:
+  MPI_Datatype dtype;
+
+};
+//// /MPI comm overlay struct
+#endif // ENABLE_MPI
+
 class SMB
 {
 public:

@@ -4,12 +4,12 @@
   "log_file": "./PiCoPiC.log",
   "geometry": {
     "size": {
-      "radius": 0.075,
-      "longitude": 0.3
+      "radius": 0.0375,
+      "longitude": 0.15
     },
     "grid": {
-      "radius": 128,
-      "longitude": 512
+      "radius": 64,
+      "longitude": 256
     },
     "domains_amount": {
       "radius": 2,
@@ -25,8 +25,8 @@
   },
   "time": {
     "start": 0,
-    "end": 2.6e-12,
-    "step": 5e-14
+    "end": 8e-10,
+    "step": 5e-13
   },
   "particles": [
     {
@@ -69,106 +69,106 @@
     "probes": [
       {
         "component": "E_r",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "E_phi",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "E_z",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "H_r",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "H_phi",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "H_z",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "J_r",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "J_phi",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "J_z",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "density",
         "specie": "beam_electrons",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "density",
         "specie": "electrons",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "density",
         "specie": "ions",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "temperature",
         "specie": "electrons",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       },
       {
         "component": "temperature",
         "specie": "ions",
-        "schedule": 50,
+        "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
-        "end": { "r": 128, "z": 512 }
+        "end": { "r": 64, "z": 256 }
       }
     ],
     "plot": {

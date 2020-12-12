@@ -44,6 +44,8 @@ using namespace std;
 #ifdef ENABLE_HDF5
 #include <highfive/H5File.hpp>
 
+#define HDF5_DATA_FILE "data.h5"
+
 std::atomic<bool> lock_(false);
 std::atomic<bool> recreate_writers_(false);
 
@@ -185,7 +187,7 @@ int main(int argc, char **argv)
   {
     // initialize MPI
     Init ();
-    COMM_WORLD.Set_errhandler (MPI::ERRORS_THROW_EXCEPTIONS);
+    // COMM_WORLD.Set_errhandler (MPI::ERRORS_THROW_EXCEPTIONS);
 
     // get information about our world
     const int NPROCS = COMM_WORLD.Get_size ();
@@ -239,7 +241,7 @@ int main(int argc, char **argv)
     H5Eset_auto(H5E_DEFAULT, NULL, NULL);
 
     std::string path = cfg.output_data->data_root;
-    std::string datafile_name = "data.h5";
+    std::string datafile_name = HDF5_DATA_FILE;
 
     // make root directory
     algo::common::make_directory(path);

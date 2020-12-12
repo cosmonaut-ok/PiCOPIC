@@ -126,9 +126,9 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
             if i % frame_step == 0:
                 sys.stdout.write('Loading dataset ' + str(i) + '... ')
                 sys.stdout.flush()
-                data_r = reader.get_frame('E_r', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
-                data_z = reader.get_frame('E_z', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
-                data_beam = reader.get_frame('density/beam_electrons', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_r = reader.rec('E_r', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_z = reader.rec('E_z', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_beam = reader.rec('density/beam_electrons', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
 
                 # add timestamp to each frame
                 timestamp = reader.meta.get_timestamp_by_frame_number(i, dump_interval)
