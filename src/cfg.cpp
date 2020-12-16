@@ -388,12 +388,16 @@ void Cfg::init_geometry ()
   double sigma_1 = json_root_pml["sigma_1"].get<double>();
   double sigma_2 = json_root_pml["sigma_2"].get<double>();
 
-  vector<double> _pml = {0, left_wall, right_wall, outer_wall};
+  vector<size_t> _pml = {0, 0, 0, 0};
   vector<double> _sigma = {sigma_1, sigma_2};
 
-  geometry = new Geometry ( _size, _dims, _pml, _sigma, _walls);
+  _pml[1] = floor(left_wall * n_grid_z);
+  _pml[2] = floor(outer_wall * n_grid_r);
+  _pml[3] = floor(right_wall * n_grid_z);
+
+  geometry = new Geometry ( _size, _dims, _pml, _sigma, _walls );
   #else
-  geometry = new Geometry ( _size, _dims, _walls);
+  geometry = new Geometry ( _size, _dims, _walls );
 #endif
   vector<size_t> domains (2, 0);
   geometry->domains_amount = domains;
