@@ -196,9 +196,6 @@ int main(int argc, char **argv)
     // number of tasks
     LOG_S(INFO) << "Number of MPI processes is: " << NPROCS;
 
-    // size of each task
-    const size_t SZ = 1024 * 1024;
-
     if (ID != 0)
       print_progress_table = false;
 
@@ -211,12 +208,14 @@ int main(int argc, char **argv)
 
     // update cell dimensions
     size_t smb_cell_amount = geometry_global->cell_amount[1] / NPROCS;
+    size_t smb_domains_amount = geometry_global->domains_amount[1] / NPROCS;
     double smb_z_size = geometry_global->size[1] / NPROCS;
 
     size_t smb_cell_begin = smb_cell_amount * ID;
     size_t smb_cell_end = smb_cell_amount * ( ID + 1 );
 
     geometry_smb->cell_amount[1] = smb_cell_amount;
+    geometry_smb->domains_amount[1] = smb_domains_amount;
     geometry_smb->cell_dims[1] = smb_cell_begin;
     geometry_smb->cell_dims[3] = smb_cell_end;
     geometry_smb->size[1] = smb_z_size;

@@ -69,18 +69,7 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time,
       if (j == z_domains - 1)
         wall_zz = geometry->walls[3];
 
-#ifdef ENABLE_PML
-      // set PML to domains
-      if (geometry->size[0] - geometry->size[0] / r_domains * (i + 1)
-          < geometry->pml_length[2])
-        pml_l_rwall = geometry->pml_length[2];
-      if (j * geometry->size[1] / z_domains < geometry->pml_length[1])
-        pml_l_z0 = geometry->pml_length[1];
-      if (geometry->size[1] - geometry->size[1] / z_domains * (j + 1)
-          < geometry->pml_length[3])
-        pml_l_zwall = geometry->pml_length[3];
-#endif // ENABLE_PML
-
+      // cell dimensions for domain
       size_t bot_r = (size_t)(geometry->cell_amount[0] * i / r_domains
                               + geometry->cell_dims[0]);
       size_t top_r = (size_t)(geometry->cell_amount[0] * (i + 1) / r_domains
@@ -91,19 +80,34 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time,
       size_t right_z = (size_t)(geometry->cell_amount[1] * (j + 1) / z_domains
                                 + geometry->cell_dims[1]);
 
+
+#ifdef ENABLE_PML
+      // set PML to domains
+      if (geometry->global_cell_amount[0] - top_r < geometry->pml_size[2])
+        pml_l_rwall = geometry->pml_size[2];
+
+      if (geometry->global_cell_amount[1] - right_z < geometry->pml_size[3])
+        pml_l_zwall = geometry->pml_size[3];
+
+      if (left_z < geometry->pml_size[1])
+        pml_l_z0 = geometry->pml_size[1];
+#endif // ENABLE_PML
+
 #ifdef ENABLE_PML
       Geometry *geom_domain = new Geometry (
         { geometry->size[0] / r_domains, geometry->size[1] / z_domains},
+        { geometry->global_size[0], geometry->global_size[1] }, // global size
         { bot_r, left_z, top_r, right_z },
-        { pml_l_z0 * z_domains,    // multiplying is a workaround, because domain
-          pml_l_zwall * z_domains, // doesn't know abount whole simulation domain size
-          pml_l_rwall * r_domains }, // aka geometry
+        { 0, pml_l_z0, pml_l_rwall, pml_l_zwall, },
         geometry->pml_sigma,
-        { wall_r0,
-          wall_z0,
-          wall_rr,
-          wall_zz }
+        { wall_r0, wall_z0, wall_rr, wall_zz }
         );
+
+  // LOG_S(FATAL) << "BBB "
+  //              << geom_domain->global_size[0] << " "
+  //              << geom_domain->global_size[1] << " "
+  //              << geometry->global_size[0] << " "
+  //              << geometry->global_size[1] << " ";
 
       // WORKAROUND: // used just to set PML
       // for information about global geometry
@@ -169,14 +173,6 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time,
       Domain *sim_domain = new Domain(*geom_domain, species_p, time);
       domains.set(i, j, sim_domain);
     };
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-  unsigned int r_domains = domains.x_size;
-  unsigned int z_domains = domains.y_size;
 
 #ifdef _OPENMP
 #ifdef ENABLE_OMP_DYNAMIC

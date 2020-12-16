@@ -10,9 +10,9 @@ TEST(geometry, constructor)
   size_t top_ngr = 20;
   size_t left_ngz = 11;
   size_t right_ngz = 31;
-  double pml_l_z0 = 0.01;
-  double pml_l_zwall = 0.01;
-  double pml_l_rwall = 0.01;
+  size_t pml_l_z0 = 3;
+  size_t pml_l_zwall = 3;
+  size_t pml_l_rwall = 3;
   double pml_sigma1 = 0.01;
   double pml_sigma2 = 0.01;
   bool wall_r0 = true;
@@ -34,7 +34,7 @@ TEST(geometry, constructor)
   ASSERT_EQ(geometry.cell_size[1], 0.06);
 
   for (unsigned int i = 1; i < 3; ++i)
-    ASSERT_EQ(geometry.pml_length[i], 0.01);
+    ASSERT_EQ(geometry.pml_size[i], 3);
 
   for (unsigned int i = 1; i < 2; ++i)
     ASSERT_EQ(geometry.pml_sigma[i], 0.01);

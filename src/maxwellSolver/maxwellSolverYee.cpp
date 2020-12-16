@@ -56,57 +56,55 @@ MaxwellSolverYee::MaxwellSolverYee(Geometry *_geometry, TimeSim *_time,
 
 void MaxwellSolverYee::set_pml()
 {
+  double cell_size_r = geometry->cell_size[0];
+  double cell_size_z = geometry->cell_size[1];
+
   // defining lenght of sigma calculation ion left wall
-  double lenght_sigma_left = geometry->cell_size[1]
-    * (floor(geometry->cell_amount[1] * geometry->pml_length[1]));
+  double lenght_sigma_left = cell_size_z * geometry->pml_size[1];
+  double lenght_sigma_right = cell_size_z * geometry->pml_size[3];
+  double lenght_sigma_extern = cell_size_r * geometry->pml_size[2];
 
-  // defining lenght of sigma calculation on right wall
-  double lenght_sigma_right = geometry->cell_size[1]
-    * (floor(geometry->cell_amount[1] * geometry->pml_length[3]));
+  double radial_cell_offset = geometry->cell_dims[0] * geometry->cell_size[0];
+  double longitudinal_cell_offset = geometry->cell_dims[1] * geometry->cell_size[1];
 
-  // defining lenght of sigma calculation on z-wall
-  double lenght_sigma_extern = geometry->cell_size[0]
-    * (floor(geometry->cell_amount[0] * geometry->pml_length[2]));
+  double system_radius = geometry->global_size[0];
+  double system_longitude =  geometry->global_size[1];
 
-  double radial_shift = geometry->cell_dims[0] * geometry->cell_size[0];
-  double longitudinal_shift = geometry->cell_dims[1] * geometry->cell_size[1];
+  double delta_sigma = geometry->pml_sigma[1] - geometry->pml_sigma[0];
 
   // r=r wall
-  if (geometry->pml_length[2] != 0)
+  if (geometry->pml_size[2] != 0)
     for(int i = 0; i < geometry->cell_amount[0]; i++)
       for(int k = 0; k < geometry->cell_amount[1]; k++)
-        if ((geometry->domains_amount[0] * geometry->cell_amount[0] - geometry->cell_dims[0] - i) * geometry->cell_size[0]
-            < lenght_sigma_extern)
-          sigma.inc(i, k, geometry->pml_sigma[0] +
-                    (geometry->pml_sigma[1] - geometry->pml_sigma[0])
+        if (geometry->dist_x_to_end(i) < lenght_sigma_extern)
+          sigma.inc(i, k, geometry->pml_sigma[0]
+                    + delta_sigma
                     / pow(lenght_sigma_extern, 2)
-                    * pow(geometry->cell_size[0] * (i + 1) + radial_shift
-                          - geometry->size[0] * geometry->domains_amount[0]
+                    * pow(cell_size_r * (i + 1) + radial_cell_offset
+                          - system_radius
                           + lenght_sigma_extern, 2));
 
   // sigma on z=0 and z=z walls
-  if (geometry->pml_length[1] != 0)
+  if (geometry->pml_size[1] != 0)
     for(int k = 0; k < geometry->cell_amount[1]; k++)
       for(int i = 0; i < geometry->cell_amount[0]; i++)
         // z=0 wall
-        if (geometry->cell_size[1] * k + longitudinal_shift < lenght_sigma_left)
+        if (cell_size_z * k + longitudinal_cell_offset < lenght_sigma_left)
           sigma.inc(i, k, geometry->pml_sigma[0]
-                    + (geometry->pml_sigma[1] - geometry->pml_sigma[0])
+                    + delta_sigma
                     / pow(lenght_sigma_left, 2)
-                    * pow(lenght_sigma_left - geometry->cell_size[1] * k - longitudinal_shift, 2));
+                    * pow(lenght_sigma_left - cell_size_z * k - longitudinal_cell_offset, 2));
 
   // z=z wall
-  if (geometry->pml_length[3] != 0)
-
+  if (geometry->pml_size[3] != 0)
     for(int k = 0; k < geometry->cell_amount[1]; k++)
       for(int i = 0; i < geometry->cell_amount[0]; i++)
-        if ((geometry->domains_amount[1] * geometry->cell_amount[1] - geometry->cell_dims[1] - k) * geometry->cell_size[1]
-            < lenght_sigma_right)
+        if (geometry->dist_y_to_end(k) < lenght_sigma_right)
           sigma.inc(i, k, geometry->pml_sigma[0]
-                    + (geometry->pml_sigma[1] - geometry->pml_sigma[0])
+                    + delta_sigma
                     / pow(lenght_sigma_right, 2)
-                    * pow(geometry->cell_size[1] * (k + 1) + longitudinal_shift
-                          - geometry->size[1] * geometry->domains_amount[1]
+                    * pow(cell_size_z * (k + 1) + longitudinal_cell_offset
+                          - system_longitude
                           + lenght_sigma_right, 2));
 }
 
