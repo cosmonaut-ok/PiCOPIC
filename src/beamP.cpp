@@ -71,7 +71,7 @@ BeamP::BeamP (unsigned int id, // ID for every particles specie
 void BeamP::inject()
 {
   // check if limit of bunches is reached
-  if (current_bunch_number <= bunches_amount)
+  if (current_bunch_number < bunches_amount)
   {
     double bunch_start_time = start_time + (bunch_length + bunches_distance) / velocity * current_bunch_number;
     double bunch_finish_time = bunch_start_time + bunch_length / velocity;
