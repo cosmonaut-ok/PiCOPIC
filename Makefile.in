@@ -193,16 +193,16 @@ doc: doxygen $(DOXYGEN_FORMATS)
 # 	zip -r `basename $(RELEASE)`.zip $(RELEASE)
 
 hdf5: prepare
-	test -d $(TARGETDIR)/@HDF5_VERSION@ || \
+	test -d $(TARGETDIR)/hdf5-@HDF5_VERSION@ || \
 	(cd $(TARGETDIR); \
 	wget -qO- "@HDF5_URL@" | tar xjf -; \
-	cd @HDF5_VERSION@; \
+	cd hdf5-@HDF5_VERSION@; \
 	./autogen.sh; \
 	./configure --enable-build-mode=production --prefix=@prefix@ $(HDF5_ADDITIONAL_OPTIONS); \
 	make)
 
 hdf5-install: hdf5
-	cd $(TARGETDIR)/@HDF5_VERSION@; \
+	cd $(TARGETDIR)/hdf5-@HDF5_VERSION@; \
 	make install
 
 python:

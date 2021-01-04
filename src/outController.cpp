@@ -21,12 +21,14 @@
 OutController::OutController ( HighFive::File* _file,
                                Geometry *_geometry, TimeSim *_time,
                                vector<probe> &_probes, SMB *_smb,
-                               std::string _metadata, bool _print_progress_table)
+                               picojson::value _metadata,
+                               bool _print_progress_table )
   : geometry(_geometry), time(_time), smb(_smb)
 #else
 OutController::OutController ( Geometry *_geometry, TimeSim *_time,
                                vector<probe> &_probes, SMB *_smb,
-                               std::string _metadata, bool _print_progress_table)
+                               picojson::value _metadata,
+                               bool _print_progress_table )
   : geometry(_geometry), time(_time), smb(_smb)
 #endif
 {

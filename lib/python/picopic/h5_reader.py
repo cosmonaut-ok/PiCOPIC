@@ -47,7 +47,7 @@ class H5Reader (Reader):
         else:
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
-        config_json = json.loads(self.file['/metadata'].attrs.get('metadata'))
+        config_json = json.loads(self.file['/'].attrs.get('metadata'))
         super(H5Reader, self).__init__(real_path, config_json, use_cache, verbose)
 
     def __del__(self):

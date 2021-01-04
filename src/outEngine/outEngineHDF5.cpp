@@ -265,29 +265,146 @@ void OutEngineHDF5::extend_dataset(size_t _num)
   // }
 }
 
-void OutEngineHDF5::write_metadata(std::string _metadata)
+void OutEngineHDF5::write_metadata(picojson::value _metadata)
 {
+#ifdef ENABLE_DEBUG
+  string metadata_str = _metadata.serialize(true);
+#else
+  string metadata_str = _metadata.serialize();
+#endif // ENABLE_DEBUG
+
   try
-    {
-      LOG_S(MAX) << "Creating group ``/metadata''";
-      Group group = data_file->createGroup("/metadata");
-      LOG_S(MAX) << "Group ``/metadata'' created";
+  {
+    Group group = data_file->getGroup("/");
 
-      LOG_S(MAX) << "Writing metadata";
+    LOG_S(MAX) << "Writing metadata";
 
-      Attribute attribute = group.createAttribute<std::string>("metadata", DataSpace::From(_metadata));
+    Attribute attribute = group.createAttribute<std::string>("metadata", DataSpace::From(metadata_str));
+    attribute.write(metadata_str);
 
-      attribute.write(_metadata);
-    }
+    // software name, version, build flags and options
+    std::string package_name = (string)PACKAGE_NAME;
+    std::string package_version = (string)PACKAGE_VERSION;
+    std::string package_build_flags = (string)CXXFLAGS;
+    Attribute pkg_name_a = group
+      .createAttribute<std::string>("software", DataSpace::From(package_name));
+    Attribute pkg_ver_a = group
+      .createAttribute<std::string>("softwareVersion",
+                                    DataSpace::From(package_version));
+    Attribute pkg_build_flags_a = group
+      .createAttribute<std::string>("softwareBuildFlags",
+                                    DataSpace::From(package_build_flags));
+
+    pkg_name_a.write(package_name);
+    pkg_ver_a.write(package_version);
+    pkg_build_flags_a.write(package_build_flags);
+
+    // softwareDependencies
+    std::string package_deps = (string)PACKAGE_DEPS;
+    Attribute pkg_deps_a = group
+      .createAttribute<std::string>("softwareDependencies",
+                                    DataSpace::From(package_deps));
+    pkg_deps_a.write(package_deps);
+
+    // debug
+    bool is_debug_enabled = _metadata.get<picojson::object>()["build_options"]
+      .get<picojson::object>()["debug"]
+      .get<bool>();
+    Attribute is_debug_enabled_a = group
+      .createAttribute<bool>("softwareConfigDebug",
+                                    DataSpace::From(is_debug_enabled));
+    is_debug_enabled_a.write(is_debug_enabled);
+
+    // accept IEEE
+    bool is_ieee_enabled = _metadata.get<picojson::object>()["build_options"]
+      .get<picojson::object>()["ieee"]
+      .get<bool>();
+    Attribute is_ieee_enabled_a = group
+      .createAttribute<bool>("softwareConfigIEEE",
+                             DataSpace::From(is_ieee_enabled));
+    is_ieee_enabled_a.write(is_ieee_enabled);
+
+    // current deposition
+    std::string current_depos = _metadata.get<picojson::object>()["build_options"]
+      .get<picojson::object>()["current_deposition"]
+      .get<std::string>();
+    Attribute current_depos_a = group
+      .createAttribute<std::string>("softwareConfigCurrentDeposition",
+                                    DataSpace::From(current_depos));
+    current_depos_a.write(current_depos);
+
+    // field solver
+    std::string maxwell_solver = _metadata.get<picojson::object>()["build_options"]
+      .get<picojson::object>()["maxwell_solver"]
+      .get<std::string>();
+    Attribute maxwell_solver_a = group
+      .createAttribute<std::string>("softwareConfigFieldSolver",
+                                    DataSpace::From(maxwell_solver));
+    maxwell_solver_a.write(maxwell_solver);
+
+
+    // density calculation
+    std::string density_calc = _metadata.get<picojson::object>()["build_options"]
+      .get<picojson::object>()["density_calculation_algorithm"]
+      .get<std::string>();
+    Attribute density_calc_a = group
+      .createAttribute<std::string>("softwareConfigDensityCalculationAlgorithm",
+                                    DataSpace::From(density_calc));
+    density_calc_a.write(density_calc);
+
+    // temperature calculation
+    std::string temperature_calc = _metadata.get<picojson::object>()["build_options"]
+      .get<picojson::object>()["temperature_calculation_algorithm"]
+      .get<std::string>();
+    Attribute temperature_calc_a = group
+      .createAttribute<std::string>("softwareConfigTemperatureCalculationAlgorithm",
+                                    DataSpace::From(temperature_calc));
+    temperature_calc_a.write(temperature_calc);
+
+    // pusher
+    std::string prtls_pusher = _metadata.get<picojson::object>()["build_options"]
+      .get<picojson::object>()["particles_pusher"]
+      .get<std::string>();
+    Attribute prtls_pusher_a = group
+      .createAttribute<std::string>("softwareConfigParticlesPusher",
+                                    DataSpace::From(prtls_pusher));
+    prtls_pusher_a.write(prtls_pusher);
+
+    // plasma_velocity_distribution
+    std::string plasma_velocity_distribution = _metadata.get<picojson::object>()["build_options"]
+      .get<picojson::object>()["plasma_velocity_distribution"]
+      .get<std::string>();
+    Attribute plasma_velocity_distribution_a = group
+      .createAttribute<std::string>("softwareConfigPlasmaVelocityDistribution",
+                                    DataSpace::From(plasma_velocity_distribution));
+    plasma_velocity_distribution_a.write(plasma_velocity_distribution);
+
+    // plasma_spatial_distribution
+    std::string plasma_spatial_distribution = _metadata.get<picojson::object>()["build_options"]
+      .get<picojson::object>()["plasma_spatial_distribution"]
+      .get<std::string>();
+    Attribute plasma_spatial_distribution_a = group
+      .createAttribute<std::string>("softwareConfigPlasmaSpatialDistribution",
+                                    DataSpace::From(plasma_spatial_distribution));
+    plasma_spatial_distribution_a.write(plasma_spatial_distribution);
+
+    // comment
+    std::string comment = _metadata.get<picojson::object>()["comment"].get<std::string>();
+    Attribute comment_a = group
+      .createAttribute<std::string>("comment",
+                                    DataSpace::From(comment));
+    comment_a.write(comment);
+
+  }
   catch(GroupException& error)
-    {
-      LOG_S(MAX) << "Group ``metadata'' already exists. Skipping";
-    }
+  {
+    LOG_S(MAX) << "Group ``metadata'' already exists. Skipping";
+  }
 
   catch(DataSetException& error)
-    {
-      LOG_S(MAX) << "metadata already exists. Skipping";
-    }
+  {
+    LOG_S(MAX) << "metadata already exists. Skipping";
+  }
 }
 
 void OutEngineHDF5::create_path()

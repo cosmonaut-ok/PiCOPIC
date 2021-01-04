@@ -78,7 +78,7 @@ Cfg::Cfg(const std::string json_file_name)
 
 #ifdef SWITCH_PLASMA_SPATIAL_CENTERED
   o["plasma_spatial_distribution"] = value("centered");
-#elif defined(SWITCH_PLASMA_SPATIA_FLAT)
+#elif defined(SWITCH_PLASMA_SPATIAL_FLAT)
   o["plasma_spatial_distribution"] = value("flat");
 #elif defined(SWITCH_PLASMA_SPATIAL_RANDOM)
   o["plasma_spatial_distribution"] = value("random");
@@ -110,6 +110,10 @@ Cfg::Cfg(const std::string json_file_name)
   o["current_deposition"] = value("zigzag");
 #elif defined(SWITCH_CCS_VB)
   o["current_deposition"] = value("villasenor-buneman");
+#endif
+
+#ifdef SWITCH_MAXWELL_SOLVER_YEE
+  o["maxwell_solver"] = value("yee");
 #endif
 
 #ifdef SWITCH_TEMP_CALC_COUNTING
@@ -665,4 +669,9 @@ string Cfg::cfg2str()
   string str = json_data_for_dump.serialize();
 #endif // ENABLE_DEBUG
   return str;
+}
+
+picojson::value Cfg::cfg2value()
+{
+  return json_data;
 }

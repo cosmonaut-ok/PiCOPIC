@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include "picojson.h"
+
 #include "algo/grid.hpp"
 
 class OutEngine
@@ -41,7 +43,7 @@ public:
   virtual void create_dataset() = 0; // extend dataset to number of slices
   virtual void extend_dataset(size_t num) = 0; // extend dataset to number of slices
   virtual void create_path() = 0;
-  virtual void write_metadata(std::string _metadata) = 0;
+  virtual void write_metadata(picojson::value _metadata) = 0;
 
   virtual void write_cub(size_t _slice, vector<vector<vector<double>>> data) = 0;   // rectangle
   virtual void write_rec(size_t _slice, vector<vector<double>> data) = 0;   // rectangle

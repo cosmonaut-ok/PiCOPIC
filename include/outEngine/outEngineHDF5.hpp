@@ -40,7 +40,7 @@ public:
   void create_dataset();
   void extend_dataset(size_t num); // extend dataset to number of slices
   void create_path(); // create group
-  void write_metadata(std::string _metadata);
+  void write_metadata(picojson::value _metadata);
 
   void write_cub(size_t _slice, vector<vector<vector<double>>> data); // cube
   void write_rec(size_t _slice, vector<vector<double>> data);         // rectangle

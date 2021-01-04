@@ -91,6 +91,7 @@ public:
   ~Cfg(void);
 
   std::string cfg2str();
+  picojson::value cfg2value();
 
 public:
   char *log_file;

@@ -136,6 +136,9 @@ def main():
     parser.add_argument('--phys-info', action='store_true',
                         help='Display useful physical info about background plasma and particle beams',
                         default=False)
+    parser.add_argument('-c', '--comment', action='store_true',
+                        help='Display comment for datafile',
+                        default=False)
 
     args = parser.parse_args()
 
@@ -156,6 +159,15 @@ def main():
         raise EnvironmentError("There is no corresponding data files in the path " + args.properties_path + ". Can not continue.")
 
     config = reader.meta.json
+    if args.comment:
+        args.bo = False
+        args.subtree = False
+        try:
+            config = config['comment']
+        except KeyError:
+            print("Invalid metadata subtree key >>", args.comment, "<< can not continue")
+            sys.exit(1)
+
     if args.bo: args.subtree = False
     if args.subtree:
         try:

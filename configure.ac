@@ -35,12 +35,13 @@ AC_SUBST(WITH_CCS)
 AC_SUBST(CFLAGS_DEFAULT)
 AC_SUBST(CFLAGS_ADDITIONAL)
 AC_SUBST(LDFLAGS_ADDITIONAL)
+AC_SUBST(PACKAGE_DEPS)
 
 AC_SUBST(RELEASE)
 RELEASE=${PACKAGE_VERSION}
 
 HDF5_URL="https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.bz2"
-HDF5_VERSION="hdf5-1.12.0"
+HDF5_VERSION="1.12.0"
 
 AC_ARG_ENABLE([experimental],
               [AC_HELP_STRING([--enable-experimental],
@@ -306,5 +307,8 @@ if test x$COULOMB_COLLISIONS_OPTION = xyes; then
 fi
 
 AC_DEFINE_UNQUOTED([CXXFLAGS], ["$CFLAGS_DEFAULT $CFLAGS_ADDITIONAL"], [define used C(XX)FLAGS])
+
+AC_DEFINE_UNQUOTED([PACKAGE_DEPS], ["gcc@6+;picojson@1.3.1-dev;python@3+;hdf5@${HDF5_VERSION};HighFive@2.2.2;loguru@2.2.0"],
+                                   [define used C(XX)FLAGS])
 
 AC_OUTPUT(Makefile)

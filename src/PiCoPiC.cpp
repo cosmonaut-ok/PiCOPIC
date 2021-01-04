@@ -272,13 +272,13 @@ int main(int argc, char **argv)
 
 #ifdef ENABLE_HDF5
     OutController out_controller ( file, geometry_global, sim_time_clock,
-                                   cfg.probes, &shared_mem_blk, cfg.cfg2str(),
+                                   cfg.probes, &shared_mem_blk, cfg.cfg2value(),
                                    print_progress_table );
 
     out_controller.hdf5_file = file;
 #else
     OutController out_controller ( geometry_global, sim_time_clock,
-                                   cfg.probes, &shared_mem_blk, cfg.cfg2str(),
+                                   cfg.probes, &shared_mem_blk, cfg.cfg2value(),
                                    print_progress_table );
 #endif
 
