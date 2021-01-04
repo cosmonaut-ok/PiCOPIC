@@ -205,8 +205,8 @@ void SMB::particles_runaway_collector ()
   // create vectors to place particles,
   // scheduled to be sent to other SMBs
 
-  vector< vector<double> * > queue_particles_plus;
-  vector< vector<double> * > queue_particles_minus;
+  vector< Particle * > queue_particles_plus;
+  vector< Particle * > queue_particles_minus;
 
   int j_c = 0;
   int r_c = 0;
@@ -230,7 +230,7 @@ void SMB::particles_runaway_collector ()
                 (**ps).particles.begin(), (**ps).particles.end(),
                 [ &j_c, &r_c, &ps, &__domains, &sim_domain,
                   &queue_particles_minus, &queue_particles_plus,
-                  &i, &j, &__geometry ] ( vector <double> * & o )
+                  &i, &j, &__geometry ] ( Particle * & o )
                 {
                   bool res = false;
 
@@ -459,7 +459,8 @@ void SMB::particles_runaway_collector ()
           /* status       = */ MPI_STATUS_IGNORE);
 
         // create vector and copy buffer there
-        vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
+        // vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
+        Particle *n = new Particle();
         for (unsigned int v=0; v < P_VEC_SIZE; ++v)
           (*n)[v] = dbuf[v];
 
@@ -522,7 +523,8 @@ void SMB::particles_runaway_collector ()
           /* status       = */ MPI_STATUS_IGNORE);
 
         // create vector and copy buffer there
-        vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
+        Particle *n = new Particle();
+        // vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
         for (unsigned int v=0; v < P_VEC_SIZE; ++v)
           (*n)[v] = dbuf[v];
 

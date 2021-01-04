@@ -27,8 +27,8 @@ CollisionsP12::CollisionsP12 (Geometry* _geometry, TimeSim *_time, vector <Speci
 {}
 
 void CollisionsP12::collide_single(double m_real_a, double m_real_b,
-				   double q_real_a, double q_real_b,
-                                   vector<double> &pa, vector<double> &pb,
+                                   double q_real_a, double q_real_b,
+                                   Particle &pa, Particle &pb,
                                    double _density_a, double _density_b,
                                    double _debye)
 {

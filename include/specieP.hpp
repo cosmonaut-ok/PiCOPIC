@@ -43,49 +43,72 @@ using namespace std;
 //! define service constant "particle`s vector size"
 #define P_VEC_SIZE 13
 
-// getters from particles vector
-#define PP_POS_R(var, p_num) (*var[p_num])[0]
-#define PP_POS_PHI(var, p_num) (*var[p_num])[1]
-#define PP_POS_Z(var, p_num) (*var[p_num])[2]
-
-#define PP_POS_OLD_R(var, num) (*var[num])[3]
-#define PP_POS_OLD_PHI(var, num) (*var[num])[4]
-#define PP_POS_OLD_Z(var, num) (*var[num])[5]
-
-#define PP_VEL_R(var, num) (*var[num])[6]
-#define PP_VEL_PHI(var, num) (*var[num])[7]
-#define PP_VEL_Z(var, num) (*var[num])[8]
-
-#define PP_WEIGHT(var, num) (*var[num])[9]
-
-// service variables to correct cartesian to cylindrical geometry
-#define PP_SIN(var, num) (*var[num])[10]
-#define PP_COS(var, num) algo::common::sq_rt( 1 - (*var[num])[10] * (*var[num])[10] )
-
-#define PP_CELL_R(var, num) (*var[num])[11]
-#define PP_CELL_Z(var, num) (*var[num])[12]
-
 // getters from particle directly
-#define P_POS_R(var) var[0]
-#define P_POS_PHI(var) var[1]
-#define P_POS_Z(var) var[2]
+#define P_POS_R(var) var.pos_r
+#define P_POS_PHI(var) var.pos_phi
+#define P_POS_Z(var) var.pos_z
 
-#define P_POS_OLD_R(var) var[3]
-#define P_POS_OLD_PHI(var) var[4]
-#define P_POS_OLD_Z(var) var[5]
+#define P_POS_OLD_R(var) var.pos_old_r
+#define P_POS_OLD_PHI(var) var.pos_old_phi
+#define P_POS_OLD_Z(var) var.pos_old_z
 
-#define P_VEL_R(var) var[6]
-#define P_VEL_PHI(var) var[7]
-#define P_VEL_Z(var) var[8]
+#define P_VEL_R(var) var.vel_r
+#define P_VEL_PHI(var) var.vel_phi
+#define P_VEL_Z(var) var.vel_z
 
-#define P_WEIGHT(var) var[9]
+#define P_WEIGHT(var) var.weight
 
 // service variables to correct cartesian to cylindrical geometry
-#define P_SIN(var) var[10]
-#define P_COS(var) algo::common::sq_rt(1 - var[10] * var[10])
+#define P_SIN(var) var.sin
+#define P_COS(var) algo::common::sq_rt(1 - var.sin * var.sin)
 
-#define P_CELL_R(var) var[11]
-#define P_CELL_Z(var) var[12]
+#define P_CELL_R(var) var.cell_r
+#define P_CELL_Z(var) var.cell_z
+
+#define P_MARK(var) var.mark
+
+struct Particle
+{
+// getters from particle directly
+  double pos_r;
+  double pos_phi;
+  double pos_z;
+
+  double pos_old_r;
+  double pos_old_phi;
+  double pos_old_z;
+
+  double vel_r;
+  double vel_phi;
+  double vel_z;
+
+  double weight;
+  double sin;
+
+  size_t cell_r;
+  size_t cell_z;
+  size_t mark;
+
+  Particle ()
+  {
+// getters from particle directly
+    pos_r = 0;
+    pos_phi = 0;
+    pos_z = 0;
+
+    pos_old_r = 0;
+    pos_old_phi = 0;
+    pos_old_z = 0;
+    vel_r = 0;
+    vel_phi = 0;
+    vel_z = 0;
+    weight = 0;
+    sin = 0;
+    cell_r = 0;
+    cell_z = 0;
+    mark = 0;
+  }
+};
 
 class FieldE;
 class FieldH;
@@ -128,7 +151,8 @@ public:
   //! - P_SIN(particles_variable, particle_number)
   //! - P_COS(particles_variable, particle_number)
   //! - P_ALIVE(particles_variable, particle_number)
-  vector< vector<double> * > particles;
+  // vector< vector<double> * > particles;
+  vector< Particle * > particles;
 
   Geometry *geometry;
 

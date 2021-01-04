@@ -46,8 +46,8 @@ Collisions::Collisions (Geometry* _geometry, TimeSim *_time, vector <SpecieP *> 
       charge_ion = (**ps).charge;
     }
   }
-  map_el2cell = Grid<vector< vector<double> * >> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
-  map_ion2cell = Grid<vector< vector<double> * >> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  map_el2cell = Grid<vector< Particle * >> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+  map_ion2cell = Grid<vector< Particle * >> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
 
   energy_tot_el = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
   amount_tot_el = Grid<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);

@@ -51,8 +51,8 @@ protected:
   vector <SpecieP *> species_p;
   SpecieP* specie_el;
   SpecieP* specie_ion;
-  Grid < vector< vector<double> * > > map_el2cell;
-  Grid < vector< vector<double> * > > map_ion2cell;
+  Grid < vector< Particle * > > map_el2cell;
+  Grid < vector< Particle * > > map_ion2cell;
 
   Grid < double > energy_tot_el;
   Grid < double > amount_tot_el;

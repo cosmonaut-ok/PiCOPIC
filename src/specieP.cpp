@@ -77,7 +77,7 @@ SpecieP::SpecieP (unsigned int p_id,
 SpecieP::~SpecieP()
 {
   for (auto i = particles.begin(); i != particles.end(); i++)
-    (**i).clear();
+    delete *i;
   particles.clear();
 }
 
@@ -157,7 +157,8 @@ void SpecieP::rectangular_random_placement (unsigned int int_cell_number,
 
   for (unsigned int i = 0; i < macro_amount; i++)
   {
-    vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
+    // vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
+    Particle *n = new Particle();
 
 #ifdef SWITCH_PLASMA_SPATIAL_RANDOM
     rand_r = math::random::uniform1();
@@ -220,7 +221,8 @@ void SpecieP::rectangular_regular_placement (unsigned int int_cell_number,
   for (double i = MNZL; i <= r_size - r_macro_interval; i += r_macro_interval)
     for (double j = MNZL; j <= z_size - z_macro_interval; j += z_macro_interval)
     {
-      vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
+      Particle *n = new Particle();
+      // vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
 
       P_POS_R((*n)) = i;
       P_POS_Z((*n)) = j;
@@ -263,7 +265,8 @@ void SpecieP::rectangular_centered_placement (unsigned int int_cell_number,
         double r_place = dr * rc + MNZL;
         double z_place = dz * zc + MNZL;
 
-        vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
+        Particle *n = new Particle();
+        // vector<double> *n = new vector<double>(P_VEC_SIZE, 0);
 
         P_POS_R((*n)) = r_place;
         P_POS_Z((*n)) = z_place;
