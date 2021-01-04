@@ -147,23 +147,23 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
           Grid<double> *value;
 
           // map outWriter to the grid of values
-          if (prb->component.compare("E_r") == 0)
+          if (prb->component.compare("E/r") == 0)
             value = &(dmn->maxwell_solver->field_e[0]);
-          else if (prb->component.compare("E_phi") == 0)
+          else if (prb->component.compare("E/phi") == 0)
             value = &(dmn->maxwell_solver->field_e[1]);
-          else if (prb->component.compare("E_z") == 0)
+          else if (prb->component.compare("E/z") == 0)
             value = &(dmn->maxwell_solver->field_e[2]);
-          else if (prb->component.compare("H_r") == 0)
+          else if (prb->component.compare("H/r") == 0)
             value = &(dmn->maxwell_solver->field_h_at_et[0]);
-          else if (prb->component.compare("H_phi") == 0)
+          else if (prb->component.compare("H/phi") == 0)
             value = &(dmn->maxwell_solver->field_h_at_et[1]);
-          else if (prb->component.compare("H_z") == 0)
+          else if (prb->component.compare("H/z") == 0)
             value = &(dmn->maxwell_solver->field_h_at_et[2]);
-          else if (prb->component.compare("J_r") == 0)
+          else if (prb->component.compare("J/r") == 0)
             value = &(dmn->current->current[0]);
-          else if (prb->component.compare("J_phi") == 0)
+          else if (prb->component.compare("J/phi") == 0)
             value = &(dmn->current->current[1]);
-          else if (prb->component.compare("J_z") == 0)
+          else if (prb->component.compare("J/z") == 0)
             value = &(dmn->current->current[2]);
           else if (prb->component.compare("temperature") == 0)
           {

@@ -110,7 +110,7 @@ def run(config_path, clim_e_r, clim_e_z, clim_t, clim_rho, video_file=None, spec
 
     # dirty hack
     for p in reader.meta.probes:
-        if p.component == 'E_r' or p.component == 'E_z' or (p.component == 'rho_beam' and p.specie == 'beam_electrons'):
+        if p.component == 'E/r' or p.component == 'E/z' or (p.component == 'rho_beam' and p.specie == 'beam_electrons'):
             dump_interval = p.schedule
             break
 
@@ -140,8 +140,8 @@ def run(config_path, clim_e_r, clim_e_z, clim_t, clim_rho, video_file=None, spec
             if i % frame_step == 0:
                 sys.stdout.write('Loading dataset ' + str(i) + '... ')
                 sys.stdout.flush()
-                data_r = reader.rec('E_r', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
-                data_z = reader.rec('E_z', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_r = reader.rec('E/r', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_z = reader.rec('E/z', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
                 data_t = reader.rec("temperature/{}".format(specie_t), frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
                 data_rho = reader.rec('density/{}'.format(specie_rho), frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
 

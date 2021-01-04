@@ -69,63 +69,63 @@
     },
     "probes": [
       {
-        "component": "E_r",
+        "component": "E/r",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 64, "z": 256 }
       },
       {
-        "component": "E_phi",
+        "component": "E/phi",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 64, "z": 256 }
       },
       {
-        "component": "E_z",
+        "component": "E/z",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 64, "z": 256 }
       },
       {
-        "component": "H_r",
+        "component": "H/r",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 64, "z": 256 }
       },
       {
-        "component": "H_phi",
+        "component": "H/phi",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 64, "z": 256 }
       },
       {
-        "component": "H_z",
+        "component": "H/z",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 64, "z": 256 }
       },
       {
-        "component": "J_r",
+        "component": "J/r",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 64, "z": 256 }
       },
       {
-        "component": "J_phi",
+        "component": "J/phi",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },
         "end": { "r": 64, "z": 256 }
       },
       {
-        "component": "J_z",
+        "component": "J/z",
         "schedule": 10,
         "shape": "rec",
         "start": { "r": 0, "z": 0 },

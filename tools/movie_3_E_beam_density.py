@@ -54,7 +54,7 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
         if (probe.shape == 'rec') and (probe.size[0] == frame_size[0]) and (probe.size[1] == frame_size[1]) and(probe.size[2] == frame_size[2]) and(probe.size[3] == frame_size[3]):
             frame_src_size = probe.size
         # dirty hack, try to detect dump interval
-        if probe.component == 'E_r' or probe.component == 'E_z' or (probe.component == 'rho_beam' and probe.specie == 'beam_electrons'):
+        if probe.component == 'E/r' or probe.component == 'E/z' or (probe.component == 'density' and probe.specie == 'beam_electrons'):
             dump_interval = probe.schedule
 
     # try bigger frames, if autoselect enabled
@@ -126,8 +126,8 @@ def run(config_path, clim_e_r, clim_e_z, rho_beam_scale, video_file=None,
             if i % frame_step == 0:
                 sys.stdout.write('Loading dataset ' + str(i) + '... ')
                 sys.stdout.flush()
-                data_r = reader.rec('E_r', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
-                data_z = reader.rec('E_z', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_r = reader.rec('E/r', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
+                data_z = reader.rec('E/z', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
                 data_beam = reader.rec('density/beam_electrons', frame_src_size, i)[frame_size[0]:frame_size[2], frame_size[1]:frame_size[3]]
 
                 # add timestamp to each frame
