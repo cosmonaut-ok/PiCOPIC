@@ -158,7 +158,7 @@ test: clean test-unit
 	@python3 ./test/functional/test.py
 
 test-perf:
-	@python3 ./test/performance/test.py -n 5
+	@python3 ./test/performance/test.py -l 5
 
 # test-ext: clean
 # 	@python3 ./test/functional/test.py --type=ext
