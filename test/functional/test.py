@@ -224,23 +224,23 @@ def test_example(template_name, number, accept_ieee=True,
     t.verbose = verbose
     t.debug = debug
 
-    t.components['E_r'] = 'rec/0-32_0-128'
-    t.components['E_phi'] = 'rec/0-32_0-128'
-    t.components['E_z'] = 'rec/0-32_0-128'
+    t.components['E/r'] = 'rec/0-32_0-128'
+    t.components['E/phi'] = 'rec/0-32_0-128'
+    t.components['E/z'] = 'rec/0-32_0-128'
 
-    t.components['H_r'] = 'rec/0-32_0-128'
-    t.components['H_phi'] = 'rec/0-32_0-128'
-    t.components['H_z'] = 'rec/0-32_0-128'
+    t.components['H/r'] = 'rec/0-32_0-128'
+    t.components['H/phi'] = 'rec/0-32_0-128'
+    t.components['H/z'] = 'rec/0-32_0-128'
 
-    t.components['J_r'] = 'rec/0-32_0-128'
-    t.components['J_phi'] = 'rec/0-32_0-128'
-    t.components['J_z'] = 'rec/0-32_0-128'
+    t.components['J/r'] = 'rec/0-32_0-128'
+    t.components['J/phi'] = 'rec/0-32_0-128'
+    t.components['J/z'] = 'rec/0-32_0-128'
 
     # compare positions and velocities
     t.components['T/Electrons'] = 'frame_100:100_150:150'
     t.components['T/Ions'] = 'frame_100:100_150:150'
 
-    components = ['E_r', 'E_phi', 'E_z', 'H_r', 'H_phi', 'H_z', 'J_r', 'J_phi', 'J_z']
+    components = ['E/r', 'E/phi', 'E/z', 'H/r', 'H/phi', 'H/z', 'J/r', 'J/phi', 'J/z']
     for i in components:
         s = t.compare(i, number)
         if status: status = s
