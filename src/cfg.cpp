@@ -183,14 +183,14 @@ void Cfg::init_particles()
 
     string specie_name = o["name"].get<string>();
 
-    unsigned int current_specie_id = algo::common::hash_from_string(specie_name, SPECIE_HASH_SALT);
+    unsigned short current_specie_id = algo::common::hash_from_string(specie_name, SPECIE_HASH_SALT);
+
+    LOG_S(MAX) << "Specie ID is ``" << current_specie_id << "'' for ``" << specie_name << "''";
 
     p_s.id = current_specie_id;
     p_s.name = specie_name;
     p_s.mass = (int)o["mass"].get<double>();
     p_s.charge = (int)o["charge"].get<double>();
-    // p_s.left_density = o["density"].get<object>()["left"].get<double>();
-    // p_s.right_density = o["density"].get<object>()["right"].get<double>();
     p_s.left_density = o["density"].get<double>(); // TODO: density profile still not supported, but planned
     p_s.right_density = o["density"].get<double>(); // TODO: density profile still not supported, but planned
     p_s.temperature = o["temperature"].get<double>();
@@ -342,6 +342,8 @@ void Cfg::init_beam()
 
       // ! calculate current beam ID from its name:
       unsigned int current_beam_id = algo::common::hash_from_string(beam_name, BEAM_HASH_SALT);
+
+      LOG_S(MAX) << "Beam ID is ``" << current_beam_id << "'' for ``" << beam_name << "''";
 
       p_b.id = current_beam_id;
       p_b.name = beam_name;

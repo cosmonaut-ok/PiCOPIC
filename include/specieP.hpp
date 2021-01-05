@@ -41,7 +41,7 @@
 using namespace std;
 
 //! define service constant "particle`s vector size"
-#define P_VEC_SIZE 13
+#define P_BLOCK_AMOUNT 15
 
 // getters from particle directly
 #define P_POS_R(var) var.pos_r
@@ -66,8 +66,9 @@ using namespace std;
 #define P_CELL_Z(var) var.cell_z
 
 #define P_MARK(var) var.mark
+#define P_SPECIE_ID(var) var.specie_id
 
-struct Particle
+typedef struct Particle_struct
 {
 // getters from particle directly
   double pos_r;
@@ -87,9 +88,12 @@ struct Particle
 
   size_t cell_r;
   size_t cell_z;
+  
   size_t mark;
+  
+  unsigned short specie_id;
 
-  Particle ()
+  Particle_struct ()
   {
 // getters from particle directly
     pos_r = 0;
@@ -107,8 +111,9 @@ struct Particle
     cell_r = 0;
     cell_z = 0;
     mark = 0;
+    specie_id = 0;
   }
-};
+} Particle;
 
 class FieldE;
 class FieldH;
@@ -117,7 +122,7 @@ class MaxwellSolver;
 class SpecieP
 {
 public:
-  unsigned int id;
+  unsigned short id;
 
   string name;
 

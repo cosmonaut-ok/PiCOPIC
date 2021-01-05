@@ -216,9 +216,9 @@ namespace algo::common
     return res;
   }
 
-  unsigned int hash_from_string (const std::string& str, unsigned int salt)
+  unsigned short hash_from_string (const std::string& str, unsigned short salt)
   {
-    unsigned int ret = salt;
+    unsigned short ret = salt;
     for (std::size_t i = 0; i < str.length(); i++)
       ret ^= ((ret << 5) + str[i] + (ret >> 2));
 

@@ -41,6 +41,20 @@
 #define BEAM_ID_START 1000
 
 #ifdef ENABLE_MPI
+#if SIZE_MAX == UCHAR_MAX
+   #define MPI_SIZE_T MPI_UNSIGNED_CHAR
+#elif SIZE_MAX == USHRT_MAX
+   #define MPI_SIZE_T MPI_UNSIGNED_SHORT
+#elif SIZE_MAX == UINT_MAX
+   #define MPI_SIZE_T MPI_UNSIGNED
+#elif SIZE_MAX == ULONG_MAX
+   #define MPI_SIZE_T MPI_UNSIGNED_LONG
+#elif SIZE_MAX == ULLONG_MAX
+   #define MPI_SIZE_T MPI_UNSIGNED_LONG_LONG
+#else
+   #error "what is happening here?"
+#endif
+
 //// MPI comm overlay struct
 struct MPICommOverlay
 {
@@ -107,22 +121,22 @@ struct MPICommOverlay
   void make_dtype()
   {
     const int nblock = 14;
-    int block_count[nblock] =
+    const int block_count[nblock] =
       {
         1,
-        col_0_0.size(),
-        col_0_1.size(),
-        col_0_2.size(),
-        col_1_0.size(),
-        col_1_1.size(),
-        col_1_2.size(),
-        col_2_0.size(),
-        col_2_1.size(),
-        col_2_2.size(),
-        col_3_0.size(),
-        col_3_1.size(),
-        col_3_2.size(),
-        dst_domain.size()
+        (int)col_0_0.size(),
+        (int)col_0_1.size(),
+        (int)col_0_2.size(),
+        (int)col_1_0.size(),
+        (int)col_1_1.size(),
+        (int)col_1_2.size(),
+        (int)col_2_0.size(),
+        (int)col_2_1.size(),
+        (int)col_2_2.size(),
+        (int)col_3_0.size(),
+        (int)col_3_1.size(),
+        (int)col_3_2.size(),
+        (int)dst_domain.size()
       };
 
     MPI_Datatype block_type[nblock] =
