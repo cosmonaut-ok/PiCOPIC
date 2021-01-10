@@ -26,9 +26,9 @@
 
 #if defined(SWITCH_PUSHER_BORIS_ADAPTIVE) || defined(SWITCH_PUSHER_BORIS) || defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
 #include "pusher/pusherBoris.hpp"
-#elif defined(SWITCH_PUSHER_VAY
+#elif defined(SWITCH_PUSHER_VAY)
 #include "pusher/pusherVay.hpp"
-#elif defined(SWITCH_PUSHER_HC
+#elif defined(SWITCH_PUSHER_HC)
 #include "pusher/pusherHC.hpp"
 #endif
 
