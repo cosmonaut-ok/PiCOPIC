@@ -172,6 +172,6 @@ class H5Reader (Reader):
 
         for i in range(start_number, end_number):
             self.__validate_rec__(p_component, shape, i)
-            recs[i-start_number] = self.get_rec(p_component, shape, i)
+            recs[i-start_number] = self.rec(p_component, shape, i)
 
         return(recs)

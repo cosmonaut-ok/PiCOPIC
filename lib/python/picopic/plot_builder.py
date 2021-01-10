@@ -124,7 +124,8 @@ class PlotBuilder:
         self.__subplots__[name] = subplot
 
         #  set aspect
-        subplot.set_aspect(aspect or self.aspect)
+        if projection != '3d':
+            subplot.set_aspect(aspect or self.aspect)
 
         # set position of needed
         invert_y_axe = self.is_invert_y_axe if is_invert_y_axe is None else is_invert_y_axe
@@ -229,15 +230,35 @@ class PlotBuilder:
         return subplot
 
 
-#     def add_subplot_cartesian_3d(self, name, number, title=None, x_axe_label='X', y_axe_label='Y', z_axe_label='Z',
-#                       tickbox=False, grid=False, position=None):
-#         ''' https://matplotlib.org/gallery/mplot3d/subplot3d.html '''
-#         subplot = self.__add_subplot_common__(name, number, title or name,
-#                                               x_axe_label, y_axe_label, z_axe_label,
-#                                               tickbox, grid, position, True,
-#                                               projection='3d')
+    def add_subplot_cartesian_3d(self, name, number, title=None,
+                                 x_plot_size=None, y_plot_size=None,
+                                 x_axe_label='X', y_axe_label='Y',
+                                 x_ticklabel_start=None, y_ticklabel_start=None,
+                                 x_ticklabel_end=None, y_ticklabel_end=None,
+                                 number_x_ticks=None, number_y_ticks=None,
+                                 tickbox=None, grid=None, is_invert_y_axe=None,
+                                 position=None, aspect=None):
+        ''' add 2D subplot, cartesian projection '''
 
-#         return(subplot)
+        subplot = self.__add_subplot_common__(name, number, projection='3d',
+                                              title=title,
+                                              x_plot_size=x_plot_size,
+                                              y_plot_size=y_plot_size,
+                                              x_axe_label=x_axe_label,
+                                              y_axe_label=y_axe_label,
+                                              x_ticklabel_start=x_ticklabel_start,
+                                              y_ticklabel_start=y_ticklabel_start,
+                                              x_ticklabel_end=x_ticklabel_end,
+                                              y_ticklabel_end=y_ticklabel_end,
+                                              number_x_ticks=number_x_ticks,
+                                              number_y_ticks=number_y_ticks,
+                                              tickbox=tickbox,
+                                              grid=grid,
+                                              is_invert_y_axe=is_invert_y_axe,
+                                              position=position,
+                                              aspect=aspect)
+
+        return subplot
 
 
     def add_image(self, subplot_name, data, cmap=None, clim=None, interpolation=None):
