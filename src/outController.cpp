@@ -168,20 +168,43 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
           else if (prb->component.compare("temperature") == 0)
           {
             SpecieP *speciep;
+            bool specie_exists = false;
             for (auto ps = dmn->species_p.begin(); ps != dmn->species_p.end(); ++ps)
               if (prb->specie.compare((**ps).name) == 0)
+              {
                 speciep = (*ps);
+                value = &(speciep->temperature_map);
+                specie_exists = true;
+              }
 
-            value = &(speciep->temperature_map);
+            if (! specie_exists)
+            {
+              LOG_S(WARNING) << "There is no particles specie ``"
+                             << prb->specie
+                             << "''. Probe dump is impossible";
+              continue;
+            }
           }
           else if (prb->component.compare("density") == 0)
           {
             SpecieP *speciep;
+            bool specie_exists = false;
+
             for (auto ps = dmn->species_p.begin(); ps != dmn->species_p.end(); ++ps)
               if (prb->specie.compare((**ps).name) == 0)
+              {
                 speciep = (*ps);
+                value = &(speciep->density_map);
+                specie_exists = true;
+              }
 
-            value = &(speciep->density_map);
+            if (!specie_exists)
+            {
+              LOG_S(WARNING) << "There is no particles specie ``"
+                             << prb->specie
+                             << "''. Probe dump is impossible";
+              continue;
+            }
           }
           else
             LOG_S(ERROR) << "Unknown probe component ``" << prb->component << "''";
@@ -235,7 +258,7 @@ void OutController::init_datasets()
     {
       //// print header every 30 values
       if (print_progress_table)
-	msg::print_header (30, time);
+        msg::print_header (30, time);
 
       string shape_name;
       size_t slices = (size_t)(ceil(current_time_step / prb->schedule));
@@ -273,10 +296,17 @@ void OutController::init_datasets()
         {
           Domain *sim_domain = smb->domains(r, z);
           SpecieP *speciep;
+          bool specie_exists = false;
 
           for (auto ps = sim_domain->species_p.begin(); ps != sim_domain->species_p.end(); ++ps)
             if (prb->specie.compare((**ps).name) == 0)
+            {
               speciep = (*ps);
+              specie_exists = true;
+            }
+
+          if (!specie_exists)
+            continue; // skip if there is no specie for probe
 
           if (prb->component.compare("density") == 0)
             speciep->calc_density();
@@ -290,20 +320,35 @@ void OutController::init_datasets()
         {
           Domain *sim_domain = smb->domains(i, j);
           SpecieP *speciep;
+          bool specie_exists = false;
 
           for (auto ps = sim_domain->species_p.begin(); ps != sim_domain->species_p.end(); ++ps)
             if (prb->specie.compare((**ps).name) == 0)
+            {
               speciep = (*ps);
+              specie_exists = true;
+            }
+
+          if (!specie_exists)
+            continue; // skip if there is no specie for probe
 
           // update grid
           if (i < geometry->domains_amount[0] - 1)
           {
             Domain *dst_domain = smb->domains(i+1, j);
             SpecieP *speciep_dst;
+            bool specie_exists = false;
 
             for (auto ps = dst_domain->species_p.begin(); ps != dst_domain->species_p.end(); ++ps)
               if (prb->specie.compare((**ps).name) == 0)
+              {
                 speciep_dst = (*ps);
+                specie_exists = true;
+              }
+            if (!specie_exists)
+              LOG_S(FATAL) << "There is no particles specie ``"
+                           << prb->specie
+                           << "'' in destination domain, while overlaying for probe dump. Exiting";
 
             if (prb->component.compare("density") == 0)
               speciep->density_map.overlay_x(speciep_dst->density_map);
@@ -315,10 +360,19 @@ void OutController::init_datasets()
           {
             Domain *dst_domain = smb->domains(i, j + 1);
             SpecieP *speciep_dst;
+            bool specie_exists = false;
 
             for (auto ps = dst_domain->species_p.begin(); ps != dst_domain->species_p.end(); ++ps)
               if (prb->specie.compare((**ps).name) == 0)
+              {
                 speciep_dst = (*ps);
+                specie_exists = true;
+              }
+
+            if (!specie_exists)
+              LOG_S(FATAL) << "There is no particles specie ``"
+                           << prb->specie
+                           << "'' in destination domain, while overlaying for probe dump. Exiting";
 
             if (prb->component.compare("density") == 0)
               speciep->density_map.overlay_y(speciep_dst->density_map);
@@ -333,7 +387,7 @@ void OutController::init_datasets()
           // }
         }
       if (print_progress_table)
-	msg::print_values (prb->path, shape_name, prb->schedule, time);
+        msg::print_values (prb->path, shape_name, prb->schedule, time);
     }
   }
 }

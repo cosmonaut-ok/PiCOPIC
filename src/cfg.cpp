@@ -183,6 +183,11 @@ void Cfg::init_particles()
 
     string specie_name = o["name"].get<string>();
 
+    for (auto sp = particle_species.begin(); sp != particle_species.end(); ++sp)
+      if (sp->name.compare(specie_name) == 0)
+        LOG_S(FATAL) << "Particles specie name ``" << specie_name
+                     << "'' already exists. Names should be unique";
+
     unsigned short current_specie_id = algo::common::hash_from_string(specie_name, SPECIE_HASH_SALT);
 
     LOG_S(MAX) << "Specie ID is ``" << current_specie_id << "'' for ``" << specie_name << "''";
@@ -339,6 +344,11 @@ void Cfg::init_beam()
       object& b_o = o["bunch"].get<object>();
 
       string beam_name = "beam_" + o["name"].get<string>();
+
+      for (auto bm = particle_beams.begin(); bm != particle_beams.end(); ++bm)
+        if (bm->name.compare(beam_name) == 0)
+          LOG_S(FATAL) << "Beam name ``" << o["name"].get<string>()
+                       << "'' already exists. Beam names should be unique";
 
       // ! calculate current beam ID from its name:
       unsigned int current_beam_id = algo::common::hash_from_string(beam_name, BEAM_HASH_SALT);
