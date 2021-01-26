@@ -243,8 +243,8 @@ void SMB::particles_runaway_collector ()
                   if (r_cell < 0 || z_cell < 0)
                   {
                     LOG_S(ERROR) << "Particle's position is less, than 0. Position is: ["
-                                 << P_VEL_R((*o)) << ", "
-                                 << P_VEL_Z((*o)) << "]. Removing";
+                                 << P_POS_R((*o)) << ", "
+                                 << P_POS_Z((*o)) << "]. Removing";
                     ++r_c;
                     res = true;
                   }
