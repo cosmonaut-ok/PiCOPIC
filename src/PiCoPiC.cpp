@@ -167,6 +167,7 @@ int main(int argc, char **argv)
   // make log message shorter
   // we don't really need
   // date and time in logfile
+  loguru::g_preamble_header = false;
   loguru::g_preamble_date = false;
   loguru::g_preamble_time = false;
 
