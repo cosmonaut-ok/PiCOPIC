@@ -162,7 +162,13 @@ int main(int argc, char **argv)
   s_options.sigterm = false;
 
   static loguru::Options options = loguru::Options();
-  options.signals = s_options;
+  options.signal_options = s_options;
+
+  // make log message shorter
+  // we don't really need
+  // date and time in logfile
+  loguru::g_preamble_date = false;
+  loguru::g_preamble_time = false;
 
   loguru::init(argc, argv, options);
 

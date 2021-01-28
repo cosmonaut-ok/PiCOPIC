@@ -47,7 +47,7 @@ INCLUDE_PATH += -I$(loguru_SUBDIR)
 LDFLAGS += -L$(loguru_SUBDIR)
 PiCoPiC_LIBRARIES += pthread
 PiCoPiC_LIBRARIES += dl
-loguru_DEFINES := -DLOGURU_WITH_STREAMS=1
+loguru_DEFINES := -DLOGURU_WITH_STREAMS=1 -DLOGURU_THREADNAME_WIDTH=12
 
 ### link hdf5 and HighFive libraries
 ifeq (@ENABLE_HDF5@, true)
