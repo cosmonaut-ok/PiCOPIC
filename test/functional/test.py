@@ -13,6 +13,9 @@ import time
 # from scipy.fftpack import fft
 # from scipy import stats
 
+from pygments.lexers import JsonLexer
+from json import dumps
+
 import jinja2 as j2
 
 import colorama
@@ -135,10 +138,10 @@ class bootstrap ():
 
     def __del__(self):
         utils = Util()
-        # print("Clearing testing data")
-        # if not self.keep_working_dir:
-        #     shutil.rmtree(self.testdir, ignore_errors=True)
-        # utils.cliexec('make clean', cwd=self.rootdir, view=False, wait=True)
+        print("Clearing testing data")
+        if not self.keep_working_dir:
+            shutil.rmtree(self.testdir, ignore_errors=True)
+        utils.cliexec('make clean', cwd=self.rootdir, view=False, wait=True)
 
 
 class picopicTest ():
@@ -153,26 +156,39 @@ class picopicTest ():
 
         self.true_data_dir = os.path.join(me, 'true_data')
 
-    def compare(self, component_name, filename):
+    def fetch_test_data(self, component_name, filename):
         frame_name = self.components[component_name]
         h5file = h5py.File(os.path.join(self.testdir, self.meta.data_path, 'data.h5'), 'r')
-        true_path = os.path.join(me, 'true_data', component_name, frame_name, str(filename))
 
         dset = h5file[os.path.join('/', component_name, frame_name)][filename]
         shape = dset.shape
         test_data = np.reshape(dset[...], (shape[0] * shape[1]))
+
+        return(test_data)
+
+
+    def compare(self, component_name, filename):
+        frame_name = self.components[component_name]
+        true_path = os.path.join(me, 'true_data', component_name, frame_name, str(filename))
+
+        test_data = self.fetch_test_data(component_name, filename)
         true_data = np.fromfile('{}.dat'.format(true_path), dtype=float, sep=' ')
 
         isc = True
 
+        # mean
+        test_value_mean = np.nanmean(test_data)
+        true_value_mean = true_data[0]
+        isc = np.allclose(test_value_mean, true_value_mean, rtol=self.r_tol, atol=self.a_tol)
+
         # standard deviation
         test_value_std = np.nanstd(test_data)
-        true_value_std = true_data[0]
+        true_value_std = true_data[1]
         isc = np.allclose(test_value_std, true_value_std, rtol=self.r_tol, atol=self.a_tol)
 
         # variance
         test_value_var = np.nanvar(test_data)
-        true_value_var = true_data[1]
+        true_value_var = true_data[2]
         if isc:
             isc = np.allclose(test_value_var, true_value_var, rtol=self.r_tol, atol=self.a_tol)
 
@@ -237,8 +253,8 @@ def test_example(template_name, number, accept_ieee=True,
     t.components['J/z'] = 'rec/0-32_0-128'
 
     # compare positions and velocities
-    t.components['T/Electrons'] = 'frame_100:100_150:150'
-    t.components['T/Ions'] = 'frame_100:100_150:150'
+    # t.components['T/Electrons'] = 'frame_100:100_150:150'
+    # t.components['T/Ions'] = 'frame_100:100_150:150'
 
     components = ['E/r', 'E/phi', 'E/z', 'H/r', 'H/phi', 'H/z', 'J/r', 'J/phi', 'J/z']
     for i in components:
@@ -248,6 +264,80 @@ def test_example(template_name, number, accept_ieee=True,
     return status
 
 
+def collect_true_data (template_name, number, accept_ieee=True,
+                       verbose=False, debug=False):
+
+    components = ['E/r', 'E/phi', 'E/z', 'H/r', 'H/phi', 'H/z', 'J/r', 'J/phi', 'J/z']
+
+    mean_dic = {}
+    std_dic = {}
+    var_dic = {}
+
+    mean_dic_mean = {}
+    std_dic_mean = {}
+    var_dic_mean = {}
+
+    for c in components:
+        mean_dic[c] = []
+        std_dic[c] = []
+        var_dic[c] = []
+
+    b = bootstrap(testdir='testingdir',
+                  parameters_template_name=template_name,
+                  keep_working_dir=debug, # if debug, keep working dir for analysis
+                  accept_ieee=accept_ieee,
+                  verbose=verbose,
+                  debug=debug)
+
+    for i in range(0, 100000):
+
+        print(Fore.YELLOW + "Launch iteration " + str(i) + Style.RESET_ALL)
+
+        t = picopicTest(os.path.join(b.testdir, 'PiCoPiC.json'),
+                        rel_tolerance=0,
+                        abs_tolerance=0)
+        t.verbose = verbose
+        t.debug = debug
+
+        for c in components:
+            t.components[c] = 'rec/0-32_0-128'
+
+        # compare positions and velocities
+        t.components['T/Electrons'] = 'frame_100:100_150:150'
+        t.components['T/Ions'] = 'frame_100:100_150:150'
+
+        for c in components:
+            test_data = t.fetch_test_data(c, number)
+            test_value_mean = np.nanmean(test_data)
+            test_value_std = np.nanstd(test_data)
+            test_value_var = np.nanvar(test_data)
+
+            mean_dic[c].append(test_value_mean)
+            std_dic[c].append(test_value_std)
+            var_dic[c].append(test_value_var)
+
+        print(Fore.YELLOW + "iteration " + str(i) + Fore.BLUE + " done" + Style.RESET_ALL)
+
+    for c in components:
+        mean_dic_mean[c] = np.nanmean(mean_dic[c])
+        std_dic_mean[c] = np.nanmean(std_dic[c])
+        var_dic_mean[c] = np.nanmean(var_dic[c])
+        # mean_sum = 0
+        # std_sum = 0
+        # var_sum = 0
+        # for item in mean_dic[c]:
+        #     mean_sum += item
+        # for item in std_dic[c]:
+        #     std_sum += item
+        # for item in var_dic[c]:
+        #     var_sum += item
+        # mean_dic_mean[c] = mean_sum / len(mean_dic[c])
+        # std_dic_mean[c] = std_sum / len(std_dic[c])
+        # var_dic_mean[c] = var_sum / len(var_dic[c])
+
+    return([mean_dic_mean, std_dic_mean, var_dic_mean])
+
+
 def regression_test_example(template_name, accept_ieee=True, verbose=False, debug=False):
     status=True
 
@@ -255,7 +345,7 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
 
     b = bootstrap(testdir='testingdir',
                   parameters_template_name=template_name,
-                  keep_working_dir=verbose, # if verbose, keep working dir for analysis
+                  keep_working_dir=debug, # if debug, keep working dir for analysis
                   accept_ieee=accept_ieee,
                   verbose=verbose,
                   debug=debug)
@@ -341,7 +431,6 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
     plot.add_colorbar(e_r_plot_name, ticks=clim_e_r, title=cbar_axis_label)
     plot.add_colorbar(e_z_plot_name, ticks=clim_e_z, title=cbar_axis_label)
     plot.add_colorbar(rho_beam_plot_name, ticks=clim_rho_beam, title=cbar_bunch_density_axis_label)
-
     # plot.show()
 
     data_r = data_z = data_beam = []
@@ -472,22 +561,59 @@ def regression_test_example(template_name, accept_ieee=True, verbose=False, debu
     return status
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--type', type=str, help='smoke, ext', default='smoke')
+    parser.add_argument('--type', type=str, help='collect_true_data, smoke, ext', default='smoke')
     parser.add_argument('--fastmath', action='store_true',
                         help='Use fast math, which are not compatible with IEEE calculation standard',
                         default=False)
     parser.add_argument('-v', '--verbose', action='count', default=0)
     parser.add_argument('-d', '--debug', action='count', default=0)
+    parser.add_argument('--color-style', type=str,
+                        help='Style of metadata colorization (works only with "--colorize" option)', default=None)
 
     args = parser.parse_args()
 
     ieee = not args.fastmath
     status = True
 
-    if args.type == 'smoke':
+    if args.type == 'collect_true_data':
+        status = collect_true_data('picopic.json.tmpl', 4,
+                                   accept_ieee=ieee,
+                                   verbose=args.verbose,
+                                   debug=args.debug)
+        mean_status = dumps(status[0], indent=2, sort_keys=True)
+        std_status = dumps(status[1], indent=2, sort_keys=True)
+        var_status = dumps(status[2], indent=2, sort_keys=True)
+        if args.color_style:
+            print(Fore.YELLOW
+                  + "`Mean` mean values for 4th simulation iteraction:\n"
+                  + Style.RESET_ALL,
+                  highlight(mean_status, JsonLexer(),
+                            Terminal256Formatter(style=args.color_style)))
+            print(Fore.YELLOW
+                  + "`Standard deviation` mean values for 4th simulation iteraction:\n"
+                  + Style.RESET_ALL,
+                  highlight(std_status, JsonLexer(), Terminal256Formatter(style=args.color_style)))
+            print(Fore.YELLOW
+                  + "`Variance` mean values for 4 simulationth iteraction:\n"
+                  + Style.RESET_ALL,
+                  highlight(var_status, JsonLexer(), Terminal256Formatter(style=args.color_style)))
+        else:
+            print(Fore.YELLOW
+                  + "`Mean` mean values for 4th simulation iteraction:\n"
+                  + Style.RESET_ALL,
+                  mean_status)
+            print(Fore.YELLOW
+                  + "`Standard deviation` mean values for 4th simulation iteraction:\n"
+                  + Style.RESET_ALL,
+                  std_status)
+            print(Fore.YELLOW
+                  + "`Variance` mean values for 4th simulation iteraction:\n" + Style.RESET_ALL
+                  + Style.RESET_ALL,
+                  var_status)
+
+    elif args.type == 'smoke':
         if ieee:
             rtol = 0.15
         else:
@@ -524,8 +650,10 @@ if __name__ == "__main__":
         raise Exception("there is no test type {}".format(args.type))
 
     if status:
-        print(Fore.BLUE + "Test PASSED" + Style.RESET_ALL)
+        if args.type != 'collect_true_data':
+            print(Fore.BLUE + "Test PASSED" + Style.RESET_ALL)
         exit(0)
     else:
-        print(Fore.RED + "Test FAILED" + Style.RESET_ALL)
+        if args.type != 'collect_true_data':
+            print(Fore.RED + "Test FAILED" + Style.RESET_ALL)
         exit(1)
