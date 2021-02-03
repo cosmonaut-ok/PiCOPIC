@@ -8,7 +8,6 @@ import h5py
 import shutil
 import subprocess
 import gzip
-import argparse
 import time
 # from scipy.fftpack import fft
 # from scipy import stats

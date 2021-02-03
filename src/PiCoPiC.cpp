@@ -162,7 +162,7 @@ int main(int argc, char **argv)
   s_options.sigterm = false;
 
   static loguru::Options options = loguru::Options();
-  options.signal_options = s_options;
+  options.signals = s_options;
 
   // make log message shorter
   // we don't really need

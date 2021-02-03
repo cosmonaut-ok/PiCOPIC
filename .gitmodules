@@ -13,6 +13,3 @@
 [submodule "lib/HighFive"]
 	path = lib/HighFive
 	url = https://github.com/BlueBrain/HighFive.git
-[submodule "lib/mpp"]
-	path = lib/mpp
-	url = https://github.com/motonacciu/mpp.git
