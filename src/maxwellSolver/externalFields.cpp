@@ -15,19 +15,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "maxwellSolver/maxwellSolverYee.hpp"
+#include "maxwellSolver/externalFields.hpp"
 
 using namespace constant;
 
-MaxwellSolverYee::MaxwellSolverYee ( Geometry *_geometry, TimeSim *_time,
-                                     Current *_current )
+ExternalFields::ExternalFields ( Geometry *_geometry, TimeSim *_time,
+                                 Current *_current )
   : MaxwellSolver(_geometry, _time, _current)
 {
-  // set field_h_at_et to zero-state
-  field_h_at_et = Grid3D<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
-  field_h_at_et = 0.;
-  field_h_at_et.overlay_set(0.);
-
   // emulate dielectric walls
   if (geometry->walls[0]) // r=0
     r_begin = 1;
@@ -54,7 +49,7 @@ MaxwellSolverYee::MaxwellSolverYee ( Geometry *_geometry, TimeSim *_time,
 #endif // ENABLE_PML
 }
 
-void MaxwellSolverYee::set_pml()
+void ExternalFields::set_pml()
 {
   double cell_size_r = geometry->cell_size[0];
   double cell_size_z = geometry->cell_size[1];
@@ -108,10 +103,9 @@ void MaxwellSolverYee::set_pml()
                           + lenght_sigma_right, 2));
 }
 
-void MaxwellSolverYee::calc_field_h()
+void ExternalFields::calc_field_h()
 {
   field_h.overlay_set(0);
-  field_h_at_et.overlay_set(0);
 
   double dr = geometry->cell_size[0];
   double dz = geometry->cell_size[1];
@@ -121,48 +115,23 @@ void MaxwellSolverYee::calc_field_h()
     for(int k = 0; k < geometry->cell_amount[1]; k++)
     {
       int i = geometry->cell_amount[0] - 1;
-      // alpha constant and delta_t production (to optimize calculations)
-      double alpha_t = time->step
-        * (field_e(1, i, k + 1) - field_e(1, i, k)) / (dz * MAGN_CONST);
 
-      field_h[0].set(i, k, field_h_at_et(0, i, k) + alpha_t / 2);
-      field_h_at_et[0].inc(i, k, alpha_t);
+      field_h[1].set(i, k, 0);
     }
 
   // regular case
   for (int i = 0; i < geometry->cell_amount[0]; i++)
     for (int k = 0; k < geometry->cell_amount[1]; k++)
     {
-      double alpha_t_r = time->step
-        * (field_e(1, i, k + 1) - field_e(1, i, k)) / (dz * MAGN_CONST);
-
-      field_h[0].set(i, k, field_h_at_et(0, i, k) + alpha_t_r / 2);
-      field_h_at_et[0].inc(i, k, alpha_t_r);
-
-      double alpha_t_phi = time->step
-        * ((field_e(2, i+1, k) - field_e(2, i, k)) / dr
-           - (field_e(0, i, k+1) - field_e(0, i, k)) / dz)
-        / MAGN_CONST;
-
-      field_h[1].set(i, k, field_h_at_et(1, i, k) + alpha_t_phi / 2);
-      field_h_at_et[1].inc(i, k, alpha_t_phi);
-
-      double alpha_t_z = time->step
-        * (
-          (field_e(1, i+1, k) + field_e(1, i, k)) / (2. * dr * (i + 0.5 + geometry->cell_dims[0]))
-          + (field_e(1, i+1, k) - field_e(1, i, k)) / dr)
-        / MAGN_CONST;
-
-      field_h[2].set(i, k, field_h_at_et(2, i, k) - alpha_t_z / 2);
-      field_h_at_et[2].dec(i, k, alpha_t_z);
+      field_h[0].set(i, k, 0);
+      field_h[1].set(i, k, 0);
+      field_h[2].set(i, k, 0);
     }
 }
 
-void MaxwellSolverYee::calc_field_e()
+void ExternalFields::calc_field_e()
 {
   field_e.overlay_set(0);
-
-  Grid3D<double> curr = current->current;
 
   double dr = geometry->cell_size[0];
   double dz = geometry->cell_size[1];
@@ -180,17 +149,8 @@ void MaxwellSolverYee::calc_field_e()
       double sigma_t = 0;
 #endif // ENABLE_PML
 
-      double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
-      double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
-
-      field_e[0].m_a(i, k, koef_e);
-      field_e[0].dec(i, k, (curr(0, i, k)
-                            + (field_h_at_et(1, i, k)
-                               - field_h_at_et(1, i, k-1)) / dz) * koef_h);
-
-      field_e[2].m_a(i, k, koef_e);
-      field_e[2].dec(i, k, (curr(2, i, k)
-                            - field_h_at_et(1, i, k) * 4. / dr) * koef_h);
+      field_e[0].set(i, k, 0);
+      field_e[2].set(i, k, 0);
     }
 
   // E_z at the left wall (z=0) case
@@ -206,15 +166,7 @@ void MaxwellSolverYee::calc_field_e()
       double sigma_t = 0;
 #endif // ENABLE_PML
 
-      double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
-      double koef_h =  2 * time->step / (epsilonx2 + sigma_t);
-
-      field_e[2].m_a(i, k, koef_e);
-      field_e[2].dec(i, k, (curr(2, i, k)
-                            - (field_h_at_et(1, i, k) - field_h_at_et(1, i - 1, k)) / dr
-                            - (field_h_at_et(1, i, k) + field_h_at_et(1, i-1, k))
-                            / (2. * dr * (i + geometry->cell_dims[0])))
-                     * koef_h);
+      field_e[2].set(i, k, 0);
     }
 
 // regular case
@@ -232,26 +184,8 @@ void MaxwellSolverYee::calc_field_e()
       double koef_e = (epsilonx2 - sigma_t) / (epsilonx2 + sigma_t);
       double koef_h = 2 * time->step / (epsilonx2 + sigma_t);
 
-      field_e[0].m_a(i, k, koef_e);
-      field_e[0].dec(i, k, (curr(0, i, k)
-                            + (field_h_at_et(1, i, k)
-                               - field_h_at_et(1, i, k-1)) / dz) * koef_h);
-
-      field_e[1].m_a(i, k, koef_e);
-      field_e[1].dec(i, k, (curr(1, i, k)
-                            - (field_h_at_et(0, i, k) - field_h_at_et(0, i, k - 1))
-                            / dz + (field_h_at_et(2, i, k)
-                                    - field_h_at_et(2, i - 1, k)) / dr) * koef_h);
-
-      field_e[2].m_a(i, k, koef_e);
-      field_e[2].dec(i, k, (curr(2, i, k)
-                            - (field_h_at_et(1, i, k) - field_h_at_et(1, i - 1, k)) / dr
-                            - (field_h_at_et(1, i, k)
-                               + field_h_at_et(1, i-1, k))
-                            / (2. * dr * (i + geometry->cell_dims[0]))) * koef_h);
-
-      if ( isnan(field_e[0](i,k)) || isnan(field_e[1](i,k)) || isnan(field_e[2](i,k)) )
-        LOG_S(FATAL) << "fld " << i << " " << k << " "
-                     << field_e[0](i,k) << " " << field_e[1](i,k) << " " << field_e[2](i,k);
+      field_e[0].set(i, k, 0);
+      field_e[1].set(i, k, 0);
+      field_e[2].set(i, k, 0);
     }
 }

@@ -24,6 +24,7 @@
 #include "defines.hpp"
 #include "msg.hpp"
 
+#include "algo/grid3d.hpp"
 #include "phys/plasma.hpp"
 
 #include "specieP.hpp"

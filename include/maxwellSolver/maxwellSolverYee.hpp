@@ -20,6 +20,8 @@
 
 #include "maxwellSolver.hpp"
 
+class Current;
+
 class MaxwellSolverYee : public MaxwellSolver
 {
 
@@ -36,15 +38,15 @@ private:
 public:
   MaxwellSolverYee ( void ) {};
   MaxwellSolverYee ( Geometry *_geometry, TimeSim *_time,
-                     vector<SpecieP *> _species_p, Current *_current);
+                     Current *_current );
 
   ~MaxwellSolverYee(void) {};
 
   void set_pml();
   void calc_field_h();
   void calc_field_e();
-  vector3d<double> get_field_h(double radius, double longitude);
-  vector3d<double> get_field_e(double radius, double longitude);
+  // vector3d<double> get_field_h(double radius, double longitude);
+  // vector3d<double> get_field_e(double radius, double longitude);
 };
 
 #endif // end of _MAXWELLSOLVERYEE_HPP_

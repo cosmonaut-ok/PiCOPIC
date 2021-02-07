@@ -36,6 +36,10 @@
 #include "maxwellSolver/maxwellSolverYee.hpp"
 #endif
 
+#ifdef ENABLE_EXTERNAL_FIELDS
+#include "maxwellSolver/externalFields.hpp"
+#endif
+
 #ifdef SWITCH_CCS_VB
 #include "current/currentVB.hpp"
 #elif defined(SWITCH_CCS_ZIGZAG)
@@ -89,9 +93,10 @@ public:
   MaxwellSolverYee *maxwell_solver;
 #endif
 
-  // Temperature *temperature;
-  // Density *density;
-  // DensityCharge *charge;
+#ifdef ENABLE_EXTERNAL_FIELDS
+  ExternalFields *external_fields;
+#endif
+
 #ifdef ENABLE_COULOMB_COLLISIONS
   Collisions *collisions;
 #endif

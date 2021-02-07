@@ -15,23 +15,34 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _PUSHERVAY_HPP_
-#define _PUSHERVAY_HPP_
+#ifndef _EXTERNALFIELDS_HPP_
+#define _EXTERNALFIELDS_HPP_
 
-#include "pusher.hpp"
+#include "maxwellSolver.hpp"
 
-class PusherVay : public Pusher
+class ExternalFields : public MaxwellSolver
 {
-public:
-#ifdef ENABLE_EXTERNAL_FIELDS
-  PusherVay (MaxwellSolver *_maxwell_solver, ExternalFields *_external_fields, vector<SpecieP *> _species_p, TimeSim *_time)
-    : Pusher(_maxwell_solver, _external_fields, _species_p, _time) {};
-#else
-  PusherVay (MaxwellSolver *_maxwell_solver, vector<SpecieP *> _species_p, TimeSim *_time)
-    : Pusher(_maxwell_solver, _species_p, _time) {};
-#endif
 
-  void operator()();
+public:
+  Grid3D<double> field_h_at_et;
+
+private:
+  // internal variables to calculation for dielectric walls
+  unsigned int r_begin;
+  unsigned int z_begin;
+  unsigned int r_end;
+  unsigned int z_end;
+
+public:
+  ExternalFields ( void ) {};
+  ExternalFields ( Geometry *_geometry, TimeSim *_time,
+                   Current *_current );
+
+  ~ExternalFields(void) {};
+
+  void set_pml();
+  void calc_field_h();
+  void calc_field_e();
 };
 
-#endif // end of _PUSHERVAY_HPP_
+#endif // end of _EXTERNALFIELDS_HPP_

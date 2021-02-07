@@ -47,6 +47,12 @@ void PusherHC::operator()()
 
       vector3d<double> e = maxwell_solver->get_field_e(pos_r, pos_z);
       vector3d<double> b = maxwell_solver->get_field_h(pos_r, pos_z);
+
+#ifdef ENABLE_EXTERNAL_FIELDS
+      e += external_fields->get_field_e(pos_r, pos_z);
+      b += external_fields->get_field_h(pos_r, pos_z);
+#endif
+
       vector3d<double> b2;
       vector3d<double> b_cross;
 

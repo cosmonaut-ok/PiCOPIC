@@ -26,21 +26,31 @@
 #include "maxwellSolver/maxwellSolverYee.hpp"
 #endif
 
-// class MaxwellSolver;
-// class SpecieP;
+#ifdef ENABLE_EXTERNAL_FIELDS
+#include "maxwellSolver/externalFields.hpp"
+#endif
 
 class Pusher
 {
 protected:
   MaxwellSolver *maxwell_solver;
+#ifdef ENABLE_EXTERNAL_FIELDS
+  ExternalFields *external_fields;
+#endif
   vector<vector<double> * > particles;
   TimeSim *time;
   vector<SpecieP *> species_p;
 
 public:
   Pusher() {};
+
+#ifdef ENABLE_EXTERNAL_FIELDS
+  Pusher(MaxwellSolver *_maxwell_solver, ExternalFields *_external_fields, vector<SpecieP *> _species_p, TimeSim *_time)
+    : maxwell_solver(_maxwell_solver), external_fields(_external_fields), time(_time)
+#else
   Pusher(MaxwellSolver *_maxwell_solver, vector<SpecieP *> _species_p, TimeSim *_time)
     : maxwell_solver(_maxwell_solver), time(_time)
+#endif
   {
     species_p = _species_p;
   };

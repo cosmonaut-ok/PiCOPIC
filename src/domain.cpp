@@ -34,7 +34,11 @@ Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
 #endif
 
 #ifdef SWITCH_MAXWELL_SOLVER_YEE
-  maxwell_solver = new MaxwellSolverYee(&geometry, time, species_p, current);
+  maxwell_solver = new MaxwellSolverYee(&geometry, time, current);
+#endif
+
+#ifdef ENABLE_EXTERNAL_FIELDS
+  external_fields = new ExternalFields(&geometry, time, current);
 #endif
 
 #ifdef ENABLE_COULOMB_COLLISIONS
@@ -48,18 +52,24 @@ Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
 #endif // ENABLE_COULOMB_COLLISIONS
 
   // ! Linking classes:
-  // ! * insert field pointers to each particles specie
-  for (auto sp = species_p.begin(); sp != species_p.end(); ++sp)
-  {
-    (**sp).maxwell_solver = maxwell_solver;
-  }
-
 #if defined(SWITCH_PUSHER_BORIS_ADAPTIVE) || defined(SWITCH_PUSHER_BORIS) || defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
+#ifdef ENABLE_EXTERNAL_FIELDS
+  pusher = new PusherBoris(maxwell_solver, external_fields, species_p, time);
+#else
   pusher = new PusherBoris(maxwell_solver, species_p, time);
+#endif
 #elif defined(SWITCH_PUSHER_VAY)
+#ifdef ENABLE_EXTERNAL_FIELDS
+  pusher = new PusherVay(maxwell_solver, external_fields, species_p, time);
+#else
   pusher = new PusherVay(maxwell_solver, species_p, time);
+#endif
 #elif defined(SWITCH_PUSHER_HC)
+#ifdef ENABLE_EXTERNAL_FIELDS
+  pusher = new PusherHC(maxwell_solver, external_fields, species_p, time);
+#else
   pusher = new PusherHC(maxwell_solver, species_p, time);
+#endif
 #endif
 }
 
@@ -80,7 +90,7 @@ void Domain::weight_density(string specie)
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
     if (specie.compare((**ps).name) == 0)
       speciep = (*ps);
-      
+
   speciep->calc_density();
 }
 
@@ -91,18 +101,24 @@ void Domain::weight_temperature(string specie)
   for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
     if (specie.compare((**ps).name) == 0)
       speciep = (*ps);
-      
+
   speciep->calc_temperature();
 }
 
 void Domain::weight_field_h()
 {
   maxwell_solver->calc_field_h();
+#ifdef ENABLE_EXTERNAL_FIELDS
+  external_fields->calc_field_h();
+#endif
 }
 
 void Domain::weight_field_e()
 {
   maxwell_solver->calc_field_e();
+#ifdef ENABLE_EXTERNAL_FIELDS
+  external_fields->calc_field_e();
+#endif
 }
 
 void Domain::reset_current()

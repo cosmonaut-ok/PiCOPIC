@@ -23,8 +23,13 @@
 class PusherHC : public Pusher
 {
 public:
+#ifdef ENABLE_EXTERNAL_FIELDS
+  PusherHC (MaxwellSolver *_maxwell_solver, ExternalFields *_external_fields, vector<SpecieP *> _species_p, TimeSim *_time)
+    : Pusher(_maxwell_solver, _external_fields, _species_p, _time) {};
+#else
   PusherHC (MaxwellSolver *_maxwell_solver, vector<SpecieP *> _species_p, TimeSim *_time)
     : Pusher(_maxwell_solver, _species_p, _time) {};
+#endif
 
   void operator()();
 };

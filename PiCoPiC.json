@@ -29,6 +29,51 @@
     "end": 8e-10,
     "step": 5e-13
   },
+  "external_fields": {
+    "comment": "This configuration is not working. This feature still in development mode",
+    "electric": {
+      "r": {
+	"shape": "sin",
+	"frequency": 2.8e9,
+	"amplitude": [1e5, 1e5, 1e5, 1e5],
+	"size": [0, 0, 0.0375, 0.15]
+      },
+      "phi": {
+	"shape": "exp",
+	"frequency": 2.8e9,
+	"amplitude": [1e5, 1e5, 1e5, 1e5],
+	"size": [0, 0, 0.0375, 0.15]
+      },
+      "z": {
+	"shape": "line",
+	"amplitude": 1e5,
+	"frequency": 2.8e9,
+	"amplitude": [1e5, 1e5, 1e5, 1e5],
+	"size": [0, 0, 0.0375, 0.15]
+      }
+    },
+    "magnetic": {
+      "r": {
+	"shape": "sin",
+	"frequency": 2.8e9,
+	"amplitude": [1e5, 1e5, 1e5, 1e5],
+	"size": [0, 0, 0.0375, 0.15]
+      },
+      "phi": {
+	"shape": "exp",
+	"frequency": 2.8e9,
+	"amplitude": [1e5, 1e5, 1e5, 1e5],
+	"size": [0, 0, 0.0375, 0.15]
+      },
+      "z": {
+	"shape": "line",
+	"amplitude": 1e5,
+	"frequency": 2.8e9,
+	"amplitude": [1e5, 1e5, 1e5, 1e5],
+	"size": [0, 0, 0.0375, 0.15]
+      }
+    }
+  },
   "particles": [
     {
       "name": "electrons",

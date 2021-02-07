@@ -59,6 +59,11 @@ void PusherBoris::operator()()
       vector3d<double> e = maxwell_solver->get_field_e(pos_r, pos_z);
       vector3d<double> b = maxwell_solver->get_field_h(pos_r, pos_z);
 
+#ifdef ENABLE_EXTERNAL_FIELDS
+      e += external_fields->get_field_e(pos_r, pos_z);
+      b += external_fields->get_field_h(pos_r, pos_z);
+#endif
+
       charge_over_2mass_dt = charge * time->step / (2 * mass); // we just shortened particle weight and use only q/m relation
 
       e *= charge_over_2mass_dt;

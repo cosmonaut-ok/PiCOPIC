@@ -32,7 +32,7 @@
 #include "algo/weighter.hpp"
 
 #ifdef SWITCH_MAXWELL_SOLVER_YEE
-#include "maxwellSolver/maxwellSolverYee.hpp"
+// #include "maxwellSolver/maxwellSolverYee.hpp"
 #endif
 
 #include "geometry.hpp"
@@ -88,9 +88,9 @@ typedef struct Particle_struct
 
   size_t cell_r;
   size_t cell_z;
-  
+
   size_t mark;
-  
+
   unsigned short specie_id;
 
   Particle_struct ()
@@ -117,7 +117,7 @@ typedef struct Particle_struct
 
 class FieldE;
 class FieldH;
-class MaxwellSolver;
+// class MaxwellSolver;
 
 class SpecieP
 {
@@ -196,7 +196,7 @@ public:
 
   ~SpecieP();
 
-  MaxwellSolver* maxwell_solver;
+  // MaxwellSolver* maxwell_solver;
 
 
 

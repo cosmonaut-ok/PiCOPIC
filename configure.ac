@@ -81,6 +81,10 @@ AC_ARG_ENABLE([mpi], [AC_HELP_STRING([--enable-mpi],
               [Enable openMPI support])],
               [MPI_OPTION="$enableval"], [MPI_OPTION=no])
 
+AC_ARG_ENABLE([external-fields], [AC_HELP_STRING([--enable-external-fields],
+              [Apply external fields])],
+              [EXTF_OPTION="$enableval"], [EXTF_OPTION=no])
+
 dnl AC_ARG_ENABLE([hdf5], [AC_HELP_STRING([--disable-hdf5],
 dnl               [Build application with hdf5 library support])],
 dnl               [HDF5_OPTION="$enableval"], [HDF5_OPTION=yes])
@@ -213,6 +217,16 @@ fi
 
 if test x$PML_OPTION = xyes; then
   AC_DEFINE_UNQUOTED([ENABLE_PML], [true], [Use PML (10.1006/jcph.1994.1159)])
+fi
+
+# apply external fields 
+if test x$EXTF_OPTION == xyes; then
+  if test x$DEVELOPMENT_OPTION == xyes; then
+    AC_MSG_WARN([External fields is still unfinished feature for development purposes only.])
+    AC_DEFINE_UNQUOTED([ENABLE_EXTERNAL_FIELDS], [true], [Apply external fields])
+  else
+    AC_MSG_ERROR([External fields support is still unfinished feature for development purposes only. To ensure, that you know, what you do, please, add --enable-development to your configure arguments])
+  fi
 fi
 
 AC_DEFINE_UNQUOTED([REL_LIMIT], [5e7], [Relativistit calculations limit (for boris-adaptive pusher)])

@@ -45,6 +45,11 @@ void PusherVay::operator()()
       vector3d<double> e = maxwell_solver->get_field_e(pos_r, pos_z);
       vector3d<double> b = maxwell_solver->get_field_h(pos_r, pos_z);
 
+#ifdef ENABLE_EXTERNAL_FIELDS
+      e += external_fields->get_field_e(pos_r, pos_z);
+      b += external_fields->get_field_h(pos_r, pos_z);
+#endif
+
       double gamma, sq_vel, s, us2, alpha, B2;
 
       // convert velocity to relativistic momentum
