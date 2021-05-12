@@ -116,18 +116,6 @@ Cfg::Cfg(const std::string json_file_name)
   o["maxwell_solver"] = value("yee");
 #endif
 
-#ifdef SWITCH_TEMP_CALC_COUNTING
-  o["temperature_calculation_algorithm"] = value("counting");
-#elif defined(SWITCH_TEMP_CALC_WEIGHTING)
-  o["temperature_calculation_algorithm"] = value("weighting");
-#endif
-
-#ifdef SWITCH_DENSITY_CALC_COUNTING
-  o["density_calculation_algorithm"] = value("counting");
-#elif defined(SWITCH_DENSITY_CALC_WEIGHTING)
-  o["density_calculation_algorithm"] = value("weighting");
-#endif
-
   o["build_flags"] = value(CXXFLAGS);
 
   json_data.get<object>()["build_options"] = value(o);
@@ -232,6 +220,10 @@ void Cfg::init_probes ()
 
     // add path part for specie-based probes
     if ( p_p.component.compare("temperature") == 0
+         || p_p.component.compare("energy") == 0
+         || p_p.component.compare("momentum/r") == 0
+         || p_p.component.compare("momentum/phi") == 0
+         || p_p.component.compare("momentum/z") == 0
          || p_p.component.compare("density") == 0 )
       p_p.path += p_p.specie + PATH_DELIMITER;
 

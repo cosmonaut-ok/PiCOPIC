@@ -37,6 +37,7 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
   hdf5_file = _file;
   OutEngineHDF5 engine (hdf5_file, _probes[0].path, {0,0}, {0,0}, true, false);
 #endif // end of ENABLE_HDF5
+
   engine.write_metadata( _metadata );
 
   print_progress_table = _print_progress_table;
@@ -206,6 +207,92 @@ OutController::OutController ( Geometry *_geometry, TimeSim *_time,
               continue;
             }
           }
+//////////////////////////////////////////////////////////////////////
+          else if (prb->component.compare("energy") == 0)
+          {
+            SpecieP *speciep;
+            bool specie_exists = false;
+
+            for (auto ps = dmn->species_p.begin(); ps != dmn->species_p.end(); ++ps)
+              if (prb->specie.compare((**ps).name) == 0)
+              {
+                speciep = (*ps);
+                value = &(speciep->energy_map);
+                specie_exists = true;
+              }
+
+            if (!specie_exists)
+            {
+              LOG_S(WARNING) << "There is no particles specie ``"
+                             << prb->specie
+                             << "''. Probe dump is impossible";
+              continue;
+            }
+          }
+          else if (prb->component.compare("momentum/r") == 0)
+          {
+            SpecieP *speciep;
+            bool specie_exists = false;
+
+            for (auto ps = dmn->species_p.begin(); ps != dmn->species_p.end(); ++ps)
+              if (prb->specie.compare((**ps).name) == 0)
+              {
+                speciep = (*ps);
+                value = &(speciep->momentum_map[0]);
+                specie_exists = true;
+              }
+
+            if (!specie_exists)
+            {
+              LOG_S(WARNING) << "There is no particles specie ``"
+                             << prb->specie
+                             << "''. Probe dump is impossible";
+              continue;
+            }
+          }
+          else if (prb->component.compare("momentum/phi") == 0)
+          {
+            SpecieP *speciep;
+            bool specie_exists = false;
+
+            for (auto ps = dmn->species_p.begin(); ps != dmn->species_p.end(); ++ps)
+              if (prb->specie.compare((**ps).name) == 0)
+              {
+                speciep = (*ps);
+                value = &(speciep->momentum_map[1]);
+                specie_exists = true;
+              }
+
+            if (!specie_exists)
+            {
+              LOG_S(WARNING) << "There is no particles specie ``"
+                             << prb->specie
+                             << "''. Probe dump is impossible";
+              continue;
+            }
+          }
+          else if (prb->component.compare("momentum/z") == 0)
+          {
+            SpecieP *speciep;
+            bool specie_exists = false;
+
+            for (auto ps = dmn->species_p.begin(); ps != dmn->species_p.end(); ++ps)
+              if (prb->specie.compare((**ps).name) == 0)
+              {
+                speciep = (*ps);
+                value = &(speciep->momentum_map[2]);
+                specie_exists = true;
+              }
+
+            if (!specie_exists)
+            {
+              LOG_S(WARNING) << "There is no particles specie ``"
+                             << prb->specie
+                             << "''. Probe dump is impossible";
+              continue;
+            }
+          }
+//////////////////////////////////////////////////////////////////////
           else
             LOG_S(ERROR) << "Unknown probe component ``" << prb->component << "''";
 
@@ -312,6 +399,12 @@ void OutController::init_datasets()
             speciep->calc_density();
           else if (prb->component.compare("temperature") == 0)
             speciep->calc_temperature();
+          else if (prb->component.compare("energy") == 0)
+            speciep->calc_energy();
+          else if (prb->component.compare("momentum/r") == 0
+                   || prb->component.compare("momentum/phi") == 0
+                   || prb->component.compare("momentum/z") == 0)
+            speciep->calc_momentum();
         }
 
       // overlay domains before dump
@@ -354,6 +447,16 @@ void OutController::init_datasets()
               speciep->density_map.overlay_x(speciep_dst->density_map);
             else if (prb->component.compare("temperature") == 0)
               speciep->temperature_map.overlay_x(speciep_dst->temperature_map);
+            else if (prb->component.compare("energy") == 0)
+              speciep->energy_map.overlay_x(speciep_dst->energy_map);
+            else if (prb->component.compare("momentum/r") == 0
+                     || prb->component.compare("momentum/phi") == 0
+                     || prb->component.compare("momentum/z") == 0)
+            {
+              speciep->momentum_map[0].overlay_x(speciep_dst->momentum_map[0]);
+              speciep->momentum_map[1].overlay_x(speciep_dst->momentum_map[1]);
+              speciep->momentum_map[2].overlay_x(speciep_dst->momentum_map[2]);
+            }
           }
 
           if (j < geometry->domains_amount[1] - 1)
