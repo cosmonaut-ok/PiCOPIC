@@ -342,25 +342,6 @@ void OutEngineHDF5::write_metadata(picojson::value _metadata)
                                     DataSpace::From(maxwell_solver));
     maxwell_solver_a.write(maxwell_solver);
 
-
-    // density calculation
-    std::string density_calc = _metadata.get<picojson::object>()["build_options"]
-      .get<picojson::object>()["density_calculation_algorithm"]
-      .get<std::string>();
-    Attribute density_calc_a = group
-      .createAttribute<std::string>("softwareConfigDensityCalculationAlgorithm",
-                                    DataSpace::From(density_calc));
-    density_calc_a.write(density_calc);
-
-    // temperature calculation
-    std::string temperature_calc = _metadata.get<picojson::object>()["build_options"]
-      .get<picojson::object>()["temperature_calculation_algorithm"]
-      .get<std::string>();
-    Attribute temperature_calc_a = group
-      .createAttribute<std::string>("softwareConfigTemperatureCalculationAlgorithm",
-                                    DataSpace::From(temperature_calc));
-    temperature_calc_a.write(temperature_calc);
-
     // pusher
     std::string prtls_pusher = _metadata.get<picojson::object>()["build_options"]
       .get<picojson::object>()["particles_pusher"]

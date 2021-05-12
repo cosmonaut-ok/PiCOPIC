@@ -29,6 +29,9 @@
 #include "math/rand.hpp"
 #include "math/maxwellJuettner.hpp"
 #include "phys/rel.hpp"
+
+#include "algo/grid.hpp"
+#include "algo/grid3d.hpp"
 #include "algo/weighter.hpp"
 
 #ifdef SWITCH_MAXWELL_SOLVER_YEE
@@ -166,11 +169,18 @@ public:
   double temperature; // in electronvolts
   Grid<double> density_map;
   Grid<double> temperature_map;
+  Grid<double> energy_map;
 
-  Grid<double> p_abs;
-  Grid<double> p_r;
-  Grid<double> p_phi;
-  Grid<double> p_z;
+  // weighted maps (for internal usage)
+  Grid<double> momentum_abs_map_w;
+  Grid3D<double> momentum_map_w;
+
+  Grid3D<double> momentum_map;
+
+  // Grid<double> p_abs;
+  // Grid<double> p_r;
+  // Grid<double> p_phi;
+  // Grid<double> p_z;
   Grid<double> count;
 
   double start_time;
@@ -225,6 +235,8 @@ public:
 
   void calc_density ();
   void calc_temperature ();
+  void calc_energy ();
+  void calc_momentum ();
 
 protected:
   void rectangular_random_placement (unsigned int int_cell_number,
@@ -252,6 +264,9 @@ protected:
   void rectangular_velocity_distribution ();
   void eigen_velocity_distribution ();
   void eigen_directed_velocity_distribution (unsigned int dir); // 0,1,2 are for r, phi, z
+
+  void calc_momentum_abs_w ();
+  void calc_momentum_w ();
 };
 
 #endif // end of _SPECIE_P_HPP_

@@ -97,14 +97,6 @@ AC_ARG_WITH([pusher], [AC_HELP_STRING([--with-pusher],
             [Set particles pusher (supported: boris (default), boris-adaptive, boris-relativistic, vay, hc [higuera-cary] )])],
             [WITH_PUSHER="$withval"], [WITH_PUSHER="boris-adaptive"])
 
-AC_ARG_WITH([temperature-calc], [AC_HELP_STRING([--with-temperature-calc],
-            [Set temperature calculation algorithm. Supported: counting (default), weighting])],
-            [WITH_TEMP_CALC="$withval"], [WITH_TEMP_CALC="counting"])
-
-AC_ARG_WITH([density-calc], [AC_HELP_STRING([--with-density-calc],
-            [Set density calculation algorithm. Supported: counting (default), weighting])],
-            [WITH_DENSITY_CALC="$withval"], [WITH_DENSITY_CALC="counting"])
-
 AC_ARG_WITH([plasma-spatial-distribution], [AC_HELP_STRING([--with-plasma-spatial-distribution],
             [Set plasma particles spatial distribution type (supported: flat (default), random, regular, centered)])],
             [WITH_PLASMA_SPATIAL="$withval"], [WITH_PLASMA_SPATIAL="flat"])
@@ -248,24 +240,6 @@ fi
 
 # define Maxwell solver
 AC_DEFINE_UNQUOTED([SWITCH_MAXWELL_SOLVER_YEE], [true], [Yee FDTD Maxwellian solver])
-
-# define a temperature claculation algorithm
-if test x$WITH_TEMP_CALC == xweighting; then
-  AC_DEFINE_UNQUOTED([SWITCH_TEMP_CALC_WEIGHTING], [true], [Set temperature calculation scheme to weighting])
-elif test x$WITH_TEMP_CALC == xcounting; then
-  AC_DEFINE_UNQUOTED([SWITCH_TEMP_CALC_COUNTING], [true], [Set temperature calculation scheme to counting])
-else
-  AC_MSG_ERROR([Temperature calculation scheme $WITH_TEMP_CALC is not supported.])
-fi
-
-# define a density claculation algorithm
-if test x$WITH_DENSITY_CALC == xweighting; then
-  AC_DEFINE_UNQUOTED([SWITCH_DENSITY_CALC_WEIGHTING], [true], [Set density calculation scheme to weighting])
-elif test x$WITH_DENSITY_CALC == xcounting; then
-  AC_DEFINE_UNQUOTED([SWITCH_DENSITY_CALC_COUNTING], [true], [Set density calculation scheme to counting])
-else
-  AC_MSG_ERROR([Density calculation scheme $WITH_DENSITY_CALC is not supported.])
-fi
 
 # define plasma spatial distribution type
 if test x$WITH_PLASMA_SPATIAL == xrandom; then

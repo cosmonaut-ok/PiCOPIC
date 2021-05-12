@@ -41,6 +41,38 @@
 #define MIN_DOMAIN_GRID_AMOUNT 64
 
 struct probe
+  //! There are several types of probes: vector and scalar and particle specie
+  //! dependent and independent. Vector probes are separated to 3 coordinates by
+  //! direction: `r`, \f$\phi\f$ and `z`. Vector probe's `component` attribute
+  //! looks like: `<Name>/r`, `<Name>/z` etc. Scalar probe's component is only
+  //! `<Name>`. Specie-dependent probes are used only for specific particle
+  //! specie (e.g. electrons, ions, beam_electrons etc). Definition of
+  //! specie-dependent probe should include `specie` attribute (see example
+  //! below).
+  //!
+  //! **Probe Types:**
+  //! - Electric field components: `E/r`, `E/phi`, `E/z` (vector)
+  //! - Magnetic field components: `H/r`, `H/phi`, `H/z` (vector)
+  //! - Current components: `J/r`, `J/phi`, `J/z` (vector)
+  //! - Weighted relativistic momentum components (\f$ \gamma m v \f$):
+  //! `momentum/r`, `momentum/phi`, `momentum/z` (vector, specie-dependent)
+  //! - Weighted density: `density` (specie-dependent)
+  //! - Weighted temperature (aka energy of chaotic motion): `temperature` (specie-dependent)
+  //! - Weighted energy: `energy` (specie-dependent)
+  //!
+  //! General structure of probe definition in PiCoPiC.json:
+  //! @code "probes": [
+  //! ...
+  //! {
+  //!    "component": "momentum/r",
+  //!    "specie": "electrons",       // only for specie-dependent probes
+  //!    "schedule": 10,              // number of time steps between dumps
+  //!    "shape": "rec",              // can be `rec`, `col`, `row` and `dot`
+  //!    "start": { "r": 0, "z": 0 }, // coordinates of `start` and `end` points
+  //!    "end": { "r": 64, "z": 256 }
+  //! },
+  //! ...
+  //! ]@endcode
 {
   std::string path;
   std::string component;
