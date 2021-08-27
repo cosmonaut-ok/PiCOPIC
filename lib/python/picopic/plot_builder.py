@@ -316,6 +316,14 @@ class PlotBuilder:
             cbar.set_ticklabels(__ticklabels)
             cbar.ax.tick_params(labelsize=font_size)
 
+    def latex_float(number):
+        float_str = "{0:.2g}".format(f)
+        if "e" in float_str:
+            base, exponent = float_str.split("e")
+            return r"{0:.2} \times 10^{{{1}}}".format(float(base), int(exponent))
+        else:
+            return float_str
+
     def show(self):
         self.__figure__.show()
 

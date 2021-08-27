@@ -1,15 +1,11 @@
 #!/bin/bash
 
 function usage () {
-    echo "USAGE: ${0} <path/to/notebook.ipynb> [-batch] [some variables, used in notebook in format: variable1=value1 variable2=value2]"
+    echo "USAGE: ${0} [-batch] <path/to/notebook.ipynb> [some variables, used in notebook in format: variable1=value1 variable2=value2]"
     exit 1
 }
 
 test -z ${1} && usage
-
-SCRIPT_PATH=${1}
-
-shift
 
 if [ "$1" == "-batch" ]; then
     BATCH=yes
@@ -18,6 +14,8 @@ else
     BATCH=no
 fi
 
+SCRIPT_PATH=${1}
+shift
 
 cd $(dirname ${SCRIPT_PATH})
 

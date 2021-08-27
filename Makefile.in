@@ -211,3 +211,6 @@ python:
 
 pack-release:
 	@tar -czpf PiCoPiC_$(RELEASE).tar.gz ./PiCoPiC ./PiCoPiC.json lib/python/picopic/ tools/ doc/app/html/ doc/app/latex/refman.pdf doc/vis/html/ doc/vis/latex/refman.pdf
+
+.install-hooks:
+	cp -a tools/git_hooks/pre-commit .git/hooks

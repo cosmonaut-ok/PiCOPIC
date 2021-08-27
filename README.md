@@ -201,7 +201,11 @@ Find documentation in:
 
 ##### Before working
 
-1. Make sure, that you have clean repository and there are no unstaged untracked and uncommited files.
+1. Install git hooks
+```bash
+user@host$ cp tools/git_hooks/pre-commit .git/hooks
+```
+2. Make sure, that you have clean repository and there are no unstaged untracked and uncommited files.
 ```bash
 user@host$ git status
 ```
@@ -210,7 +214,7 @@ user@host$ git status
 ```bash
 user@host$ git reset --hard
 ```
-2. Sync with upstream
+3. Sync with upstream
 ```bash
 user@host$ git fetch origin
 ```
