@@ -82,6 +82,13 @@ struct probe
   unsigned int schedule;
 };
 
+struct external_field
+{
+  std::string name;
+  std::string formfactor;
+  vector<double> params;
+};
+
 struct particle_specie
 {
   unsigned int id;
@@ -104,6 +111,8 @@ struct particle_beam : particle_specie
   double bunch_length;
   double bunch_radius;
   unsigned int current_bunch_number; // to mark, how many bunches already injcted
+  std::string radial_profile;
+  std::string longitudinal_profile;
 };
 
 struct save_data
@@ -204,6 +213,8 @@ public:
   // probes
   vector<probe> probes;
 
+  vector<external_field> external_fields;
+
 private:
   picojson::value json_data;
 
@@ -215,6 +226,9 @@ private:
   void init_time();
   void init_boundary();
   void init_output_data();
+#ifdef ENABLE_EXTERNAL_FIELDS
+  void init_external_fields();
+#endif
   void weight_macro_amount();
   bool method_limitations_check();
 };

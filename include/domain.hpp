@@ -107,7 +107,15 @@ public:
 
 public:
   Domain() {};
+
+#ifdef ENABLE_EXTERNAL_FIELDS
+  Domain(Geometry _geometry, vector<SpecieP *> species_p, TimeSim* _time,
+         std::string _el_field_profile, std::string _magn_field_profile,
+         std::vector<double> _el_field_params,
+         std::vector<double> _magn_field_params);
+#else
   Domain(Geometry _geometry, vector<SpecieP *> species_p, TimeSim* _time);
+#endif
 
   // wrapper methods
   void distribute();
@@ -124,6 +132,7 @@ public:
   void reset_field_h() {};
   void weight_field_h();
   void weight_field_e();
+  void apply_external_fields();
   void particles_back_velocity_to_rz();
   void particles_back_position_to_rz();
   void reflect();

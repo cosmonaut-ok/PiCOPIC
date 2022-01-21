@@ -148,6 +148,10 @@ Cfg::Cfg(const std::string json_file_name)
   init_output_data();
   init_probes();
 
+#ifdef ENABLE_EXTERNAL_FIELDS
+  init_external_fields();
+#endif
+
   method_limitations_check();
 }
 
@@ -358,7 +362,9 @@ void Cfg::init_beam()
       p_b.bunch_length = b_o["length"].get<double>();
       p_b.bunch_radius = b_o["radius"].get<double>();
       p_b.density = b_o["density"].get<double>();
-      // p_b.macro_amount = b_o["macro_amount"].get<double>();
+
+      p_b.radial_profile = b_o["profile"].get<object>()["radial"].get<string>();
+      p_b.longitudinal_profile = b_o["profile"].get<object>()["longitudinal"].get<string>();
 
       p_b.current_bunch_number = 0;
 
@@ -443,6 +449,42 @@ void Cfg::init_output_data()
   output_data->compress = json_root["compression"].get<object>()["use"].get<bool>();
   output_data->compress_level = (int)json_root["compression"].get<object>()["level"].get<double>();
 }
+
+#ifdef ENABLE_EXTERNAL_FIELDS
+void Cfg::init_external_fields()
+{
+  object& json_root = json_data.get<object>()["external_fields"].get<object>();
+
+  // init electric field
+  object& json_el_field = json_root["electric"].get<object>();
+  external_field el_f;
+  el_f.name = "electric";
+  el_f.formfactor = json_el_field["formfactor"].get<string>().c_str();
+  // create array of params for electric field
+  value::array el_params = json_el_field["params"].get<value::array>();
+  for (value item: el_params)
+    el_f.params.push_back(item.get<double>());
+
+  // init magnetic field
+  object& json_magn_field = json_root["magnetic"].get<object>();
+  external_field magn_f;
+  magn_f.name = "magnetic";
+  magn_f.formfactor = json_magn_field["formfactor"].get<string>().c_str();
+  // create array of params for magnetic field
+  value::array magn_params = json_magn_field["params"].get<value::array>();
+  for (value item: magn_params)
+    magn_f.params.push_back(item.get<double>());
+
+  external_fields.push_back(el_f);
+  external_fields.push_back(magn_f);
+
+  LOG_S(INFO) << "Using External Fields. Electric field formfactor: ``"
+              << external_fields[0].formfactor
+              << "''; Magnetic field formfactor: ``"
+              << external_fields[1].formfactor
+              << "''";
+}
+#endif
 
 void Cfg::weight_macro_amount()
 //! calculate alignment of macroparticles amount

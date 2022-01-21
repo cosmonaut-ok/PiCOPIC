@@ -18,6 +18,7 @@
 #ifndef _EXTERNALFIELDS_HPP_
 #define _EXTERNALFIELDS_HPP_
 
+#include <string>
 #include "maxwellSolver.hpp"
 
 class ExternalFields : public MaxwellSolver
@@ -33,16 +34,37 @@ private:
   unsigned int r_end;
   unsigned int z_end;
 
+  unsigned short e_profile_enum; // electric profile enum
+  unsigned short m_profile_enum; // magnetic profile enum
+  //! enums:
+  //! * 0 - none
+  //! * 1 - const_r
+  //! * 2 - const_phi
+  //! * 3 - const_z
+  //! * 4 - linerad_r
+  //! * 5 - linerad_z
+
+  std::vector<double> e_field_params;
+  std::vector<double> m_field_params;
+
 public:
   ExternalFields ( void ) {};
   ExternalFields ( Geometry *_geometry, TimeSim *_time,
-                   Current *_current );
+                   std::string _el_field_profile,
+                   std::string _magn_field_profile,
+                   std::vector<double> _el_field_params,
+                   std::vector<double> _magn_field_params );
 
   ~ExternalFields(void) {};
 
   void set_pml();
-  void calc_field_h();
-  void calc_field_e();
+  void calc_field_h() {};
+  void calc_field_e() {};
+
+  void set_el_field_homogenous_z ();
+  void set_magn_field_homogenous_z ();
+
+  void operator()();
 };
 
 #endif // end of _EXTERNALFIELDS_HPP_
