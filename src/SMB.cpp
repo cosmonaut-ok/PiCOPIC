@@ -163,7 +163,16 @@ SMB::SMB ( Cfg* _cfg, Geometry *_geometry, TimeSim *_time,
           ++b_id_counter;
         }
 
+#ifdef ENABLE_EXTERNAL_FIELDS
+      Domain *sim_domain = new Domain(*geom_domain, species_p, time,
+                                      cfg->external_fields[0].formfactor,
+                                      cfg->external_fields[1].formfactor,
+                                      cfg->external_fields[0].params,
+                                      cfg->external_fields[1].params);
+#else
       Domain *sim_domain = new Domain(*geom_domain, species_p, time);
+#endif
+
       domains.set(i, j, sim_domain);
     };
 
@@ -1241,6 +1250,17 @@ void SMB::solve_maxvell()
       sim_domain->weight_field_h(); // +
     }
   field_h_overlay();
+
+#ifdef ENABLE_EXTERNAL_FIELDS
+#pragma omp parallel for collapse(2)
+  for (unsigned int i=0; i < r_domains; i++)
+    for (unsigned int j = 0; j < z_domains; j++)
+    {
+      Domain *sim_domain = domains(i, j);
+
+      sim_domain->apply_external_fields();
+    }
+#endif
 }
 
 void SMB::solve_current()

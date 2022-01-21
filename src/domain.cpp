@@ -17,7 +17,15 @@
 
 #include "domain.hpp"
 
-Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time) : geometry(_geometry)
+#ifdef ENABLE_EXTERNAL_FIELDS
+Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time,
+               std::string _el_field_profile, std::string _magn_field_profile,
+               std::vector<double> _el_field_params,
+               std::vector<double> _magn_field_params) : geometry(_geometry)
+#else
+Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
+  : geometry(_geometry)
+#endif
 {
   //! Pass geometry, particle species configuration and time
   // TODO: is it ok to pass only configuration,
@@ -38,7 +46,9 @@ Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
 #endif
 
 #ifdef ENABLE_EXTERNAL_FIELDS
-  external_fields = new ExternalFields(&geometry, time, current);
+  external_fields = new ExternalFields(&geometry, time,
+                                       _el_field_profile, _magn_field_profile,
+                                       _el_field_params, _magn_field_params);
 #endif
 
 #ifdef ENABLE_COULOMB_COLLISIONS
@@ -108,18 +118,19 @@ void Domain::weight_temperature(string specie)
 void Domain::weight_field_h()
 {
   maxwell_solver->calc_field_h();
-#ifdef ENABLE_EXTERNAL_FIELDS
-  external_fields->calc_field_h();
-#endif
 }
 
 void Domain::weight_field_e()
 {
   maxwell_solver->calc_field_e();
-#ifdef ENABLE_EXTERNAL_FIELDS
-  external_fields->calc_field_e();
-#endif
 }
+
+#ifdef ENABLE_EXTERNAL_FIELDS
+void Domain::apply_external_fields()
+{
+  (*external_fields)();
+}
+#endif
 
 void Domain::reset_current()
 {

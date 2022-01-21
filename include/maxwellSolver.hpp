@@ -47,11 +47,8 @@ protected:
   Grid<double> sigma; // for PML
   Current *current;
 
-public:
-  MaxwellSolver ( void ) {};
-  MaxwellSolver ( Geometry *_geometry, TimeSim *_time,
-                  Current* _current )
-    : geometry(_geometry), time(_time), current(_current)
+private:
+  void constructor ( void )
   {
     // initialize fields to zero-state
     field_e = Grid3D<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
@@ -71,7 +68,22 @@ public:
     sigma.overlay_set(0.);
   };
 
-  ~MaxwellSolver(void) {};
+public:
+  MaxwellSolver ( void ) {};
+
+  MaxwellSolver ( Geometry *_geometry, TimeSim *_time)
+    : geometry(_geometry), time(_time)
+  {
+    constructor();
+  };
+
+  MaxwellSolver ( Geometry *_geometry, TimeSim *_time, Current* _current )
+    : geometry(_geometry), time(_time), current(_current)
+  {
+    constructor();
+  };
+
+  ~MaxwellSolver( void ) {};
 
   vector3d<double> get_field_dummy(__attribute__((unused)) double radius, __attribute__((unused)) double longitude)
   {
