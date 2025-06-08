@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,29 +34,29 @@
 class Pusher
 {
 protected:
-  MaxwellSolver *maxwell_solver;
+  MaxwellSolver* maxwell_solver;
 #ifdef ENABLE_EXTERNAL_FIELDS
-  ExternalFields *external_fields;
+  ExternalFields* external_fields;
 #endif
-  vector<vector<double> * > particles;
-  TimeSim *time;
-  vector<SpecieP *> species_p;
+  vector<vector<double>*> particles;
+  TimeSim* time;
+  vector<SpecieP*> species_p;
 
 public:
-  Pusher() {};
+  Pusher () {};
 
 #ifdef ENABLE_EXTERNAL_FIELDS
-  Pusher(MaxwellSolver *_maxwell_solver, ExternalFields *_external_fields, vector<SpecieP *> _species_p, TimeSim *_time)
+  Pusher (MaxwellSolver* _maxwell_solver, ExternalFields* _external_fields, vector<SpecieP*> _species_p, TimeSim* _time)
     : maxwell_solver(_maxwell_solver), external_fields(_external_fields), time(_time)
 #else
-  Pusher(MaxwellSolver *_maxwell_solver, vector<SpecieP *> _species_p, TimeSim *_time)
+  Pusher (MaxwellSolver* _maxwell_solver, vector<SpecieP*> _species_p, TimeSim* _time)
     : maxwell_solver(_maxwell_solver), time(_time)
 #endif
   {
     species_p = _species_p;
   };
 
-  virtual void operator()() = 0;
+  virtual void operator() () = 0;
 };
 
 #endif // end of _PUSHER_HPP_

@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +26,9 @@
 #include "defines.hpp"
 #include "msg.hpp"
 
-#include "math/vector3d.hpp"
-#include "math/rand.hpp"
 #include "math/maxwellJuettner.hpp"
+#include "math/rand.hpp"
+#include "math/vector3d.hpp"
 #include "phys/rel.hpp"
 
 #include "algo/grid.hpp"
@@ -73,7 +74,7 @@ using namespace std;
 
 typedef struct Particle_struct
 {
-// getters from particle directly
+  // getters from particle directly
   double pos_r;
   double pos_phi;
   double pos_z;
@@ -98,7 +99,7 @@ typedef struct Particle_struct
 
   Particle_struct ()
   {
-// getters from particle directly
+    // getters from particle directly
     pos_r = 0;
     pos_phi = 0;
     pos_z = 0;
@@ -139,11 +140,10 @@ public:
 
   //! Array of particle properties
   //! in format:
-  //! \f$ [[r_1, \phi_1, z_1, v_{r_1}, v_{\phi_1}, v_{z_1}, Q_1, m_1, \sin(\theta_r), \cos(\theta_r), is_alive], ...] \f$
-  //! So, it is 2D array of particles
-  //! which includes arrays of position,
-  //! velocity, charge, mass, corrections
-  //! and aliveness properties per particle
+  //! \f$ [[r_1, \phi_1, z_1, v_{r_1}, v_{\phi_1}, v_{z_1}, Q_1, m_1,
+  //! \sin(\theta_r), \cos(\theta_r), is_alive], ...] \f$ So, it is 2D array of
+  //! particles which includes arrays of position, velocity, charge, mass,
+  //! corrections and aliveness properties per particle
   //!
   //! You can call: particles[particle_number][component_number]
   //! or use macros to get required component:
@@ -160,11 +160,11 @@ public:
   //! - P_COS(particles_variable, particle_number)
   //! - P_ALIVE(particles_variable, particle_number)
   // vector< vector<double> * > particles;
-  vector< Particle * > particles;
+  vector<Particle*> particles;
 
-  Geometry *geometry;
+  Geometry* geometry;
 
-  TimeSim *time;
+  TimeSim* time;
 
   double temperature; // in electronvolts
   Grid<double> density_map;
@@ -190,47 +190,40 @@ public:
   int velocity;
 
 public:
-  SpecieP() {};
+  SpecieP () {};
 
-  SpecieP(unsigned int id, // ID for every particles specie
-          string p_name,
-          double p_charge, // in electron charges
-          double p_mass, // in electron masses
-          unsigned int p_macro_amount,
-          double p_left_density, // CI units
-          double p_right_density, // CI units
-          double p_temperature, // electronvolts
-          Geometry *geom,
-          TimeSim *t
-    );
+  SpecieP (unsigned int id, // ID for every particles specie
+           string p_name,
+           double p_charge, // in electron charges
+           double p_mass,   // in electron masses
+           unsigned int p_macro_amount,
+           double p_left_density,  // CI units
+           double p_right_density, // CI units
+           double p_temperature,   // electronvolts
+           Geometry* geom, TimeSim* t);
 
-  ~SpecieP();
+  ~SpecieP ();
 
   // MaxwellSolver* maxwell_solver;
 
-
-
 public:
   virtual void fullyfill_spatial_distribution (void);
-  void linear_spatial_distribution (unsigned int int_cell_number,
-                                    unsigned int ext_cell_number);
+  void linear_spatial_distribution (unsigned int int_cell_number, unsigned int ext_cell_number);
 
-  void rectangular_spatial_distribution(unsigned int int_cell_number,
-                                        unsigned int ext_cell_number,
-                                        unsigned int left_cell_number,
-                                        unsigned int right_cell_number);
+  void rectangular_spatial_distribution (unsigned int int_cell_number, unsigned int ext_cell_number,
+                                         unsigned int left_cell_number, unsigned int right_cell_number);
 
   virtual void velocity_distribution ();
-  virtual void inject();
-  void inject_bunch();
-  void boris_pusher();
-  void vay_pusher();
-  void hc_pusher();
-  void mover_cylindrical();
-  virtual void reflect();
-  void back_position_to_rz();
-  void back_velocity_to_rz();
-  void dump_position_to_old();
+  virtual void inject ();
+  void inject_bunch ();
+  void boris_pusher ();
+  void vay_pusher ();
+  void hc_pusher ();
+  void mover_cylindrical ();
+  virtual void reflect ();
+  void back_position_to_rz ();
+  void back_velocity_to_rz ();
+  void dump_position_to_old ();
   void bind_cell_numbers ();
 
   void calc_density ();
@@ -239,25 +232,15 @@ public:
   void calc_momentum ();
 
 protected:
-  void rectangular_random_placement (unsigned int int_cell_number,
-                                     unsigned int ext_cell_number,
-                                     unsigned int left_cell_number,
-                                     unsigned int right_cell_number);
-  void rectangular_flat_placement (unsigned int int_cell_number,
-                                   unsigned int ext_cell_number,
-                                   unsigned int left_cell_number,
-                                   unsigned int right_cell_number);
-  void rectangular_regular_placement (unsigned int int_cell_number,
-                                      unsigned int ext_cell_number,
-                                      unsigned int left_cell_number,
-                                      unsigned int right_cell_number);
-  void rectangular_centered_placement (unsigned int int_cell_number,
-                                       unsigned int ext_cell_number,
-                                       unsigned int left_cell_number,
-                                       unsigned int right_cell_number);
-  void set_weight (unsigned int int_cell_number,
-                   unsigned int ext_cell_number,
-                   unsigned int left_cell_number,
+  void rectangular_random_placement (unsigned int int_cell_number, unsigned int ext_cell_number,
+                                     unsigned int left_cell_number, unsigned int right_cell_number);
+  void rectangular_flat_placement (unsigned int int_cell_number, unsigned int ext_cell_number,
+                                   unsigned int left_cell_number, unsigned int right_cell_number);
+  void rectangular_regular_placement (unsigned int int_cell_number, unsigned int ext_cell_number,
+                                      unsigned int left_cell_number, unsigned int right_cell_number);
+  void rectangular_centered_placement (unsigned int int_cell_number, unsigned int ext_cell_number,
+                                       unsigned int left_cell_number, unsigned int right_cell_number);
+  void set_weight (unsigned int int_cell_number, unsigned int ext_cell_number, unsigned int left_cell_number,
                    unsigned int right_cell_number);
 
   void thermal_velocity_distribution ();

@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +19,12 @@
 #include "domain.hpp"
 
 #ifdef ENABLE_EXTERNAL_FIELDS
-Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time,
-               std::string _el_field_profile, std::string _magn_field_profile,
-               std::vector<double> _el_field_params,
-               std::vector<double> _magn_field_params) : geometry(_geometry)
-#else
-Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
+Domain::Domain (Geometry _geometry, vector<SpecieP*> _species_p, TimeSim* _time, std::string _el_field_profile,
+                std::string _magn_field_profile, std::vector<double> _el_field_params,
+                std::vector<double> _magn_field_params)
   : geometry(_geometry)
+#else
+Domain::Domain (Geometry _geometry, vector<SpecieP*> _species_p, TimeSim* _time) : geometry(_geometry)
 #endif
 {
   //! Pass geometry, particle species configuration and time
@@ -46,9 +46,8 @@ Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
 #endif
 
 #ifdef ENABLE_EXTERNAL_FIELDS
-  external_fields = new ExternalFields(&geometry, time,
-                                       _el_field_profile, _magn_field_profile,
-                                       _el_field_params, _magn_field_params);
+  external_fields =
+    new ExternalFields(&geometry, time, _el_field_profile, _magn_field_profile, _el_field_params, _magn_field_params);
 #endif
 
 #ifdef ENABLE_COULOMB_COLLISIONS
@@ -83,9 +82,9 @@ Domain::Domain(Geometry _geometry, vector<SpecieP *> _species_p, TimeSim* _time)
 #endif
 }
 
-void Domain::distribute()
+void Domain::distribute ()
 {
-  for (auto i = species_p.begin(); i != species_p.end(); i++)
+  for ( auto i = species_p.begin(); i != species_p.end(); i++ )
   {
     (**i).fullyfill_spatial_distribution();
     (**i).bind_cell_numbers(); // calculate cell numbers at initial state
@@ -93,112 +92,93 @@ void Domain::distribute()
   }
 }
 
-void Domain::weight_density(string specie)
+void Domain::weight_density (string specie)
 {
-  SpecieP *speciep;
+  SpecieP* speciep;
 
-  for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
-    if (specie.compare((**ps).name) == 0)
+  for ( auto ps = species_p.begin(); ps != species_p.end(); ++ps )
+    if ( specie.compare((**ps).name) == 0 )
       speciep = (*ps);
 
   speciep->calc_density();
 }
 
-void Domain::weight_temperature(string specie)
+void Domain::weight_temperature (string specie)
 {
-  SpecieP *speciep;
+  SpecieP* speciep;
 
-  for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
-    if (specie.compare((**ps).name) == 0)
+  for ( auto ps = species_p.begin(); ps != species_p.end(); ++ps )
+    if ( specie.compare((**ps).name) == 0 )
       speciep = (*ps);
 
   speciep->calc_temperature();
 }
 
-void Domain::weight_field_h()
-{
-  maxwell_solver->calc_field_h();
-}
+void Domain::weight_field_h () { maxwell_solver->calc_field_h(); }
 
-void Domain::weight_field_e()
-{
-  maxwell_solver->calc_field_e();
-}
+void Domain::weight_field_e () { maxwell_solver->calc_field_e(); }
 
 #ifdef ENABLE_EXTERNAL_FIELDS
-void Domain::apply_external_fields()
-{
-  (*external_fields)();
-}
+void Domain::apply_external_fields () { (*external_fields)(); }
 #endif
 
-void Domain::reset_current()
+void Domain::reset_current ()
 {
   current->current = 0;
   current->current.overlay_set(0);
 }
 
-void Domain::push_particles ()
-{
-  (*pusher)();
-}
+void Domain::push_particles () { (*pusher)(); }
 
-void Domain::update_particles_coords()
+void Domain::update_particles_coords ()
 {
   // ! update particles coordinates
-  for (auto i = species_p.begin(); i != species_p.end(); i++)
+  for ( auto i = species_p.begin(); i != species_p.end(); i++ )
     (**i).mover_cylindrical();
 }
 
-void Domain::bind_cell_numbers()
+void Domain::bind_cell_numbers ()
 {
   // ! bind cell r-number and z-number to each particle
-  for (auto i = species_p.begin(); i != species_p.end(); i++)
+  for ( auto i = species_p.begin(); i != species_p.end(); i++ )
     (**i).bind_cell_numbers();
 }
 
-void Domain::reflect()
+void Domain::reflect ()
 {
   // ! update particles coordinates
-  for (auto i = species_p.begin(); i != species_p.end(); i++)
+  for ( auto i = species_p.begin(); i != species_p.end(); i++ )
     (*i)->reflect();
 }
 
-
-void Domain::particles_back_position_to_rz()
+void Domain::particles_back_position_to_rz ()
 {
-  for (auto i = species_p.begin(); i != species_p.end(); i++)
+  for ( auto i = species_p.begin(); i != species_p.end(); i++ )
     (*i)->back_position_to_rz();
 }
 
-void Domain::particles_back_velocity_to_rz()
+void Domain::particles_back_velocity_to_rz ()
 {
-  for (auto i = species_p.begin(); i != species_p.end(); i++)
+  for ( auto i = species_p.begin(); i != species_p.end(); i++ )
     (*i)->back_velocity_to_rz();
 }
 
-void Domain::manage_beam()
+void Domain::manage_beam ()
 {
   // injecting bunch
-  if (geometry.cell_dims[1] == 0) // inject only from left wall
-    for (auto i = species_p.begin(); i != species_p.end(); i++)
+  if ( geometry.cell_dims[1] == 0 ) // inject only from left wall
+    for ( auto i = species_p.begin(); i != species_p.end(); i++ )
       (**i).inject();
 }
 
-void Domain::weight_current()
-{
-  current->current_distribution();
-}
+void Domain::weight_current () { current->current_distribution(); }
 
-void Domain::dump_particle_positions_to_old()
+void Domain::dump_particle_positions_to_old ()
 {
-  for (auto i = species_p.begin(); i != species_p.end(); i++)
+  for ( auto i = species_p.begin(); i != species_p.end(); i++ )
     (**i).dump_position_to_old();
 }
 
 #ifdef ENABLE_COULOMB_COLLISIONS
-void Domain::collide()
-{
-  collisions->run();
-}
+void Domain::collide () { collisions->run(); }
 #endif // ENABLE_COULOMB_COLLISIONS

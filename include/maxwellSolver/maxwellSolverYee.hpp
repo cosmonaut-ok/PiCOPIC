@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,15 +37,14 @@ private:
   unsigned int z_end;
 
 public:
-  MaxwellSolverYee ( void ) {};
-  MaxwellSolverYee ( Geometry *_geometry, TimeSim *_time,
-                     Current *_current );
+  MaxwellSolverYee (void) {};
+  MaxwellSolverYee (Geometry* _geometry, TimeSim* _time, Current* _current);
 
-  ~MaxwellSolverYee(void) {};
+  ~MaxwellSolverYee (void) {};
 
-  void set_pml();
-  void calc_field_h();
-  void calc_field_e();
+  void set_pml ();
+  void calc_field_h ();
+  void calc_field_e ();
   // vector3d<double> get_field_h(double radius, double longitude);
   // vector3d<double> get_field_e(double radius, double longitude);
 };

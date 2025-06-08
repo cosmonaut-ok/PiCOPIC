@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +20,7 @@
 
 using namespace constant;
 
-void CurrentZigZag::current_distribution()
+void CurrentZigZag::current_distribution ()
 {
   current.overlay_set(0);
 
@@ -27,8 +28,8 @@ void CurrentZigZag::current_distribution()
   double dz = geometry->cell_size[1];
   double dt = time->step;
 
-  for (auto ps = species_p.begin(); ps != species_p.end(); ++ps)
-    for (auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i)
+  for ( auto ps = species_p.begin(); ps != species_p.end(); ++ps )
+    for ( auto i = (**ps).particles.begin(); i != (**ps).particles.end(); ++i )
     {
       //// Preparation
 
@@ -60,11 +61,12 @@ void CurrentZigZag::current_distribution()
 
       //// Calculation
 
-      //! \f$ F_{\phi} = \frac{Q_{prtl} * (\phi{new} + \phi_{new})}{\Delta t} \f$
+      //! \f$ F_{\phi} = \frac{Q_{prtl} * (\phi{new} + \phi_{new})}{\Delta t}
+      //! \f$
       double F_phi = (**ps).charge * P_WEIGHT((**i)) * P_VEL_PHI((**i));
 
-      //! the formula is \f$ \frac{\phi_{old} + \phi_{new}}{2 \Delta \phi} - j_{old} \f$
-      //! where \f$ j_{old} \f$ is 0 as well as \f$ j_{new} \f$ and
+      //! the formula is \f$ \frac{\phi_{old} + \phi_{new}}{2 \Delta \phi} -
+      //! j_{old} \f$ where \f$ j_{old} \f$ is 0 as well as \f$ j_{new} \f$ and
       //! \f$ \Delta \phi \f$ is full circle = \f$ 2 \pi r\f$,
       //! where \f$ r = (r_{position \; old} + r_{position \; new}) / 2\f$
       //! and (phi_pos_old + phi_pos_new) / 2 = \frac{v_{\phi} \Delta t}{2}
@@ -116,21 +118,21 @@ void CurrentZigZag::current_distribution()
 
       // weight currents with calculated values
       current[0].inc(i_o_shift, k_o_shift, Jr_i1h_j1_k1 + Jr_i1h_j1_1_k1);
-      current[0].inc(i_o_shift, k_o_shift+1, Jr_i1h_j1_k1_1 + Jr_i1h_j1_1_k1_1);
+      current[0].inc(i_o_shift, k_o_shift + 1, Jr_i1h_j1_k1_1 + Jr_i1h_j1_1_k1_1);
       current[0].inc(i_n_shift, k_n_shift, Jr_i2h_j2_k2 + Jr_i2h_j2_1_k2);
-      current[0].inc(i_n_shift, k_n_shift+1, Jr_i2h_j2_k2_1 + Jr_i2h_j2_1_k2_1);
+      current[0].inc(i_n_shift, k_n_shift + 1, Jr_i2h_j2_k2_1 + Jr_i2h_j2_1_k2_1);
 
       // weight only to grid nodes, related to new position
       // because oldone is "zeroed", because of
       // 2.5D simplifications
       current[1].inc(i_n_shift, k_n_shift, Jphi_i_jh_k);
-      current[1].inc(i_n_shift, k_n_shift+1, Jphi_i_jh_k_1);
-      current[1].inc(i_n_shift+1, k_n_shift, Jphi_i_1_jh_k);
-      current[1].inc(i_n_shift+1, k_n_shift+1, Jphi_i_1_jh_k_1);
+      current[1].inc(i_n_shift, k_n_shift + 1, Jphi_i_jh_k_1);
+      current[1].inc(i_n_shift + 1, k_n_shift, Jphi_i_1_jh_k);
+      current[1].inc(i_n_shift + 1, k_n_shift + 1, Jphi_i_1_jh_k_1);
 
       current[2].inc(i_o_shift, k_o_shift, Jz_i1_j1_k1h + Jz_i1_j1_1_k1h);
-      current[2].inc(i_o_shift+1, k_o_shift, Jz_i1_1_j1_k1h + Jz_i1_1_j1_1_k1h);
+      current[2].inc(i_o_shift + 1, k_o_shift, Jz_i1_1_j1_k1h + Jz_i1_1_j1_1_k1h);
       current[2].inc(i_n_shift, k_n_shift, Jz_i2_j2_k2h + Jz_i2_j2_1_k2h);
-      current[2].inc(i_n_shift+1, k_n_shift, Jz_i2_1_j2_k2h + Jz_i2_1_j2_1_k2h);
+      current[2].inc(i_n_shift + 1, k_n_shift, Jz_i2_1_j2_k2h + Jz_i2_1_j2_1_k2h);
     }
 }

@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,20 +26,18 @@ using namespace std;
 class SpecieP;
 class Geometry;
 
-#define RELAY_POINT(i1, i2, x1, x2, dx)                           \
-  min( min((i1) * (dx), (i2) * (dx)) + (dx),                      \
-       max( max((i1) * (dx), (i2) * (dx)), ((x1) + (x2)) / 2.));
+#define RELAY_POINT(i1, i2, x1, x2, dx)                                                                                \
+  min(min((i1) * (dx), (i2) * (dx)) + (dx), max(max((i1) * (dx), (i2) * (dx)), ((x1) + (x2)) / 2.));
 
 class CurrentZigZag : public Current
 {
 public:
-  CurrentZigZag() {};
-  CurrentZigZag(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Current(geom, t, species) {};
-  ~CurrentZigZag() {};
+  CurrentZigZag () {};
+  CurrentZigZag (Geometry* geom, TimeSim* t, vector<SpecieP*> species) : Current(geom, t, species) {};
+  ~CurrentZigZag () {};
 
-  void current_distribution();
+  void current_distribution ();
 
 private:
-
 };
 #endif // end of _CURRENT_ZIGZAG_

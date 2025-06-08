@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +22,8 @@
 #include "defines.hpp"
 #include "msg.hpp"
 
-#include "specieP.hpp"
 #include "beamP.hpp"
+#include "specieP.hpp"
 
 #if defined(SWITCH_PUSHER_BORIS_ADAPTIVE) || defined(SWITCH_PUSHER_BORIS) || defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
 #include "pusher/pusherBoris.hpp"
@@ -77,68 +78,67 @@ using namespace std;
 class Domain
 {
 public:
-  vector<SpecieP *> species_p;
-  Current *current;
+  vector<SpecieP*> species_p;
+  Current* current;
   vector<OutWriter> out_writers;
 
 #if defined(SWITCH_PUSHER_BORIS_ADAPTIVE) || defined(SWITCH_PUSHER_BORIS) || defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
-  PusherBoris *pusher;
+  PusherBoris* pusher;
 #elif defined(SWITCH_PUSHER_VAY)
-  PusherVay *pusher;
+  PusherVay* pusher;
 #elif defined(SWITCH_PUSHER_HC)
-  PusherHC *pusher;
+  PusherHC* pusher;
 #endif
 
 #ifdef SWITCH_MAXWELL_SOLVER_YEE
-  MaxwellSolverYee *maxwell_solver;
+  MaxwellSolverYee* maxwell_solver;
 #endif
 
 #ifdef ENABLE_EXTERNAL_FIELDS
-  ExternalFields *external_fields;
+  ExternalFields* external_fields;
 #endif
 
 #ifdef ENABLE_COULOMB_COLLISIONS
-  Collisions *collisions;
+  Collisions* collisions;
 #endif
 
   Geometry geometry;
 
-  TimeSim *time; // simulation time object
+  TimeSim* time; // simulation time object
 
 public:
-  Domain() {};
+  Domain () {};
 
 #ifdef ENABLE_EXTERNAL_FIELDS
-  Domain(Geometry _geometry, vector<SpecieP *> species_p, TimeSim* _time,
-         std::string _el_field_profile, std::string _magn_field_profile,
-         std::vector<double> _el_field_params,
-         std::vector<double> _magn_field_params);
+  Domain (Geometry _geometry, vector<SpecieP*> species_p, TimeSim* _time, std::string _el_field_profile,
+          std::string _magn_field_profile, std::vector<double> _el_field_params,
+          std::vector<double> _magn_field_params);
 #else
-  Domain(Geometry _geometry, vector<SpecieP *> species_p, TimeSim* _time);
+  Domain (Geometry _geometry, vector<SpecieP*> species_p, TimeSim* _time);
 #endif
 
   // wrapper methods
-  void distribute();
-  void weight_density(string specie);
-  void weight_temperature(string specie);
-  void weight_charge(string specie);
-  void push_particles();
-  void weight_current();
-  void update_particles_coords();
+  void distribute ();
+  void weight_density (string specie);
+  void weight_temperature (string specie);
+  void weight_charge (string specie);
+  void push_particles ();
+  void weight_current ();
+  void update_particles_coords ();
   // void weight_current_azimuthal();
-  void reset_current();
-  void reset_charge();
-  void reset_field_e() {};
-  void reset_field_h() {};
-  void weight_field_h();
-  void weight_field_e();
-  void apply_external_fields();
-  void particles_back_velocity_to_rz();
-  void particles_back_position_to_rz();
-  void reflect();
-  void manage_beam();
-  void dump_particle_positions_to_old();
-  void collide();
-  void bind_cell_numbers();
+  void reset_current ();
+  void reset_charge ();
+  void reset_field_e () {};
+  void reset_field_h () {};
+  void weight_field_h ();
+  void weight_field_e ();
+  void apply_external_fields ();
+  void particles_back_velocity_to_rz ();
+  void particles_back_position_to_rz ();
+  void reflect ();
+  void manage_beam ();
+  void dump_particle_positions_to_old ();
+  void collide ();
+  void bind_cell_numbers ();
 };
 #endif // end of _DOMAIN_HPP_

@@ -11,6 +11,7 @@ import gzip
 import time
 # from scipy.fftpack import fft
 # from scipy import stats
+import multiprocessing
 
 from pygments.lexers import JsonLexer
 from json import dumps
@@ -96,13 +97,16 @@ class bootstrap ():
         utils = Util()
 
         print("Preparing the code")
+        os.makedirs(os.path.join(self.rootdir, 'testingdir'), exist_ok=True)
         utils.cliexec('make distclean', cwd=self.rootdir, view=self.verbose, wait=True)
         utils.cliexec('./autogen.sh', cwd=self.rootdir, view=self.verbose, wait=True)
         if self.accept_ieee:
             utils.cliexec('./configure --enable-ieee --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
         else:
             utils.cliexec('./configure --disable-singlethread', cwd=self.rootdir, view=self.verbose, wait=True)
-        utils.cliexec('make build', cwd=self.rootdir, view=self.verbose, wait=True)
+
+        cpu_number = multiprocessing.cpu_count()
+        utils.cliexec('make PiCoPiC -j{}'.format(cpu_number - 2), cwd=self.rootdir, view=self.verbose, wait=True)
 
         picopic_file = os.path.join(self.rootdir, 'PiCoPiC')
         tools_dir = os.path.join(self.rootdir, 'tools')

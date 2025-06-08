@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +25,9 @@
 #include "msg.hpp"
 
 #include "algo/grid3d.hpp"
-#include "timeSim.hpp"
 #include "geometry.hpp"
 #include "specieP.hpp"
+#include "timeSim.hpp"
 
 using namespace std;
 
@@ -35,22 +36,22 @@ class SpecieP;
 class Current
 {
 public:
-  Geometry *geometry;
-  TimeSim *time;
-  vector<SpecieP *> species_p;
+  Geometry* geometry;
+  TimeSim* time;
+  vector<SpecieP*> species_p;
   Grid3D<double> current;
-  
-  Current() {};
-  Current(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : geometry(geom), time(t)
+
+  Current () {};
+  Current (Geometry* geom, TimeSim* t, vector<SpecieP*> species) : geometry(geom), time(t)
   {
-    current = Grid3D<double> (geometry->cell_amount[0], geometry->cell_amount[1], 2);
+    current = Grid3D<double>(geometry->cell_amount[0], geometry->cell_amount[1], 2);
     species_p = species;
 
     current = 0;
     current.overlay_set(0);
   };
 
-  virtual void current_distribution() = 0;
+  virtual void current_distribution () = 0;
 };
 
 #endif // end of _CURRENT_HPP_

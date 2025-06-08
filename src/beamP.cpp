@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,41 +23,32 @@ using namespace constant;
 BeamP::BeamP (unsigned int id, // ID for every particles specie
               string p_name,
               double p_charge, // in electron charges
-              double p_mass, // in electron masses
-              unsigned int p_macro_amount,
-              double p_start_time,
-              double b_radius,
+              double p_mass,   // in electron masses
+              unsigned int p_macro_amount, double p_start_time, double b_radius,
               double b_density, // CI units
-              double b_amount,
-              double b_length,
-              double b_distance,
+              double b_amount, double b_length, double b_distance,
               double b_velocity, // electronvolts
-              Geometry *geom,
-              TimeSim *t )
-  : SpecieP (id, p_name, p_charge, p_mass,
-             p_macro_amount, b_density,
-             b_density, 0, geom, t)
+              Geometry* geom, TimeSim* t)
+  : SpecieP(id, p_name, p_charge, p_mass, p_macro_amount, b_density, b_density, 0, geom, t)
 {
   current_bunch_number = 0;
 
   radius = b_radius;
-  density =  b_density;
+  density = b_density;
   velocity = b_velocity;
   start_time = p_start_time;
   bunches_amount = b_amount;
   bunch_length = b_length;
   bunches_distance = b_distance;
-  finish_time = start_time
-    + bunch_length / velocity * bunches_amount
-    + bunches_distance / velocity * (bunches_amount - 1);
-
+  finish_time =
+    start_time + bunch_length / velocity * bunches_amount + bunches_distance / velocity * (bunches_amount - 1);
 
   // find bunch radius, compared to current domain
-  if (geometry->cell_dims[1] > 0)
+  if ( geometry->cell_dims[1] > 0 )
     domain_radius = 0;
-  else if (radius > geometry->cell_dims[2] * geometry->cell_size[0])
+  else if ( radius > geometry->cell_dims[2] * geometry->cell_size[0] )
     domain_radius = geometry->size[0];
-  else if (radius > geometry->cell_dims[0] * geometry->cell_size[0])
+  else if ( radius > geometry->cell_dims[0] * geometry->cell_size[0] )
     domain_radius = radius - geometry->cell_dims[0] * geometry->cell_size[0];
   else
     domain_radius = 0;
@@ -68,17 +60,17 @@ BeamP::BeamP (unsigned int id, // ID for every particles specie
   macro_per_step_to_inject = bunch_macro_amount * velocity * time->step / bunch_length;
 }
 
-void BeamP::inject()
+void BeamP::inject ()
 {
   // check if limit of bunches is reached
-  if (current_bunch_number < bunches_amount)
+  if ( current_bunch_number < bunches_amount )
   {
     double bunch_start_time = start_time + (bunch_length + bunches_distance) / velocity * current_bunch_number;
     double bunch_finish_time = bunch_start_time + bunch_length / velocity;
 
-    if (geometry->cell_dims[0] * geometry->cell_size[0] < radius // prevent injection for unused bunches
-        && time->current >= bunch_start_time  // launch only
-        && time->current < bunch_finish_time) // at injection time
+    if ( geometry->cell_dims[0] * geometry->cell_size[0] < radius // prevent injection for unused bunches
+         && time->current >= bunch_start_time                     // launch only
+         && time->current < bunch_finish_time )                   // at injection time
     {
       double dr = geometry->cell_size[0];
       double dz = geometry->cell_size[1];
@@ -97,9 +89,9 @@ void BeamP::inject()
       double N_total = PI * radius * radius * bunch_length * bunches_amount * density;
       double n_per_macro_avg = N_total / macro_amount;
 
-      for (unsigned int i = 0; i < macro_per_step_to_inject; ++i)
+      for ( unsigned int i = 0; i < macro_per_step_to_inject; ++i )
       {
-        Particle *v = new Particle();
+        Particle* v = new Particle();
         P_SPECIE_ID((*v)) = id;
 
         double rand_r = math::random::uniform();
@@ -121,7 +113,7 @@ void BeamP::inject()
 
         // coefitient of normalization
         double norm;
-        if (pos_r > dr / 2)
+        if ( pos_r > dr / 2 )
           norm = 2 * PI * pos_r * dr * dz / v_macro_avg;
         else
           norm = PI * (pos_r * pos_r + pos_r * dr + dr * dr / 4.) * dz / v_macro_avg;
@@ -146,11 +138,10 @@ void BeamP::inject()
     }
 
     // increase current bunch number after whole bunch injection
-    if (time->current > bunch_finish_time
-        && geometry->cell_dims[1] == 0 // print message only for domain 0,0
-        && geometry->cell_dims[0] == 0)
+    if ( time->current > bunch_finish_time && geometry->cell_dims[1] == 0 // print message only for domain 0,0
+         && geometry->cell_dims[0] == 0 )
     {
-      LOG_S(MAX) << "Bunch #" << current_bunch_number << " of beam ``" << name << "'' has been injected";
+      spdlog::debug("Bunch #{} of beam ``{}'' has been injected", current_bunch_number, name);
       ++current_bunch_number;
     }
   }
@@ -164,14 +155,14 @@ void BeamP::reflect ()
   // shift for converting local positions into global and back
   double r_shift = geometry->cell_dims[0] * dr;
 
-  for (auto p = particles.begin(); p != particles.end(); ++p)
+  for ( auto p = particles.begin(); p != particles.end(); ++p )
   {
     double pos_r = P_POS_R((**p)) - r_shift;
 
-    if (pos_r < half_dr && geometry->walls[0])
+    if ( pos_r < half_dr && geometry->walls[0] )
     {
       P_POS_R((**p)) = dr - pos_r + r_shift;
-      P_VEL_R((**p)) = - P_VEL_R((**p));
+      P_VEL_R((**p)) = -P_VEL_R((**p));
     }
   }
 }

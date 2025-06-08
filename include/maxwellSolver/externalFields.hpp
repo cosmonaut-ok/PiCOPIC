@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +19,8 @@
 #ifndef _EXTERNALFIELDS_HPP_
 #define _EXTERNALFIELDS_HPP_
 
-#include <string>
 #include "maxwellSolver.hpp"
+#include <string>
 
 class ExternalFields : public MaxwellSolver
 {
@@ -48,23 +49,20 @@ private:
   std::vector<double> m_field_params;
 
 public:
-  ExternalFields ( void ) {};
-  ExternalFields ( Geometry *_geometry, TimeSim *_time,
-                   std::string _el_field_profile,
-                   std::string _magn_field_profile,
-                   std::vector<double> _el_field_params,
-                   std::vector<double> _magn_field_params );
+  ExternalFields (void) {};
+  ExternalFields (Geometry* _geometry, TimeSim* _time, std::string _el_field_profile, std::string _magn_field_profile,
+                  std::vector<double> _el_field_params, std::vector<double> _magn_field_params);
 
-  ~ExternalFields(void) {};
+  ~ExternalFields (void) {};
 
-  void set_pml();
-  void calc_field_h() {};
-  void calc_field_e() {};
+  void set_pml ();
+  void calc_field_h () {};
+  void calc_field_e () {};
 
   void set_el_field_homogenous_z ();
   void set_magn_field_homogenous_z ();
 
-  void operator()();
+  void operator() ();
 };
 
 #endif // end of _EXTERNALFIELDS_HPP_

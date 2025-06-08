@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +21,11 @@
 
 #include "current.hpp"
 
-#define SOME_SHIT_DENSITY_STRICT(q, r, dr, dz, delta_t) \
-  (q) / (constant::PI * 4. * (r) * (dz) * (dz) * (dr) * (delta_t));
+#define SOME_SHIT_DENSITY_STRICT(q, r, dr, dz, delta_t) (q) / (M_PI * 4. * (r) * (dz) * (dz) * (dr) * (delta_t));
 
-#define SOME_SHIT_DENSITY_R(q, r, dr, dz, delta_t) \
-  (q) / (2. * constant::PI * (r) * (dr) * (dz)                \
-         * (delta_t) * 2. * (dr));
+#define SOME_SHIT_DENSITY_R(q, r, dr, dz, delta_t) (q) / (2. * M_PI * (r) * (dr) * (dz) * (delta_t) * 2. * (dr));
 
-#define SOME_SHIT_DENSITY_Z(q, r, dr, dz, delta_t) \
-  (q) / (2. * constant::PI * (r) * (dr) * (dz)                \
-         * (delta_t) * (dz));
+#define SOME_SHIT_DENSITY_Z(q, r, dr, dz, delta_t) (q) / (2. * M_PI * (r) * (dr) * (dz) * (delta_t) * (dz));
 
 using namespace std;
 
@@ -39,27 +35,19 @@ class Geometry;
 class CurrentVB : public Current
 {
 public:
-  CurrentVB() {};
-  CurrentVB(Geometry *geom, TimeSim *t, vector<SpecieP *> species) : Current(geom, t, species) {};
+  CurrentVB () {};
+  CurrentVB (Geometry* geom, TimeSim* t, vector<SpecieP*> species) : Current(geom, t, species) {};
 
-  void current_distribution();
+  void current_distribution ();
 
 private:
-  void rz_current_distribution();
-  void azimuthal_current_distribution();
+  void rz_current_distribution ();
+  void azimuthal_current_distribution ();
 
-  void simple_current_distribution (double radius_new,
-                                    double longitude_new,
-                                    double radius_old,
-                                    double longitude_old,
-                                    int i_n,
-                                    int k_n,
-                                    double p_charge);
+  void simple_current_distribution (double radius_new, double longitude_new, double radius_old, double longitude_old,
+                                    int i_n, int k_n, double p_charge);
 
-  void strict_motion_distribution (double radius_new,
-                                   double longitude_new,
-                                   double radius_old,
-                                   double longitude_old,
+  void strict_motion_distribution (double radius_new, double longitude_new, double radius_old, double longitude_old,
                                    double p_charge);
 };
 

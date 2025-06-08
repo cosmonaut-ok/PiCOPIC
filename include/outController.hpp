@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,18 +19,18 @@
 #ifndef _OUT_CONTROLLER_HPP_
 #define _OUT_CONTROLLER_HPP_
 
-#include <string>
 #include <highfive/H5File.hpp>
+#include <string>
 
 #include "picojson.h"
 
 #include "defines.hpp"
 #include "msg.hpp"
 
+#include "SMB.hpp"
+#include "cfg.hpp"
 #include "geometry.hpp"
 #include "timeSim.hpp"
-#include "cfg.hpp"
-#include "SMB.hpp"
 
 #ifdef ENABLE_HDF5
 #include "outEngine/outEngineHDF5.hpp"
@@ -40,32 +41,30 @@
 class OutController
 {
 public:
-  Geometry *geometry;
-  TimeSim *time;
+  Geometry* geometry;
+  TimeSim* time;
   vector<probe> probes;
-  SMB *smb;
+  SMB* smb;
 
 #ifdef ENABLE_HDF5
-  HighFive::File *hdf5_file;
+  HighFive::File* hdf5_file;
 #endif // ENABLE_HDF5
 
 public:
-  OutController() {};
+  OutController () {};
 #ifdef ENABLE_HDF5
-  OutController(HighFive::File *_file, Geometry *_geometry, TimeSim *_time,
-                vector<probe> &_probes, SMB *_smb, picojson::value _metadata,
-		bool _print_progress_table);
+  OutController (HighFive::File* _file, Geometry* _geometry, TimeSim* _time, vector<probe>& _probes, SMB* _smb,
+                 picojson::value _metadata, bool _print_progress_table);
 #else
-  OutController(Geometry *_geometry, TimeSim *_time,
-                vector<probe> &_probes, SMB *_smb, picojson::value _metadata,
-		bool _print_progress_table);
+  OutController (Geometry* _geometry, TimeSim* _time, vector<probe>& _probes, SMB* _smb, picojson::value _metadata,
+                 bool _print_progress_table);
 #endif
-  ~OutController() {};
+  ~OutController () {};
 
-  void operator()(); // launch writers on all domains of all SMBs
+  void operator() (); // launch writers on all domains of all SMBs
 
 private:
-  void init_datasets();
+  void init_datasets ();
   bool print_progress_table;
 };
 

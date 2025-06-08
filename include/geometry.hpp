@@ -1,6 +1,6 @@
 /*
  * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 
 #include <vector>
 
-#include "defines.hpp"
 #include "constant.hpp"
+#include "defines.hpp"
 #include "msg.hpp"
 
 struct Geometry
@@ -46,12 +46,8 @@ public:
   std::vector<double> pml_sigma;
 
   // Geometry constructors
-  Geometry ( std::vector<double> _size,
-             std::vector<double> _global_size,
-             std::vector<size_t> _cell_dims,
-             std::vector<size_t> _pml_size,
-             std::vector<double> _pml_sigma,
-             std::vector<bool> _walls )
+  Geometry (std::vector<double> _size, std::vector<double> _global_size, std::vector<size_t> _cell_dims,
+            std::vector<size_t> _pml_size, std::vector<double> _pml_sigma, std::vector<bool> _walls)
   {
     size = _size;
     global_size = _global_size;
@@ -61,13 +57,13 @@ public:
     // so beginings and endings of the edge points are separated
     // by half of array length
     size_t half_length = (size_t)(cell_dims.size() / 2.);
-    for (size_t i = 0; i < half_length; ++i)
-      cell_amount.push_back(cell_dims[i+half_length] - cell_dims[i]);
+    for ( size_t i = 0; i < half_length; ++i )
+      cell_amount.push_back(cell_dims[i + half_length] - cell_dims[i]);
 
-    for (unsigned int i = 0; i < size.size(); ++i)
+    for ( unsigned int i = 0; i < size.size(); ++i )
       cell_size.push_back(size[i] / cell_amount[i]);
 
-    for (size_t i = 0; i < _global_size.size(); ++i)
+    for ( size_t i = 0; i < _global_size.size(); ++i )
       global_cell_amount.push_back(global_size[i] / cell_size[i]);
 
     walls = _walls;
@@ -75,30 +71,20 @@ public:
     pml_sigma = _pml_sigma;
   };
 
-  Geometry ( std::vector<double> _size,
-             std::vector<size_t> _cell_dims,
-             std::vector<size_t> _pml_size,
-             std::vector<double> _pml_sigma,
-             std::vector<bool> _walls)
-    : Geometry ( _size, _size, _cell_dims, _pml_size, _pml_sigma, _walls)
-  {};
+  Geometry (std::vector<double> _size, std::vector<size_t> _cell_dims, std::vector<size_t> _pml_size,
+            std::vector<double> _pml_sigma, std::vector<bool> _walls)
+    : Geometry(_size, _size, _cell_dims, _pml_size, _pml_sigma, _walls) {};
 
-  Geometry ( std::vector<double> _size,
-             std::vector<double> _global_size,
-             std::vector<size_t> _cell_dims,
-             std::vector<bool> _walls)
-    : Geometry ( _size, _global_size, _cell_dims, {0, 0, 0, 0}, {0, 0}, _walls)
-  {};
+  Geometry (std::vector<double> _size, std::vector<double> _global_size, std::vector<size_t> _cell_dims,
+            std::vector<bool> _walls)
+    : Geometry(_size, _global_size, _cell_dims, {0, 0, 0, 0}, {0, 0}, _walls) {};
 
-  Geometry ( std::vector<double> _size,
-             std::vector<size_t> _cell_dims,
-             std::vector<bool> _walls)
-    : Geometry ( _size, _size, _cell_dims, {0, 0, 0, 0}, {0, 0}, _walls)
-  {};
+  Geometry (std::vector<double> _size, std::vector<size_t> _cell_dims, std::vector<bool> _walls)
+    : Geometry(_size, _size, _cell_dims, {0, 0, 0, 0}, {0, 0}, _walls) {};
 
-  Geometry() {};
+  Geometry () {};
 
-  ~Geometry() {};
+  ~Geometry () {};
 
   double dist_x_to_end (size_t cell_num)
   {
@@ -183,14 +169,14 @@ public:
 
 // some geometry-related macros
 //! \f$ ( \pi \times (dr * (i+0.5))^2 - \pi \times (dr * (i-0.5))^2 ) * dz \f$
-#define CELL_VOLUME(i, dr, dz) constant::PI * (dz) * (dr) * (dr) * (2.0 * i + 1)
+#define CELL_VOLUME(i, dr, dz) M_PI*(dz) * (dr) * (dr) * (2.0 * i + 1)
 
 //! volume of the cylindrical ring (internal cylinder on r1 is cut out)
-#define CYL_RNG_VOL(z, r1, r2) constant::PI * (z) * ((r2) * (r2) - (r1) * (r1))
+#define CYL_RNG_VOL(z, r1, r2) M_PI*(z) * ((r2) * (r2) - (r1) * (r1))
 
 //! volume of the cylinder
 // #define CYL_VOL(z, r) PI * (z) * (r) * (r) / 4.
-#define CYL_VOL(z, r) constant::PI * (z) * (r) * (r)
+#define CYL_VOL(z, r) M_PI*(z) * (r) * (r)
 
 // #define PARTICLE_VOLUME(x,y) (PI * dz * dr * dr * 2.0 * i)
 

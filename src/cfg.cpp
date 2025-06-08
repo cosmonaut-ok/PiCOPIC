@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +21,7 @@
 using namespace std;
 using namespace picojson;
 
-Cfg::Cfg(const std::string json_file_name)
+Cfg::Cfg (const std::string json_file_name)
 {
   //! read given json file and parse it
   stringstream ss;
@@ -32,8 +33,11 @@ Cfg::Cfg(const std::string json_file_name)
 
   // Read Json file
   f.open(json_file_name.c_str(), ios::binary);
-  if (!f.is_open())
-    LOG_S(FATAL) << "Can not read configuration file ``" << json_file_name.c_str() << "''";
+  if ( !f.is_open() )
+  {
+    spdlog::critical("Can not read configuration file ``{}''", json_file_name);
+    exit(EXIT_FAILURE);
+  }
   ss << f.rdbuf();
   f.close();
 
@@ -41,27 +45,40 @@ Cfg::Cfg(const std::string json_file_name)
   value v;
   ss >> v;
   string err = get_last_error();
-  if(!err.empty())
-    LOG_S(FATAL) << err;
+  if ( !err.empty() )
+  {
+    spdlog::critical(err);
+    exit(EXIT_FAILURE);
+  }
 
   json_data = v;
 
+  //! setup logging
   //! set logfile
   log_file = (char*)json_data.get<object>()["log_file"].get<string>().c_str();
-  // set log level, file etc
+  spdlog::init_thread_pool(8192, 1);
+  auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+  auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file, true);
+  // TODO: set pattern. e.g.: console_sink->set_pattern("[%T.%e] %^%-8l%$: %v");
+  std::vector<spdlog::sink_ptr> sinks{stdout_sink, file_sink};
+  auto logger = std::make_shared<spdlog::async_logger>("default", sinks.begin(), sinks.end(), spdlog::thread_pool(),
+                                                       spdlog::async_overflow_policy::block);
+  spdlog::register_logger(logger);
+  spdlog::set_default_logger(logger);
+
+  // set log level
 #ifdef ENABLE_DEBUG
-  loguru::add_file(log_file, loguru::Truncate, loguru::Verbosity_MAX);
-  loguru::g_stderr_verbosity = loguru::Verbosity_MAX;
+  logger->set_level(spdlog::level::trace);
 #else
-  loguru::add_file(log_file, loguru::Truncate, loguru::Verbosity_INFO);
-  loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
+  logger->set_level(spdlog::level::info);
 #endif
 
   //! update json with additional items
   //! to inform about build options
   //! and package version
   // set package version to config metadata
-  // json_data.get<object>()["package_version"] = value((string)PACKAGE_VERSION);
+  // json_data.get<object>()["package_version"] =
+  // value((string)PACKAGE_VERSION);
   object o;
   o["package_version"] = value((string)PACKAGE_VERSION);
 #ifdef ENABLE_DEBUG
@@ -155,11 +172,9 @@ Cfg::Cfg(const std::string json_file_name)
   method_limitations_check();
 }
 
-Cfg::~Cfg()
-{
-}
+Cfg::~Cfg () {}
 
-void Cfg::init_particles()
+void Cfg::init_particles ()
 {
   //! initialize particles charge, mass, number,
   //! density and temperature for all particle species
@@ -167,7 +182,7 @@ void Cfg::init_particles()
   object& json_root = json_data.get<object>();
   picojson::array& particle_species_list = json_root["particles"].get<picojson::array>();
 
-  for (auto i=particle_species_list.begin(); i != particle_species_list.end(); ++i)
+  for ( auto i = particle_species_list.begin(); i != particle_species_list.end(); ++i )
   {
     particle_specie p_s;
 
@@ -175,21 +190,26 @@ void Cfg::init_particles()
 
     string specie_name = o["name"].get<string>();
 
-    for (auto sp = particle_species.begin(); sp != particle_species.end(); ++sp)
-      if (sp->name.compare(specie_name) == 0)
-        LOG_S(FATAL) << "Particles specie name ``" << specie_name
-                     << "'' already exists. Names should be unique";
-
+    for ( auto sp = particle_species.begin(); sp != particle_species.end(); ++sp )
+      if ( sp->name.compare(specie_name) == 0 )
+      {
+        spdlog::critical("Particles specie name ``{}'' already exists. Names "
+                         "should be unique",
+                         specie_name);
+        exit(EXIT_FAILURE);
+      }
     unsigned short current_specie_id = algo::common::hash_from_string(specie_name, SPECIE_HASH_SALT);
 
-    LOG_S(MAX) << "Specie ID is ``" << current_specie_id << "'' for ``" << specie_name << "''";
+    spdlog::debug("Specie ID is ``{}'' for ``{}''", current_specie_id, specie_name);
 
     p_s.id = current_specie_id;
     p_s.name = specie_name;
     p_s.mass = (int)o["mass"].get<double>();
     p_s.charge = (int)o["charge"].get<double>();
-    p_s.left_density = o["density"].get<double>(); // TODO: density profile still not supported, but planned
-    p_s.right_density = o["density"].get<double>(); // TODO: density profile still not supported, but planned
+    p_s.left_density = o["density"].get<double>();  // TODO: density profile still not
+                                                    // supported, but planned
+    p_s.right_density = o["density"].get<double>(); // TODO: density profile still not
+                                                    // supported, but planned
     p_s.temperature = o["temperature"].get<double>();
 
     particle_species.push_back(p_s);
@@ -206,7 +226,7 @@ void Cfg::init_probes ()
   object& json_root = json_data.get<object>()["data"].get<object>();
   picojson::array& probes_list = json_root["probes"].get<picojson::array>();
 
-  for (auto i=probes_list.begin(); i != probes_list.end(); ++i)
+  for ( auto i = probes_list.begin(); i != probes_list.end(); ++i )
   {
     probe p_p;
 
@@ -214,8 +234,14 @@ void Cfg::init_probes ()
 
     p_p.component = o["component"].get<string>().c_str();
 
-    try { p_p.specie = o["specie"].get<string>().c_str(); }
-    catch (std::exception& e) { p_p.specie = "unknown"; }
+    try
+    {
+      p_p.specie = o["specie"].get<string>().c_str();
+    }
+    catch ( std::exception& e )
+    {
+      p_p.specie = "unknown";
+    }
 
     string p_shape = o["shape"].get<string>().c_str();
 
@@ -223,12 +249,9 @@ void Cfg::init_probes ()
     p_p.path = p_p.component + PATH_DELIMITER;
 
     // add path part for specie-based probes
-    if ( p_p.component.compare("temperature") == 0
-         || p_p.component.compare("energy") == 0
-         || p_p.component.compare("momentum/r") == 0
-         || p_p.component.compare("momentum/phi") == 0
-         || p_p.component.compare("momentum/z") == 0
-         || p_p.component.compare("density") == 0 )
+    if ( p_p.component.compare("temperature") == 0 || p_p.component.compare("energy") == 0 ||
+         p_p.component.compare("momentum/r") == 0 || p_p.component.compare("momentum/phi") == 0 ||
+         p_p.component.compare("momentum/z") == 0 || p_p.component.compare("density") == 0 )
       p_p.path += p_p.specie + PATH_DELIMITER;
 
     if ( p_shape.compare("rec") == 0 )
@@ -296,34 +319,39 @@ void Cfg::init_probes ()
       p_p.path += to_string(p_p.dims[3]);
     }
     else
-      LOG_S(FATAL) << "Unknown probe shape ``" << p_shape << "''";
+    {
+      spdlog::critical("Unknown probe shape ``{}''", p_shape);
+      exit(EXIT_FAILURE);
+    }
 
     p_p.schedule = (int)o["schedule"].get<double>();
 
-    if (p_p.dims[0] > p_p.dims[2] || p_p.dims[1] > p_p.dims[3])
+    if ( p_p.dims[0] > p_p.dims[2] || p_p.dims[1] > p_p.dims[3] )
     {
-      LOG_S(FATAL) << "Incorrect probe's " << p_p.component << "/" << p_shape << " shape: ["
-                   << p_p.dims[0] << "," << p_p.dims[2] << ","
-                   << p_p.dims[1] << "," << p_p.dims[3] << "]";
+      spdlog::critical("Incorrect probe's {}/{}, shape: [{},{},{},{}]", p_p.component, p_shape, p_p.dims[0],
+                       p_p.dims[2], p_p.dims[1], p_p.dims[3]);
+      exit(EXIT_FAILURE);
     }
-    else if (p_p.dims[2] > geometry->cell_amount[0])
+    else if ( p_p.dims[2] > geometry->cell_amount[0] )
     {
-      LOG_S(FATAL) << "Probe's " << p_p.component << "/" << p_shape << " radius is out of simulation domain: "
-                   << p_p.dims[2] << ". Must be less, than "
-                   << geometry->cell_amount[0];
+      spdlog::critical("Probe's {}/{} radius is out of simulation domain: {}. "
+                       "Must be less than {}",
+                       p_p.component, p_shape, p_p.dims[2], geometry->cell_amount[0]);
+      exit(EXIT_FAILURE);
     }
-    else if (p_p.dims[3] > geometry->cell_amount[1])
+    else if ( p_p.dims[3] > geometry->cell_amount[1] )
     {
-      LOG_S(FATAL) << "Probe's " << p_p.component << "/" << p_shape << " longitude is out of simulation domain: "
-                   << p_p.dims[3] << ". Must be less, than "
-                   << geometry->cell_amount[1];
+      spdlog::critical("Probe's {}/{} longitude is out of simulation domain: "
+                       "{}. Must be less, than {}",
+                       p_p.component, p_shape, p_p.dims[3], geometry->cell_amount[1]);
+      exit(EXIT_FAILURE);
     }
     else
       probes.push_back(p_p);
   }
 }
 
-void Cfg::init_beam()
+void Cfg::init_beam ()
 {
   //! initialize particles bunch data
   //! particles bunch should be injected to plasma
@@ -331,8 +359,8 @@ void Cfg::init_beam()
   object& json_root = json_data.get<object>();
   picojson::array& particle_beams_list = json_root["beams"].get<picojson::array>();
 
-  if (! particle_beams_list.empty())
-    for (auto i=particle_beams_list.begin(); i != particle_beams_list.end(); ++i)
+  if ( !particle_beams_list.empty() )
+    for ( auto i = particle_beams_list.begin(); i != particle_beams_list.end(); ++i )
     {
       particle_beam p_b;
 
@@ -341,15 +369,19 @@ void Cfg::init_beam()
 
       string beam_name = "beam_" + o["name"].get<string>();
 
-      for (auto bm = particle_beams.begin(); bm != particle_beams.end(); ++bm)
-        if (bm->name.compare(beam_name) == 0)
-          LOG_S(FATAL) << "Beam name ``" << o["name"].get<string>()
-                       << "'' already exists. Beam names should be unique";
+      for ( auto bm = particle_beams.begin(); bm != particle_beams.end(); ++bm )
+        if ( bm->name.compare(beam_name) == 0 )
+        {
+          spdlog::critical("Beam name ``{}'' is already exists. Beam names "
+                           "should be unique. Exiting",
+                           o["name"].get<string>());
+          exit(EXIT_FAILURE);
+        }
 
       // ! calculate current beam ID from its name:
       unsigned int current_beam_id = algo::common::hash_from_string(beam_name, BEAM_HASH_SALT);
 
-      LOG_S(MAX) << "Beam ID is ``" << current_beam_id << "'' for ``" << beam_name << "''";
+      spdlog::debug("Beam ID is ``{}'' for ``{}''", current_beam_id, beam_name);
 
       p_b.id = current_beam_id;
       p_b.name = beam_name;
@@ -373,7 +405,7 @@ void Cfg::init_beam()
       // ++current_beam_id;
     }
   else
-    LOG_S(INFO) << "There is no particle beams to inject";
+    spdlog::info("There is no particle beams to inject");
 }
 
 void Cfg::init_geometry ()
@@ -409,16 +441,16 @@ void Cfg::init_geometry ()
   _pml[2] = floor(outer_wall * n_grid_r);
   _pml[3] = floor(right_wall * n_grid_z);
 
-  geometry = new Geometry ( _size, _dims, _pml, _sigma, _walls );
-  #else
-  geometry = new Geometry ( _size, _dims, _walls );
+  geometry = new Geometry(_size, _dims, _pml, _sigma, _walls);
+#else
+  geometry = new Geometry(_size, _dims, _walls);
 #endif
-  vector<size_t> domains (2, 0);
+  vector<size_t> domains(2, 0);
   geometry->domains_amount = domains;
 
   //
 #ifdef ENABLE_SINGLETHREAD
-  LOG_S(INFO) << "Singlethread mode. Reducing domains amount to 1";
+  spdlog::info("Singlethread mode. Reducing domains amount to 1");
   geometry->domains_amount[0] = 1;
   geometry->domains_amount[1] = 1;
 #else
@@ -438,7 +470,7 @@ void Cfg::init_time ()
   time->current = 0;
 }
 
-void Cfg::init_output_data()
+void Cfg::init_output_data ()
 {
   //! initialize file saving parameters, like path to computed data files,
   //! path to system state data files max frames number, placed to one file etc.
@@ -451,7 +483,7 @@ void Cfg::init_output_data()
 }
 
 #ifdef ENABLE_EXTERNAL_FIELDS
-void Cfg::init_external_fields()
+void Cfg::init_external_fields ()
 {
   object& json_root = json_data.get<object>()["external_fields"].get<object>();
 
@@ -462,7 +494,7 @@ void Cfg::init_external_fields()
   el_f.formfactor = json_el_field["formfactor"].get<string>().c_str();
   // create array of params for electric field
   value::array el_params = json_el_field["params"].get<value::array>();
-  for (value item: el_params)
+  for ( value item : el_params )
     el_f.params.push_back(item.get<double>());
 
   // init magnetic field
@@ -472,31 +504,30 @@ void Cfg::init_external_fields()
   magn_f.formfactor = json_magn_field["formfactor"].get<string>().c_str();
   // create array of params for magnetic field
   value::array magn_params = json_magn_field["params"].get<value::array>();
-  for (value item: magn_params)
+  for ( value item : magn_params )
     magn_f.params.push_back(item.get<double>());
 
   external_fields.push_back(el_f);
   external_fields.push_back(magn_f);
 
-  LOG_S(INFO) << "Using External Fields. Electric field formfactor: ``"
-              << external_fields[0].formfactor
-              << "''; Magnetic field formfactor: ``"
-              << external_fields[1].formfactor
-              << "''";
+  spdlog::info("Using External Fields. Electric field formfactor: ``{}'', "
+               "Magnetic field formfactor: ``{}''",
+               external_fields[0].formfactor, external_fields[1].formfactor);
 }
 #endif
 
-void Cfg::weight_macro_amount()
+void Cfg::weight_macro_amount ()
 //! calculate alignment of macroparticles amount
 //! to each particles specie and each beam
 {
   double norm_sum = 0;
 
-// increase normalization sum for particle species (assume, that specie size times species amount)
+  // increase normalization sum for particle species (assume, that specie size
+  // times species amount)
   norm_sum += geometry->cell_amount[0] * geometry->cell_amount[1] * particle_species.size();
 
-// increase normalization sum for particle beams
-  for (auto b = particle_beams.begin(); b != particle_beams.end(); ++b)
+  // increase normalization sum for particle beams
+  for ( auto b = particle_beams.begin(); b != particle_beams.end(); ++b )
   {
     double beam_r_grid_size = (*b).bunch_radius / geometry->cell_size[0];
     double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->cell_size[1];
@@ -509,64 +540,71 @@ void Cfg::weight_macro_amount()
 
   // message about pusher, used in system
 #ifdef SWITCH_PUSHER_BORIS
-  LOG_S(INFO) << "Using classic Boris particles pusher";
+  spdlog::info("Using classic Boris particles pusher");
 #elif defined(SWITCH_PUSHER_BORIS_ADAPTIVE)
-  LOG_S(INFO) << "Using adaptive Boris particles pusher";
+  spdlog::info("Using adaptive Boris particles pusher");
 #elif defined(SWITCH_PUSHER_BORIS_RELATIVISTIC)
-  LOG_S(INFO) << "Using fully relativistic Boris particles pusher";
+  spdlog::info("Using fully relativistic Boris particles pusher");
 #elif defined(SWITCH_PUSHER_VAY)
-  LOG_S(INFO) << "Using Vay particles pusher [10.1063/1.2837054]";
+  spdlog::info("Using Vay particles pusher [10.1063/1.2837054]");
 #elif defined(SWITCH_PUSHER_HC)
-  LOG_S(INFO) << "Using Higuera-Cary particles pusher [10.1063/1.4979989]";
+  spdlog::info("Using Higuera-Cary particles pusher [10.1063/1.4979989]");
 #else
-  LOG_S(FATAL) << "Undefined particles pusher used";
+  // spdlog::critical("Undefined particles pusher used");
+  //       exit(EXIT_FAILURE);
 #endif
 
   // message about charge conservation scheme, used in system
 #ifdef SWITCH_CCS_ZIGZAG
-  LOG_S(INFO) << "Using ZigZag charge conservation scheme [10.1016/S0010-4655(03)00437-5]";
+  spdlog::info("Using ZigZag charge conservation scheme "
+               "[10.1016/S0010-4655(03)00437-5]");
 #elif defined(SWITCH_CCS_VB)
-  LOG_S(INFO) << "Using Villasenor-Buneman charge conservation scheme [10.1016/0010-4655(92)90169-Y]";
+  spdlog::info("Using Villasenor-Buneman charge conservation scheme "
+               "[10.1016/0010-4655(92)90169-Y]");
 #endif
 
   // message about coulomb colisions
 #ifdef ENABLE_COULOMB_COLLISIONS
-  LOG_S(WARNING) << "Particle collisions are enabled. This is still development feature. Ensure, that you know, what you doing";
+  spdlog::warn("Particle collisions are enabled. This is still development "
+               "feature. Ensure, that you know, what you doing");
 #ifdef SWITCH_COULOMB_COLLISIONS_TA77S
-  LOG_S(INFO) << "Using Takizuka and Abe Coulomb collisions scheme";
-  LOG_S(INFO) << "\twith symmetric weighted particles correction [10.1002/ctpp.201700121]";
+  spdlog::info("Using Takizuka and Abe Coulomb collisions scheme");
+  spdlog::info("\twith symmetric weighted particles correction "
+               "[10.1002/ctpp.201700121]");
 #elif defined(SWITCH_COULOMB_COLLISIONS_SK98)
-  LOG_S(INFO) << "Using Sentoku and Kemp Coulomb collisions scheme [10.1143/JPSJ.67.4084, 10.1016/j.jcp.2008.03.043]";
+  spdlog::info("Using Sentoku and Kemp Coulomb collisions scheme "
+               "[10.1143/JPSJ.67.4084, 10.1016/j.jcp.2008.03.043]");
 #elif defined(SWITCH_COULOMB_COLLISIONS_P12)
-  LOG_S(INFO) << "Using Perez et al. collisions scheme [10.1063/1.4742167]";
+  spdlog::info("Using Perez et al. collisions scheme [10.1063/1.4742167]");
 #endif
 #endif
 
 #ifdef SWITCH_MAXWELL_SOLVER_YEE
-  LOG_S(INFO) << "Using Yee (FDTD) maxwellian solver [10.1109/TAP.1966.1138693]";
+  spdlog::info("Using Yee (FDTD) maxwellian solver [10.1109/TAP.1966.1138693]");
 #endif
 
   // align macroparticles amount to particle species
   // with respect to normalization
 #if defined(SWITCH_PLASMA_SPATIAL_REGULAR) || defined(SWITCH_PLASMA_SPATIAL_CENTERED)
-  LOG_S(INFO) << "Using amount-dependent plama macroparticles spatial distribution";
-  LOG_S(INFO) << "Amount of plasma macroparticles could be changed to satisfy spatial distribution requirement";
+  spdlog::info("Using amount-dependent plama macroparticles spatial distribution");
+  spdlog::info("Amount of plasma macroparticles could be changed to satisfy "
+               "spatial distribution requirement");
 #endif
-  for (auto p_s = particle_species.begin(); p_s != particle_species.end(); ++p_s)
+  for ( auto p_s = particle_species.begin(); p_s != particle_species.end(); ++p_s )
   {
     (*p_s).macro_amount = (unsigned int)(geometry->cell_amount[0] * geometry->cell_amount[1] * norm);
-    LOG_S(INFO) << "Macro amount for ``" << (*p_s).name << "'' speice is " << (*p_s).macro_amount;
+    spdlog::info("Macro amount for ``{}'' specie is ``{}''", (*p_s).name, (*p_s).macro_amount);
   }
 
   // align macroparticles amount to particle beams
   // with respect to normalization
-  for (auto b = particle_beams.begin(); b != particle_beams.end(); ++b)
+  for ( auto b = particle_beams.begin(); b != particle_beams.end(); ++b )
   {
     double beam_r_grid_size = (*b).bunch_radius / geometry->cell_size[0];
     double beam_z_grid_size = (*b).bunch_length * (*b).bunches_amount / geometry->cell_size[1];
 
     (*b).macro_amount = (unsigned int)(beam_r_grid_size * beam_z_grid_size * norm * beam_macro_ratio);
-    LOG_S(INFO) << "Macro amount for ``" << (*b).name << "'' beam is " << (*b).macro_amount;
+    spdlog::info("Macro amount for ``{}'' beam is ``{}''", (*b).name, (*b).macro_amount);
   }
 }
 
@@ -579,131 +617,113 @@ bool Cfg::method_limitations_check ()
   double ion_temperature = 0;
 
   // grid limitations
-  if ((fmod(geometry->domains_amount[0], 2) != 0 && geometry->domains_amount[0] != 1) || (fmod(geometry->domains_amount[1], 2) != 0 && geometry->domains_amount[1] != 1))
-    {
-      LOG_S(FATAL) << "Amount of domains should be multiple of 2, or 1";
-    }
+  if ( (fmod(geometry->domains_amount[0], 2) != 0 && geometry->domains_amount[0] != 1) ||
+       (fmod(geometry->domains_amount[1], 2) != 0 && geometry->domains_amount[1] != 1) )
+  {
+    spdlog::critical("Amount of domains should be multiple of 2, or 1");
+    exit(EXIT_FAILURE);
+  }
 
-  // if (geometry->cell_amount[0] / geometry->domains_amount[0] < MIN_DOMAIN_GRID_AMOUNT)
+  // if (geometry->cell_amount[0] / geometry->domains_amount[0] <
+  // MIN_DOMAIN_GRID_AMOUNT)
   //   {
-  //     LOG_S(FATAL) << "Too small domain size by r. Must be ``" << MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
+  //     spdlog::critical("Too small domain size by r. Must be ``{}'' cells or
+  //     more", MIN_DOMAIN_GRID_AMOUNT); exit(EXIT_FAILURE);
   //   }
 
-  // if (geometry->cell_amount[1] / geometry->domains_amount[1] < MIN_DOMAIN_GRID_AMOUNT)
+  // if (geometry->cell_amount[1] / geometry->domains_amount[1] <
+  // MIN_DOMAIN_GRID_AMOUNT)
   //   {
-  //     LOG_S(FATAL) << "Too small domain size by z. Must be ``" << MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
+  //     spdlog::critical("Too small domain size by z. Must be ``{}'' cells or
+  //     more", MIN_DOMAIN_GRID_AMOUNT); exit(EXIT_FAILURE);
   //   }
 
-  // if (geometry->cell_amount[0] / geometry->domains_amount[0] * geometry->cell_amount[1] / geometry->domains_amount[1] < MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT)
+  // if (geometry->cell_amount[0] / geometry->domains_amount[0] *
+  // geometry->cell_amount[1] / geometry->domains_amount[1] <
+  // MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT)
   //   {
-  //     LOG_S(FATAL) << "Too small domain size. Must be ``" << MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT << "'' cells or more", 1);
+  //     spdlog::critical("Too small domain size. Must be ``{}'' cells or more",
+  //     MIN_DOMAIN_GRID_AMOUNT * MIN_DOMAIN_GRID_AMOUNT); exit(EXIT_FAILURE);
   //   }
 
-// try to figure out, where is electrons
-  for (auto i = particle_species.begin(); i != particle_species.end(); ++i)
+  // try to figure out, where is electrons
+  for ( auto i = particle_species.begin(); i != particle_species.end(); ++i )
   {
     full_macro_amount += (*i).macro_amount; // calculate total number of macroparticles
 
-    if (i->name.compare("Electrons") == 0
-        || i->name.compare("electrons") == 0
-        || i->name.compare("Electron") == 0
-        || i->name.compare("electron") == 0
-        || i->mass == 1)
+    if ( i->name.compare("Electrons") == 0 || i->name.compare("electrons") == 0 || i->name.compare("Electron") == 0 ||
+         i->name.compare("electron") == 0 || i->mass == 1 )
     {
       electron_density = ((*i).left_density + (*i).right_density) / 2;
       electron_temperature = (*i).temperature;
     }
 
-    if (i->name.compare("Ions") == 0
-        || i->name.compare("ions") == 0
-        || i->name.compare("Ion") == 0
-        || i->name.compare("ion") == 0)
+    if ( i->name.compare("Ions") == 0 || i->name.compare("ions") == 0 || i->name.compare("Ion") == 0 ||
+         i->name.compare("ion") == 0 )
     {
       ion_density = ((*i).left_density + (*i).right_density) / 2;
       ion_temperature = (*i).temperature;
     }
   }
 
-  if (electron_density == 0)
+  if ( electron_density == 0 )
   {
-    LOG_S(FATAL) << "There is no electrons present in system";
+    spdlog::critical("There is no electrons present in system");
+    exit(EXIT_FAILURE);
   }
 
-  double plasma_freq = phys::plasma::plasma_frequency ( electron_density );
+  double plasma_freq = phys::plasma::plasma_frequency(electron_density);
 
   // TODO: WTF
   unsigned int time_multiplicator = 100;
 
   // particle should not fly more, than 1 cell per time step
-  double max_time_c = min(geometry->cell_size[0] / constant::LIGHT_VEL,
-                          geometry->cell_size[1] / constant::LIGHT_VEL);
+  double max_time_c = min(geometry->cell_size[0] / constant::LIGHT_VEL, geometry->cell_size[1] / constant::LIGHT_VEL);
   double max_time_wp = 2 / plasma_freq / time_multiplicator;
   double max_time = min(max_time_c, max_time_wp);
 
-  if (time->step > max_time)
-  {
-    LOG_S(ERROR) << "Too large time step: ``"
-             << time->step
-             << " s.''. Should be less, than ``"
-             << max_time
-             << " s.''";
-  }
+  if ( time->step > max_time )
+    spdlog::error("Too large time step: ``{} s.''. Should be less, than ``{} s.''", time->step, max_time);
 
   // cell size d{r,z} < \lambda debye
 
-  double debye_length = phys::plasma::debye_length (electron_density, ion_density, ion_temperature, electron_temperature);
+  double debye_length =
+    phys::plasma::debye_length(electron_density, ion_density, ion_temperature, electron_temperature);
   unsigned int debye_multiplicator = 100;
 
-  if ( electron_temperature != 0)
+  if ( electron_temperature != 0 )
   {
-    if (geometry->cell_size[0] > debye_length * debye_multiplicator
-	|| geometry->cell_size[1] > debye_length * debye_multiplicator)
-    {
-      LOG_S(ERROR) << "Too large grid size: ``"
-	       << geometry->cell_size[0] << " x " << geometry->cell_size[1]
-	       << " m.''. Should be less, than ``"
-	       << debye_length * debye_multiplicator
-		   << " m.''";
-    }
+    if ( geometry->cell_size[0] > debye_length * debye_multiplicator ||
+         geometry->cell_size[1] > debye_length * debye_multiplicator )
+      spdlog::error("Too large grid size: ``{}x{} m.''. Should be less, than ``{} m.''", geometry->cell_size[0],
+                    geometry->cell_size[1], debye_length * debye_multiplicator);
 
     // \f$ L >> R_{debye} \f$
-    if (geometry->size[0] < debye_length * debye_multiplicator
-    	|| geometry->size[1] < debye_length * debye_multiplicator)
-    {
-      LOG_S(ERROR) << "Too small system size: ``"
-    	       << geometry->size[0] << " x " << geometry->size[1]
-    	       << " m.''. Should be more, than ``"
-    	       <<  debye_length * debye_multiplicator
-    		   << " m.''";
-    }
+    if ( geometry->size[0] < debye_length * debye_multiplicator ||
+         geometry->size[1] < debye_length * debye_multiplicator )
+      spdlog::error("Too small system size: ``{}x{} m.''. Should be more, than ``{} m.''", geometry->size[0],
+                    geometry->size[1], debye_length * debye_multiplicator);
 
     // \f$ L << N_{particles} * R_{debye} \f$
-    if (geometry->size[0] > debye_length * full_macro_amount * debye_multiplicator
-	|| geometry->size[1] > debye_length * full_macro_amount * debye_multiplicator)
-    {
-      LOG_S(ERROR) << "Too large system size: ``"
-	       << geometry->size[0] << " x " << geometry->size[1]
-	       << " m.''. Should be less, than ``"
-	       <<  debye_length * full_macro_amount * debye_multiplicator
-	       << " m.''";
-    }
+    if ( geometry->size[0] > debye_length * full_macro_amount * debye_multiplicator ||
+         geometry->size[1] > debye_length * full_macro_amount * debye_multiplicator )
+      spdlog::error("Too large system size: ``{}x{} m.''. Should be less, than ``{} m.''", geometry->size[0],
+                    geometry->size[1], debye_length * full_macro_amount * debye_multiplicator);
   }
 
   unsigned int grid_multiplicator = 10;
 
-  if (geometry->cell_amount[0] * geometry->cell_amount[0] * grid_multiplicator > full_macro_amount)
+  if ( geometry->cell_amount[0] * geometry->cell_amount[0] * grid_multiplicator > full_macro_amount )
   {
-    LOG_S(WARNING) << "Too small amount of macroparticles: ``"
-             << full_macro_amount
-             << "''. Should be more, than ``"
-             <<  geometry->cell_amount[0] * geometry->cell_amount[0] * grid_multiplicator
-             << "''. You could get not relevant results";
+    spdlog::warn("Too small amount of macroparticles: ``{}''. Should be more, "
+                 "than ``{}''. You could get not relevant results",
+                 full_macro_amount, geometry->cell_amount[0] * geometry->cell_amount[0] * grid_multiplicator);
   }
 
   return true;
 }
 
-string Cfg::cfg2str()
+string Cfg::cfg2str ()
 {
   // make some generic preparations
   value json_data_for_dump = json_data;
@@ -717,7 +737,4 @@ string Cfg::cfg2str()
   return str;
 }
 
-picojson::value Cfg::cfg2value()
-{
-  return json_data;
-}
+picojson::value Cfg::cfg2value () { return json_data; }
