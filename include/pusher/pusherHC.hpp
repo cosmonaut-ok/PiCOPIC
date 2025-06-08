@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,14 +25,15 @@ class PusherHC : public Pusher
 {
 public:
 #ifdef ENABLE_EXTERNAL_FIELDS
-  PusherHC (MaxwellSolver *_maxwell_solver, ExternalFields *_external_fields, vector<SpecieP *> _species_p, TimeSim *_time)
+  PusherHC (MaxwellSolver* _maxwell_solver, ExternalFields* _external_fields, vector<SpecieP*> _species_p,
+            TimeSim* _time)
     : Pusher(_maxwell_solver, _external_fields, _species_p, _time) {};
 #else
-  PusherHC (MaxwellSolver *_maxwell_solver, vector<SpecieP *> _species_p, TimeSim *_time)
+  PusherHC (MaxwellSolver* _maxwell_solver, vector<SpecieP*> _species_p, TimeSim* _time)
     : Pusher(_maxwell_solver, _species_p, _time) {};
 #endif
 
-  void operator()();
+  void operator() ();
 };
 
 #endif // end of _PUSHERHC_HPP_

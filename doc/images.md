@@ -7,7 +7,7 @@
 @image latex geometry.png
 
 # PIC loop
-@image latex PiC_scheme.png
+@image latex PiCoPiC_scheme.png
 
 # Current weighting scheme
 

@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +19,18 @@
 #ifndef _CFG_HPP_
 #define _CFG_HPP_
 
-#include <vector>
-#include <sstream> // std::stringstream
 #include <fstream> // std::ifstream
+#include <sstream> // std::stringstream
+#include <vector>
 
 #include "picojson.h"
 
 #include "defines.hpp"
+
+#include "spdlog/async.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
 #include "msg.hpp"
 #include "phys/plasma.hpp"
 
@@ -41,38 +47,39 @@
 #define MIN_DOMAIN_GRID_AMOUNT 64
 
 struct probe
-  //! There are several types of probes: vector and scalar and particle specie
-  //! dependent and independent. Vector probes are separated to 3 coordinates by
-  //! direction: `r`, \f$\phi\f$ and `z`. Vector probe's `component` attribute
-  //! looks like: `<Name>/r`, `<Name>/z` etc. Scalar probe's component is only
-  //! `<Name>`. Specie-dependent probes are used only for specific particle
-  //! specie (e.g. electrons, ions, beam_electrons etc). Definition of
-  //! specie-dependent probe should include `specie` attribute (see example
-  //! below).
-  //!
-  //! **Probe Types:**
-  //! - Electric field components: `E/r`, `E/phi`, `E/z` (vector)
-  //! - Magnetic field components: `H/r`, `H/phi`, `H/z` (vector)
-  //! - Current components: `J/r`, `J/phi`, `J/z` (vector)
-  //! - Weighted relativistic momentum components (\f$ \gamma m v \f$):
-  //! `momentum/r`, `momentum/phi`, `momentum/z` (vector, specie-dependent)
-  //! - Weighted density: `density` (specie-dependent)
-  //! - Weighted temperature (aka energy of chaotic motion): `temperature` (specie-dependent)
-  //! - Weighted energy: `energy` (specie-dependent)
-  //!
-  //! General structure of probe definition in PiCoPiC.json:
-  //! @code "probes": [
-  //! ...
-  //! {
-  //!    "component": "momentum/r",
-  //!    "specie": "electrons",       // only for specie-dependent probes
-  //!    "schedule": 10,              // number of time steps between dumps
-  //!    "shape": "rec",              // can be `rec`, `col`, `row` and `dot`
-  //!    "start": { "r": 0, "z": 0 }, // coordinates of `start` and `end` points
-  //!    "end": { "r": 64, "z": 256 }
-  //! },
-  //! ...
-  //! ]@endcode
+//! There are several types of probes: vector and scalar and particle specie
+//! dependent and independent. Vector probes are separated to 3 coordinates by
+//! direction: `r`, \f$\phi\f$ and `z`. Vector probe's `component` attribute
+//! looks like: `<Name>/r`, `<Name>/z` etc. Scalar probe's component is only
+//! `<Name>`. Specie-dependent probes are used only for specific particle
+//! specie (e.g. electrons, ions, beam_electrons etc). Definition of
+//! specie-dependent probe should include `specie` attribute (see example
+//! below).
+//!
+//! **Probe Types:**
+//! - Electric field components: `E/r`, `E/phi`, `E/z` (vector)
+//! - Magnetic field components: `H/r`, `H/phi`, `H/z` (vector)
+//! - Current components: `J/r`, `J/phi`, `J/z` (vector)
+//! - Weighted relativistic momentum components (\f$ \gamma m v \f$):
+//! `momentum/r`, `momentum/phi`, `momentum/z` (vector, specie-dependent)
+//! - Weighted density: `density` (specie-dependent)
+//! - Weighted temperature (aka energy of chaotic motion): `temperature`
+//! (specie-dependent)
+//! - Weighted energy: `energy` (specie-dependent)
+//!
+//! General structure of probe definition in PiCoPiC.json:
+//! @code "probes": [
+//! ...
+//! {
+//!    "component": "momentum/r",
+//!    "specie": "electrons",       // only for specie-dependent probes
+//!    "schedule": 10,              // number of time steps between dumps
+//!    "shape": "rec",              // can be `rec`, `col`, `row` and `dot`
+//!    "start": { "r": 0, "z": 0 }, // coordinates of `start` and `end` points
+//!    "end": { "r": 64, "z": 256 }
+//! },
+//! ...
+//! ]@endcode
 {
   std::string path;
   std::string component;
@@ -117,8 +124,8 @@ struct particle_beam : particle_specie
 
 struct save_data
 {
-  char *path;
-  char *data_root;
+  char* path;
+  char* data_root;
   int fpf; // frames per file
   bool compress;
   int compress_level;
@@ -128,27 +135,27 @@ class Cfg
 {
 public:
   // Cfg(void);
-  Cfg(const std::string json_file_name);
-  ~Cfg(void);
+  Cfg (const std::string json_file_name);
+  ~Cfg (void);
 
-  std::string cfg2str();
-  picojson::value cfg2value();
+  std::string cfg2str ();
+  picojson::value cfg2value ();
 
 public:
-  char *log_file;
+  char* log_file;
 
   bool use_hdf5 = false;
 
   double macro_amount; // amount of macroparticles in system
   unsigned int beam_macro_ratio;
 
-  Geometry *geometry;
+  Geometry* geometry;
 
   /* <time> */
-  TimeSim *time;
+  TimeSim* time;
 
   /* output data params structure */
-  save_data *output_data;
+  save_data* output_data;
 
   vector<particle_specie> particle_species;
   vector<particle_beam> particle_beams;
@@ -158,57 +165,57 @@ public:
   //! use "beam" for full set of electron bunches
   //! use "bunch" for sinble electron bunch (part of beam)
 
-//   char *beam_name;
-//   //! particles charge in beam
-//   //! (mean, all bunches in the beam and charge/mass of all particles
-//   //! in the bunch are equal.
-//   int beam_particle_charge;
-//   //! particles mass in beam
-//   unsigned int beam_particle_mass;
-//   //! number of particles in beam
-//   unsigned int beam_number_bunches;
-//   //! distance between bunches in beam
-//   double beam_bunches_distance;
-//   //! initial velocity of bunches in beam
-//   //! (mean, it is equal for all bucnhes in beam)
-//   double beam_initial_velocity;
-//   //! number of macroparticles in bunch
-//   unsigned int bunch_number_macro;
-//   //! length of bunch
-//   double bunch_lenght;
-//   //! radius of bunch
-//   double bunch_radius;
-//   //! particles density in bunch
-//   double bunch_density;
+  //   char *beam_name;
+  //   //! particles charge in beam
+  //   //! (mean, all bunches in the beam and charge/mass of all particles
+  //   //! in the bunch are equal.
+  //   int beam_particle_charge;
+  //   //! particles mass in beam
+  //   unsigned int beam_particle_mass;
+  //   //! number of particles in beam
+  //   unsigned int beam_number_bunches;
+  //   //! distance between bunches in beam
+  //   double beam_bunches_distance;
+  //   //! initial velocity of bunches in beam
+  //   //! (mean, it is equal for all bucnhes in beam)
+  //   double beam_initial_velocity;
+  //   //! number of macroparticles in bunch
+  //   unsigned int bunch_number_macro;
+  //   //! length of bunch
+  //   double bunch_lenght;
+  //   //! radius of bunch
+  //   double bunch_radius;
+  //   //! particles density in bunch
+  //   double bunch_density;
 
-//   double boundary_maxwell_e_phi_upper;
-//   double boundary_maxwell_e_phi_left;
-//   double boundary_maxwell_e_phi_right;
-//   int boundary_conditions;
+  //   double boundary_maxwell_e_phi_upper;
+  //   double boundary_maxwell_e_phi_left;
+  //   double boundary_maxwell_e_phi_right;
+  //   int boundary_conditions;
 
-//   char *dump_result_path;
-//   char *dump_data_root;
-//   unsigned int dump_data_interval;
-//   unsigned int dump_frames_per_file;
-//   unsigned int dump_system_state_interval;
-//   bool dump_compress = false;
-//   int dump_compress_level = 0;
+  //   char *dump_result_path;
+  //   char *dump_data_root;
+  //   unsigned int dump_data_interval;
+  //   unsigned int dump_frames_per_file;
+  //   unsigned int dump_system_state_interval;
+  //   bool dump_compress = false;
+  //   int dump_compress_level = 0;
 
-//   // dump different kinds of data
-//   bool dump_e_r = false;
-//   bool dump_e_phi = false;
-//   bool dump_e_z = false;
-//   bool dump_h_r = false;
-//   bool dump_h_phi = false;
-//   bool dump_h_z = false;
-//   bool dump_position = false;
-//   bool dump_velocity = false;
-//   bool dump_rho_beam = false;
+  //   // dump different kinds of data
+  //   bool dump_e_r = false;
+  //   bool dump_e_phi = false;
+  //   bool dump_e_z = false;
+  //   bool dump_h_r = false;
+  //   bool dump_h_phi = false;
+  //   bool dump_h_z = false;
+  //   bool dump_position = false;
+  //   bool dump_velocity = false;
+  //   bool dump_rho_beam = false;
 
-//   // electrical current dump
-//   bool dump_current_r = false;
-//   bool dump_current_phi = false;
-//   bool dump_current_z = false;
+  //   // electrical current dump
+  //   bool dump_current_r = false;
+  //   bool dump_current_phi = false;
+  //   bool dump_current_z = false;
 
   // probes
   vector<probe> probes;
@@ -218,18 +225,18 @@ public:
 private:
   picojson::value json_data;
 
-  void init_particles();
-  void init_probes();
-  void init_beam();
-  void init_geometry();
-  void init_pml();
-  void init_time();
-  void init_boundary();
-  void init_output_data();
+  void init_particles ();
+  void init_probes ();
+  void init_beam ();
+  void init_geometry ();
+  void init_pml ();
+  void init_time ();
+  void init_boundary ();
+  void init_output_data ();
 #ifdef ENABLE_EXTERNAL_FIELDS
-  void init_external_fields();
+  void init_external_fields ();
 #endif
-  void weight_macro_amount();
-  bool method_limitations_check();
+  void weight_macro_amount ();
+  bool method_limitations_check ();
 };
 #endif // end of _CFG_HPP_

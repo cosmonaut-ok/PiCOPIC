@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +19,18 @@
 #ifndef _PLASMA_HPP_
 #define _PLASMA_HPP_
 
-#include "defines.hpp"
 #include "constant.hpp"
+#include "defines.hpp"
 #include "msg.hpp"
 
 namespace phys::plasma
 {
-  double debye_length (double density_el, double density_ion,
-                       double temperature_ion, double temperature_el);
+double debye_length (double density_el, double density_ion, double temperature_ion, double temperature_el);
 
-  double plasma_frequency (double density);
+double plasma_frequency (double density);
 
-  double coulomb_logarithm (double mass_a, double mass_b,
-			    double debye_length, double v_rel);
+double coulomb_logarithm (double mass_a, double mass_b, double debye_length, double v_rel);
 
-  double collision_freqency (double e_a, double e_b,
-                             double density_lowest,
-                             double L,
-                             double p_rel, double v_rel);
-}
+double collision_freqency (double e_a, double e_b, double density_lowest, double L, double p_rel, double v_rel);
+} // namespace phys::plasma
 #endif // end of _PLASMA_HPP_

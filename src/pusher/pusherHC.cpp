@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,28 +16,27 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "pusher/pusherHC.hpp"
 
 using namespace constant;
 
-void PusherHC::operator()()
+void PusherHC::operator() ()
 {
   // !
   // ! Higuera-Cary pusher
   // !
-  for (auto sp = species_p.begin(); sp != species_p.end(); ++sp)
+  for ( auto sp = species_p.begin(); sp != species_p.end(); ++sp )
   {
     double charge = (**sp).charge;
     double mass = (**sp).mass;
 
-    for (auto p = (**sp).particles.begin(); p != (**sp).particles.end(); ++p)
+    for ( auto p = (**sp).particles.begin(); p != (**sp).particles.end(); ++p )
     {
       vector3d<double> velocity(P_VEL_R((**p)), P_VEL_PHI((**p)), P_VEL_Z((**p)));
       vector3d<double> uplocity; // u prime
-      vector3d<double> psm; // pxsm, pysm, pzsm
-      vector3d<double> um; // pxsm, pysm, pzsm
-      vector3d<double> up; // pxsm, pysm, pzsm
+      vector3d<double> psm;      // pxsm, pysm, pzsm
+      vector3d<double> um;       // pxsm, pysm, pzsm
+      vector3d<double> up;       // pxsm, pysm, pzsm
 
       // we don't care, if it is particle's or macroparticle's
       // charge over mass ratio
@@ -78,27 +78,28 @@ void PusherHC::operator()()
       B2 = b.length2();
 
       // Equivalent of 1/\gamma_{new} in the paper
-      gamma = 1. / sqrt ( 0.5*( gfm2 - B2 +
-                                sqrt ( pow( gfm2 - B2, 2 )
-                                       + 4.0 * ( B2 + pow( b[0]*um[0]
-                                                           + b[1]*um[1]
-                                                           + b[2]*um[2], 2 ) ) ) ) );
+      gamma =
+        1. / sqrt(0.5 * (gfm2 - B2 +
+                         sqrt(pow(gfm2 - B2, 2) + 4.0 * (B2 + pow(b[0] * um[0] + b[1] * um[1] + b[2] * um[2], 2)))));
 
       b *= gamma;
       b2 = b;
       b2 *= b;
 
-      b_cross[0] = b[0]*b[1];
-      b_cross[1] = b[1]*b[2];
-      b_cross[2] = b[2]*b[0];
-      double inv_det_B = 1.0/( 1.0+b2[0]+b2[1]+b2[0] );
+      b_cross[0] = b[0] * b[1];
+      b_cross[1] = b[1] * b[2];
+      b_cross[2] = b[2] * b[0];
+      double inv_det_B = 1.0 / (1.0 + b2[0] + b2[1] + b2[0]);
 
-      up[0] = ( ( 1.0+b2[0]-b2[1]-b2[2] ) * um[0] + 2. * ( b_cross[0]+b[2] )
-                * um[1] + 2. * ( b_cross[2] - b[2] ) * um[2] ) * inv_det_B;
-      up[1] = ( 2. * ( b_cross[0]-b[2] ) * um[0] + ( 1. - b2[0]+b2[1]-b2[2] )
-                * um[1] + 2. * ( b_cross[1] + b[0] ) * um[2] ) * inv_det_B;
-      up[2] = ( 2. * ( b_cross[2] + b[1] ) * um[0] + 2. * ( b_cross[1] - b[0] )
-                * um[1] + ( 1. - b2[0]-b2[1]+b2[2] )* um[2] ) * inv_det_B;
+      up[0] =
+        ((1.0 + b2[0] - b2[1] - b2[2]) * um[0] + 2. * (b_cross[0] + b[2]) * um[1] + 2. * (b_cross[2] - b[2]) * um[2]) *
+        inv_det_B;
+      up[1] =
+        (2. * (b_cross[0] - b[2]) * um[0] + (1. - b2[0] + b2[1] - b2[2]) * um[1] + 2. * (b_cross[1] + b[0]) * um[2]) *
+        inv_det_B;
+      up[2] =
+        (2. * (b_cross[2] + b[1]) * um[0] + 2. * (b_cross[1] - b[0]) * um[1] + (1. - b2[0] - b2[1] + b2[2]) * um[2]) *
+        inv_det_B;
 
       // finalize Half-acceleration in the electric field
       psm += up;

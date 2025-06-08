@@ -1,6 +1,7 @@
 /*
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,22 +24,20 @@
 class CollisionsTA77S : public Collisions
 {
 public:
-  CollisionsTA77S(void) {};
-  CollisionsTA77S(Geometry* _geometry, TimeSim *_time, vector <SpecieP *> _species_p);
-  ~CollisionsTA77S(void) {};
+  CollisionsTA77S (void) {};
+  CollisionsTA77S (Geometry* _geometry, TimeSim* _time, vector<SpecieP*> _species_p);
+  ~CollisionsTA77S (void) {};
 
   // virtual void calc_collisions() = 0;
-  void collide_single(double m_real_a, double m_real_b,
-		      double q_real_a, double q_real_b,
-                      Particle &p1, Particle &p2,
-                      double _density_a, double _density_b, double debye);
+  void collide_single (double m_real_a, double m_real_b, double q_real_a, double q_real_b, Particle& p1, Particle& p2,
+                       double _density_a, double _density_b, double debye);
 
-  void operator()();
+  void operator() ();
 
 protected:
-  void correct_velocities();
+  void correct_velocities ();
 
-  void collide();
+  void collide ();
 };
 
 #endif // end of _COLLISIONS_TA77S_HPP_

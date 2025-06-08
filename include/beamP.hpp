@@ -1,17 +1,18 @@
-/* 
- * This file is part of the PiCoPiC distribution (https://github.com/cosmonaut-ok/PiCoPiC).
- * Copyright (c) 2020 Alexander Vynnyk.
- * 
- * This program is free software: you can redistribute it and/or modify  
- * it under the terms of the GNU General Public License as published by  
+/*
+ * This file is part of the PiCoPiC distribution
+ * (https://github.com/cosmonaut-ok/PiCoPiC).
+ * Copyright (c) 2020,2025 Alexander Vynnyk.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
  *
- * This program is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
+ * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -44,23 +45,18 @@ public:
   BeamP (unsigned int id, // ID for every particles specie
          string p_name,
          double p_charge, // in electron charges
-         double p_mass, // in electron masses
-         unsigned int p_macro_amount,
-         double p_start_time,
-         double b_radius,
+         double p_mass,   // in electron masses
+         unsigned int p_macro_amount, double p_start_time, double b_radius,
          double b_density, // CI units
-         double b_amount,
-         double b_length,
-         double b_distance,
+         double b_amount, double b_length, double b_distance,
          double b_velocity, // electronvolts
-         Geometry *geom,
-         TimeSim *t );
+         Geometry* geom, TimeSim* t);
 
-  void inject();
-  void reflect();
+  void inject ();
+  void reflect ();
 
   // just dummy methods. Not used by BeamP
-  void fullyfill_spatial_distribution() {};
+  void fullyfill_spatial_distribution () {};
   void velocity_distribution () {};
 };
 
